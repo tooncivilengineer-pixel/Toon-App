@@ -153,7 +153,16 @@
 
                     <!-- TOASTS FOR MAP PICKING -->
                     <div id="picking-toast" class="hidden absolute top-6 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-full z-[70] shadow-2xl font-bold flex items-center gap-3 border-2 border-white animate-bounce"><i class="fas fa-crosshairs fa-spin"></i> กรุณาคลิกเลือกตำแหน่งที่ตั้งบนแผนที่<button id="btn-cancel-pick-1" class="ml-2 bg-white/20 hover:bg-white/30 rounded-full w-6 h-6 flex items-center justify-center pointer-events-auto"><i class="fas fa-times text-xs"></i></button></div>
-                    <div id="picking-line-toast" class="hidden absolute top-6 left-1/2 transform -translate-x-1/2 bg-yellow-600 text-white px-4 py-3 rounded-full z-[70] shadow-2xl font-bold flex items-center gap-3 border-2 border-white"><i class="fas fa-route fa-spin"></i> คลิกลงบนแผนที่เพื่อวาดแนวเส้นทาง<button id="btn-finish-line" class="ml-2 bg-white text-yellow-700 px-3 py-1.5 rounded-full text-xs hover:bg-gray-100 shadow transition pointer-events-auto">เสร็จสิ้นการวาด</button><button id="btn-cancel-pick-2" class="bg-white/20 hover:bg-white/30 rounded-full w-6 h-6 flex items-center justify-center pointer-events-auto"><i class="fas fa-times text-xs"></i></button></div>
+                    
+                    <div id="picking-line-toast" class="hidden absolute top-6 left-1/2 transform -translate-x-1/2 bg-yellow-600 text-white px-4 py-3 rounded-full z-[70] shadow-2xl font-bold flex items-center gap-2 border-2 border-white">
+                        <i class="fas fa-route fa-spin"></i> <span class="hidden md:inline">คลิกลงบนแผนที่เพื่อวาดแนวเส้นทาง</span>
+                        <div class="h-4 w-px bg-white/30 mx-1"></div>
+                        <button id="btn-undo-line" class="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded-full text-[10px] md:text-xs transition pointer-events-auto flex items-center gap-1 shadow-sm" title="ย้อนกลับจุดล่าสุด"><i class="fas fa-undo"></i> <span class="hidden sm:inline">ย้อนกลับ</span></button>
+                        <button id="btn-restart-line" class="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1.5 rounded-full text-[10px] md:text-xs transition pointer-events-auto flex items-center gap-1 shadow-sm" title="ลบเส้นเริ่มวาดใหม่"><i class="fas fa-trash-alt"></i> <span class="hidden sm:inline">ลบวาดใหม่</span></button>
+                        <button id="btn-finish-line" class="bg-white text-yellow-700 px-3 py-1.5 rounded-full text-xs hover:bg-gray-100 shadow transition pointer-events-auto ml-1 font-bold">เสร็จสิ้น</button>
+                        <button id="btn-cancel-pick-2" class="bg-white/20 hover:bg-white/30 rounded-full w-7 h-7 flex items-center justify-center pointer-events-auto ml-1"><i class="fas fa-times text-xs"></i></button>
+                    </div>
+                    
                     <div id="street-view-toast" class="hidden absolute top-6 left-1/2 transform -translate-x-1/2 bg-orange-600 text-white px-6 py-3 rounded-full z-[70] shadow-2xl font-bold flex items-center gap-3 border-2 border-white animate-bounce"><i class="fas fa-street-view"></i> คลิกลงบนถนนในแผนที่เพื่อดู Street View<button id="btn-cancel-street-view" class="ml-2 bg-white/20 hover:bg-white/30 rounded-full w-6 h-6 flex items-center justify-center pointer-events-auto"><i class="fas fa-times text-xs"></i></button></div>
                 </main>
 
@@ -291,16 +300,27 @@
                                     </div>
 
                                     <div id="e-style-point-section" class="mb-2 pb-2 border-b border-gray-100 hidden bg-green-50 p-2 rounded border border-green-100">
-                                        <label class="text-[10px] font-bold text-green-800 block mb-1">9. รูปแบบหมุด (Point)</label>
-                                        <div class="grid grid-cols-3 gap-2">
+                                        <label class="text-[10px] font-bold text-green-800 block mb-1">9. รูปแบบและตำแหน่งหมุด (Point)</label>
+                                        <div class="grid grid-cols-3 gap-2 mb-2">
                                             <div><label class="text-[9px] text-gray-500 block mb-1">สีหมุด</label><select id="e-point-color" class="w-full border rounded text-[10px] p-1 h-7"><option value="#16a34a">🟢 สีเขียว</option><option value="#dc2626">🔴 สีแดง (ล่าช้า)</option><option value="#2563eb">🔵 สีน้ำเงิน (ส่งมอบแล้ว)</option><option value="#eab308">🟡 สีเหลือง (รอดำเนินการ)</option><option value="#9333ea">🟣 สีม่วง</option><option value="#71717a">⚪ สีเทา</option></select></div>
                                             <div><label class="text-[9px] text-gray-500 block mb-1">ไอคอน</label><select id="e-point-icon" class="w-full border rounded text-[10px] p-1 h-7"><option value="fa-map-marker-alt">📍 มาตรฐาน</option><option value="fa-hard-hat">👷 หมวกนิรภัย</option><option value="fa-road">🛣️ ถนน</option><option value="fa-building">🏢 อาคาร</option><option value="fa-bridge">🌉 สะพาน</option></select></div>
                                             <div><label class="text-[9px] text-gray-500 block mb-1">ขนาด</label><select id="e-point-size" class="w-full border rounded text-[10px] p-1 h-7"><option value="24">เล็ก (Small)</option><option value="32">กลาง (Medium)</option><option value="48">ใหญ่ (Large)</option><option value="64">ใหญ่มาก (X-Large)</option></select></div>
                                         </div>
+                                        <div class="grid grid-cols-2 gap-2 mb-2">
+                                            <div><input type="number" id="e-lat" step="any" class="w-full border rounded px-2 py-1.5 text-[10px] bg-white" placeholder="ละติจูด (Lat)"></div>
+                                            <div><input type="number" id="e-lng" step="any" class="w-full border rounded px-2 py-1.5 text-[10px] bg-white" placeholder="ลองจิจูด (Lng)"></div>
+                                        </div>
+                                        <button type="button" id="btn-e-pick-point" class="w-full bg-white border border-green-300 text-green-700 text-xs font-bold py-1.5 rounded shadow-sm hover:bg-green-50 transition cursor-pointer"><i class="fas fa-crosshairs"></i> คลิกเพื่อปักหมุดตำแหน่งใหม่</button>
                                     </div>
                                     <div id="e-style-line-section" class="mb-2 pb-2 border-b border-gray-100 hidden bg-blue-50 p-2 rounded border border-blue-100">
                                         <label class="text-[10px] font-bold text-blue-800 block mb-1">9. รูปแบบและการดำเนินการ (เส้น/พื้นที่)</label>
                                         <div class="grid grid-cols-3 gap-2 mb-2"><div><label class="text-[9px] text-gray-500">สี</label><input type="color" id="e-line-color" class="w-full h-7 cursor-pointer border rounded p-0 bg-white"></div><div><label class="text-[9px] text-gray-500">ชนิดเส้น</label><select id="e-line-style" class="w-full border rounded text-[10px] p-1 h-7 bg-white"><option value="solid">เส้นทึบ</option><option value="dashed">เส้นประ</option></select></div><div><label class="text-[9px] text-gray-500">ความหนา</label><input type="number" id="e-line-weight" min="1" max="20" class="w-full border rounded text-[10px] p-1 h-7 bg-white"></div></div>
+                                        
+                                        <div class="text-[10px] text-center text-blue-800 bg-white border border-blue-200 p-1 rounded mt-1 mb-2">
+                                            จุด: <span id="e-line-points-count" class="font-bold">0</span> | ระยะที่วาดใหม่: <span id="e-line-distance" class="font-bold">0.00</span> ม.
+                                        </div>
+                                        <button type="button" id="btn-e-pick-line" class="w-full mb-2 bg-white border border-blue-300 text-blue-700 text-xs font-bold py-1.5 rounded shadow-sm hover:bg-blue-50 transition cursor-pointer"><i class="fas fa-route"></i> วาดเส้นแนวถนนใหม่</button>
+                                        
                                         <div class="grid grid-cols-1 gap-2 pt-2 border-t border-blue-200">
                                             <div class="flex justify-between items-center"><span class="text-[10px] font-bold text-gray-600">ระยะทางรวมของไฟล์</span><span id="e-distance-display" class="font-bold text-gray-600 text-xs">0.00 ม.</span></div>
                                             <div><label class="text-[10px] font-bold text-green-700 block mb-1">ระยะทางก่อสร้างจริง (สามารถปรับลดได้) ม.</label><input type="number" id="e-working-distance" step="any" class="w-full border border-green-300 rounded px-2 py-1.5 text-xs text-green-700 font-bold bg-green-50 shadow-inner" placeholder="ระบุระยะทางจริง..."></div>
@@ -780,10 +800,38 @@
         let tempEditTasks = []; 
         let tempEditSCurve = [];
         let currentFilter = { district: null, budgetType: null, year: null };
+        
+        // 🟢 สถานะเพิ่มเติมสำหรับการแก้ไขหมุด/เส้น บนแผนที่
+        let editTempLinePoints = []; 
+        let editTempPolyline = null; 
+        let editCurrentDistance = 0;
 
         let map, googleStreets, googleSat;
         let currentMapType = 'street';
         let coordFormat = 'latlng';
+
+        // 🟢 ฟังก์ชันคำนวณและวาดเส้นใหม่ (สำหรับ Undo และ ลบวาดใหม่)
+        window.redrawPolyline = function(mode) {
+            let pts = mode === 'project-line' ? tempLinePoints : editTempLinePoints;
+            let polyline = mode === 'project-line' ? tempPolyline : editTempPolyline;
+            let dist = 0;
+            if (pts.length > 1) {
+                for (let i = 1; i < pts.length; i++) {
+                    dist += map.distance([pts[i-1].lat, pts[i-1].lng], [pts[i].lat, pts[i].lng]);
+                }
+            }
+            if (mode === 'project-line') {
+                currentDistance = dist;
+                setTxt('line-distance', dist.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                setTxt('line-points-count', pts.length);
+                if (polyline) polyline.setLatLngs(pts);
+            } else {
+                editCurrentDistance = dist;
+                setTxt('e-line-distance', dist.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                setTxt('e-line-points-count', pts.length);
+                if (polyline) polyline.setLatLngs(pts);
+            }
+        };
 
         // ==========================================
         // 🟢 3. CORE HELPER FUNCTIONS
@@ -944,14 +992,21 @@
                     else if (pickingMode === 'material') { setVal('new-m-lat', e.latlng.lat.toFixed(6)); setVal('new-m-lng', e.latlng.lng.toFixed(6)); }
                     cancelPicking(true); 
                 } 
+                else if (pickingMode === 'edit-project-point') {
+                    setVal('e-lat', e.latlng.lat.toFixed(6)); setVal('e-lng', e.latlng.lng.toFixed(6));
+                    cancelPicking(true); 
+                }
                 else if (pickingMode === 'project-line') {
                     tempLinePoints.push({lat: e.latlng.lat, lng: e.latlng.lng}); 
-                    if (tempLinePoints.length > 1) { let lastPt = tempLinePoints[tempLinePoints.length - 2]; currentDistance += map.distance([lastPt.lat, lastPt.lng], [e.latlng.lat, e.latlng.lng]); }
-                    setTxt('line-distance', currentDistance.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
                     const lColor = val('new-l-color') || '#3b82f6'; const lWeight = val('new-l-weight') || 6; const lStyle = val('new-l-style') === 'dashed' ? '10, 10' : null;
-                    if (!tempPolyline) tempPolyline = L.polyline(tempLinePoints, {color: lColor, weight: lWeight, opacity: 0.8, dashArray: lStyle}).addTo(map);
-                    else { tempPolyline.setLatLngs(tempLinePoints); tempPolyline.setStyle({color: lColor, weight: lWeight, dashArray: lStyle}); }
-                    setTxt('line-points-count', tempLinePoints.length);
+                    if (!tempPolyline && tempLinePoints.length >= 2) tempPolyline = L.polyline(tempLinePoints, {color: lColor, weight: lWeight, opacity: 0.8, dashArray: lStyle}).addTo(map);
+                    window.redrawPolyline(pickingMode);
+                }
+                else if (pickingMode === 'edit-project-line') {
+                    editTempLinePoints.push({lat: e.latlng.lat, lng: e.latlng.lng}); 
+                    const lColor = val('e-line-color') || '#3b82f6'; const lWeight = val('e-line-weight') || 6; const lStyle = val('e-line-style') === 'dashed' ? '10, 10' : null;
+                    if (!editTempPolyline && editTempLinePoints.length >= 2) editTempPolyline = L.polyline(editTempLinePoints, {color: lColor, weight: lWeight, opacity: 0.8, dashArray: lStyle}).addTo(map);
+                    window.redrawPolyline(pickingMode);
                 }
             });
 
@@ -1049,11 +1104,14 @@
             const plt = $id('picking-line-toast'); if(plt) plt.classList.add('hidden');
             const st = $id('street-view-toast'); if(st) st.classList.add('hidden');
             
-            if (tempPolyline) { map.removeLayer(tempPolyline); tempPolyline = null; } 
+            if (tempPolyline && map) { map.removeLayer(tempPolyline); tempPolyline = null; } 
+            if (editTempPolyline && map) { map.removeLayer(editTempPolyline); editTempPolyline = null; }
             setTxt('line-distance', "0.00"); currentDistance = 0; 
+            setTxt('e-line-distance', "0.00"); editCurrentDistance = 0;
+            
             if (reopenModal) {
-                if (oldMode === 'material') { const m = $id('add-material-modal'); if(m) m.classList.remove('hidden'); }
-                else if (oldMode === 'project' || oldMode === 'project-line') { const p = $id('add-project-modal'); if(p) p.classList.remove('hidden'); } 
+                if (oldMode === 'project' || oldMode === 'project-line') { const p = $id('add-project-modal'); if(p) p.classList.remove('hidden'); } 
+                if (oldMode === 'edit-project-point' || oldMode === 'edit-project-line') { const dp = $id('detail-panel'); if(dp) dp.classList.remove('translate-y-full'); }
             }
         }
 
@@ -1229,12 +1287,15 @@
                         if (vDistSec) { vDistSec.classList.remove('hidden'); setTxt('v-distance', distStr); const vWorkDistWrap = $id('v-working-distance-wrapper'); if (data.workingDistance && data.workingDistance !== data.distance) { if(vWorkDistWrap) vWorkDistWrap.classList.remove('hidden'); setTxt('v-working-distance', parseFloat(data.workingDistance).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' ม.'); } else { if(vWorkDistWrap) vWorkDistWrap.classList.add('hidden'); } }
                         if (eDistDisp) eDistDisp.innerText = distStr; if (eWorkDist) eWorkDist.value = data.workingDistance || data.distance.toFixed(2);
                     } else { if (vDistSec) vDistSec.classList.add('hidden'); if (eDistDisp) eDistDisp.innerText = '-'; if (eWorkDist) eWorkDist.value = ''; }
+                    
+                    editTempLinePoints = []; editCurrentDistance = 0; setTxt('e-line-points-count', '0'); setTxt('e-line-distance', '0.00');
                 } else if (data.type === 'point') {
                     const lsec = $id('e-style-line-section'); if(lsec) lsec.classList.add('hidden'); 
                     const psec = $id('e-style-point-section'); if(psec) psec.classList.remove('hidden');
                     let displayColor = data.color || '#eab308'; if (data.importedRawData && !data.isProcessed) displayColor = '#16a34a'; 
                     setVal('e-point-color', displayColor); setVal('e-point-icon', data.icon || 'fa-map-marker-alt'); 
                     setVal('e-point-size', data.pinSize || 32); // ดึงค่าขนาดหมุดมาแสดง
+                    setVal('e-lat', data.lat || ''); setVal('e-lng', data.lng || ''); // ดึงพิกัดมาแสดง
                     const vds = $id('v-distance-section'); if(vds) vds.classList.add('hidden');
                 } else { 
                     const lsec = $id('e-style-line-section'); if(lsec) lsec.classList.add('hidden'); 
@@ -1930,7 +1991,46 @@
 
             // Map Picking Tools
             addEvent('btn-pick-location', 'click', () => { const t = val('new-p-type'); closeAddProjectModal(); document.getElementById('map-container').style.cursor = 'crosshair'; if (t === 'line') { pickingMode = 'project-line'; const pt = document.getElementById('picking-line-toast'); if(pt) pt.classList.remove('hidden'); } else { pickingMode = 'project'; const pt = document.getElementById('picking-toast'); if(pt) pt.classList.remove('hidden'); } });
-            addEvent('btn-finish-line', 'click', () => { if (tempLinePoints.length < 2) return window.showToast("วาดเส้นอย่างน้อย 2 จุด", "warning"); pickingMode = null; document.getElementById('map-container').style.cursor = ''; const pt = document.getElementById('picking-line-toast'); if(pt) pt.classList.add('hidden'); const am = document.getElementById('add-project-modal'); if(am) am.classList.remove('hidden'); });
+            
+            // 🟢 ฟังก์ชันปุ่มอัปเดตหมุด หรือ วาดเส้นใหม่ ในหน้าแก้ไข
+            addEvent('btn-e-pick-point', 'click', () => { const dp = $id('detail-panel'); if(dp) dp.classList.add('translate-y-full'); document.getElementById('map-container').style.cursor = 'crosshair'; pickingMode = 'edit-project-point'; const pt = document.getElementById('picking-toast'); if(pt) pt.classList.remove('hidden'); });
+            addEvent('btn-e-pick-line', 'click', () => { const dp = $id('detail-panel'); if(dp) dp.classList.add('translate-y-full'); document.getElementById('map-container').style.cursor = 'crosshair'; pickingMode = 'edit-project-line'; editTempLinePoints = []; editCurrentDistance = 0; if (editTempPolyline) { map.removeLayer(editTempPolyline); editTempPolyline = null; } setTxt('e-line-points-count', '0'); setTxt('e-line-distance', '0.00'); const pt = document.getElementById('picking-line-toast'); if(pt) pt.classList.remove('hidden'); });
+
+            // 🟢 ฟังก์ชัน ย้อนกลับจุดล่าสุด และ ลบวาดใหม่ (Undo / Clear)
+            addEvent('btn-undo-line', 'click', () => {
+                if (pickingMode === 'project-line' && tempLinePoints.length > 0) {
+                    tempLinePoints.pop();
+                    if (tempLinePoints.length < 2 && tempPolyline && map) { map.removeLayer(tempPolyline); tempPolyline = null; }
+                    window.redrawPolyline(pickingMode);
+                } else if (pickingMode === 'edit-project-line' && editTempLinePoints.length > 0) {
+                    editTempLinePoints.pop();
+                    if (editTempLinePoints.length < 2 && editTempPolyline && map) { map.removeLayer(editTempPolyline); editTempPolyline = null; }
+                    window.redrawPolyline(pickingMode);
+                }
+            });
+
+            addEvent('btn-restart-line', 'click', () => {
+                if (pickingMode === 'project-line') {
+                    tempLinePoints = [];
+                    if (tempPolyline && map) { map.removeLayer(tempPolyline); tempPolyline = null; }
+                    window.redrawPolyline(pickingMode);
+                } else if (pickingMode === 'edit-project-line') {
+                    editTempLinePoints = [];
+                    if (editTempPolyline && map) { map.removeLayer(editTempPolyline); editTempPolyline = null; }
+                    window.redrawPolyline(pickingMode);
+                }
+            });
+
+            addEvent('btn-finish-line', 'click', () => { 
+                if (pickingMode === 'project-line') {
+                    if (tempLinePoints.length < 2) return window.showToast("วาดเส้นอย่างน้อย 2 จุด", "warning"); 
+                    pickingMode = null; document.getElementById('map-container').style.cursor = ''; const pt = document.getElementById('picking-line-toast'); if(pt) pt.classList.add('hidden'); const am = document.getElementById('add-project-modal'); if(am) am.classList.remove('hidden'); 
+                } else if (pickingMode === 'edit-project-line') {
+                    if (editTempLinePoints.length < 2) return window.showToast("วาดเส้นอย่างน้อย 2 จุด", "warning"); 
+                    pickingMode = null; document.getElementById('map-container').style.cursor = ''; const pt = document.getElementById('picking-line-toast'); if(pt) pt.classList.add('hidden'); const dp = document.getElementById('detail-panel'); if(dp) dp.classList.remove('translate-y-full');
+                }
+            });
+            
             addEvent('btn-street-view', 'click', () => { const am1 = document.getElementById('add-project-modal'); if(am1) am1.classList.add('hidden'); cancelPicking(false); pickingMode = 'street-view'; document.getElementById('map-container').style.cursor = 'crosshair'; const st = document.getElementById('street-view-toast'); if(st) st.classList.remove('hidden'); });
             addEvent('btn-cancel-street-view', 'click', () => cancelPicking(false));
             addEvent('btn-cancel-pick-1', 'click', () => cancelPicking(true));
@@ -1998,7 +2098,11 @@
             addEvent('btn-close-panel-pc', 'click', window.closeDetailPanel);
             addEvent('btn-close-panel-mobile', 'click', window.closeDetailPanel);
             addEvent('btn-edit-details', 'click', () => { const vmd = document.getElementById('view-mode-details'); if(vmd) vmd.classList.add('hidden'); const emd = document.getElementById('edit-mode-details'); if(emd) emd.classList.remove('hidden'); });
-            addEvent('btn-cancel-edit', 'click', () => { const emd = document.getElementById('edit-mode-details'); if(emd) emd.classList.add('hidden'); const vmd = document.getElementById('view-mode-details'); if(vmd) vmd.classList.remove('hidden'); });
+            addEvent('btn-cancel-edit', 'click', () => { 
+                if (editTempPolyline && map) { map.removeLayer(editTempPolyline); editTempPolyline = null; }
+                editTempLinePoints = []; editCurrentDistance = 0;
+                const emd = document.getElementById('edit-mode-details'); if(emd) emd.classList.add('hidden'); const vmd = document.getElementById('view-mode-details'); if(vmd) vmd.classList.remove('hidden'); 
+            });
             addEvent('btn-navigate', 'click', () => {
                 if(!currentSelectedProjectId) return; const pData = loadedMarkers[currentSelectedProjectId].projectData; let lat, lng;
                 if (pData.type === 'point' || pData.recordType === 'issue' || pData.recordType === 'material') { lat = pData.lat; lng = pData.lng; } else if (pData.type === 'line' && pData.linePoints && pData.linePoints.length > 0) { lat = pData.linePoints[0].lat; lng = pData.linePoints[0].lng; }
@@ -2024,11 +2128,30 @@
                 if(!currentSelectedProjectId) return; const pData = loadedMarkers[currentSelectedProjectId].projectData;
                 pData.name = val('e-name') || 'โครงการไม่มีชื่อ';
                 pData.district = val('e-district') || 'เมืองพิษณุโลก';
-                if (pData.type === 'line' || pData.type === 'kml') { pData.color = val('e-line-color') || '#3b82f6'; pData.lineColor = val('e-line-color') || '#3b82f6'; pData.lineStyle = val('e-line-style') || 'solid'; pData.lineWeight = val('e-line-weight') || 6; pData.workingDistance = parseFloat(val('e-working-distance')) || pData.distance; pData.isProcessed = true; } 
+                if (pData.type === 'line' || pData.type === 'kml') { 
+                    pData.color = val('e-line-color') || '#3b82f6'; pData.lineColor = val('e-line-color') || '#3b82f6'; pData.lineStyle = val('e-line-style') || 'solid'; pData.lineWeight = val('e-line-weight') || 6; 
+                    
+                    // 🟢 นำเส้นที่วาดใหม่มาแทนที่
+                    if (editTempLinePoints.length >= 2) {
+                        pData.linePoints = editTempLinePoints;
+                        pData.distance = editCurrentDistance;
+                        pData.workingDistance = editCurrentDistance;
+                        if (editTempPolyline && map) { map.removeLayer(editTempPolyline); editTempPolyline = null; }
+                        editTempLinePoints = []; editCurrentDistance = 0;
+                    } else {
+                        pData.workingDistance = parseFloat(val('e-working-distance')) || pData.distance; 
+                    }
+                    pData.isProcessed = true; 
+                } 
                 else if (pData.type === 'point') { 
                     pData.color = val('e-point-color') || '#16a34a'; 
                     pData.icon = val('e-point-icon') || 'fa-map-marker-alt'; 
                     pData.pinSize = parseInt(val('e-point-size')) || 32; 
+                    
+                    // 🟢 นำพิกัดใหม่มาแทนที่
+                    let newLat = parseFloat(val('e-lat')); let newLng = parseFloat(val('e-lng'));
+                    if (!isNaN(newLat) && !isNaN(newLng)) { pData.lat = newLat; pData.lng = newLng; }
+
                     pData.isProcessed = true; 
                 }
                 pData.opStatus = val('e-op-status') || ''; 
