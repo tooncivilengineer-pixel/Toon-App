@@ -572,20 +572,42 @@
                         <h3 class="text-2xl md:text-3xl font-bold text-red-600 mt-1 relative z-10" id="gd-pending-projects">0</h3>
                     </div>
                 </div>
+                
                 <!-- Charts -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 shrink-0">
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-[280px] flex flex-col">
-                        <h4 class="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-2"><i class="fas fa-calendar-alt text-red-500 mr-1"></i> โครงการตกค้างแยกตามปี พ.ศ.</h4>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-[300px] flex flex-col">
+                        <h4 class="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-2"><i class="fas fa-chart-bar text-blue-500 mr-1"></i> สัดส่วนโครงการแยกตามปีและประเภทงบประมาณ</h4>
                         <div class="relative w-full flex-1"><canvas id="gd-year-chart"></canvas></div>
                     </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-[280px] flex flex-col">
-                        <h4 class="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-2"><i class="fas fa-tasks text-orange-500 mr-1"></i> สถานะโครงการที่กำลังดำเนินการ</h4>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-[300px] flex flex-col">
+                        <h4 class="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-2"><i class="fas fa-tasks text-orange-500 mr-1"></i> สถานะโครงการที่กำลังดำเนินการ (ตกค้าง)</h4>
                         <div class="relative w-full flex-1"><canvas id="gd-status-chart"></canvas></div>
                     </div>
                 </div>
-                <!-- Table -->
+
+                <!-- 🟢 Detailed Summary Table (ตารางสรุปงบประมาณแบบละเอียด) 🟢 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 shrink-0">
+                    <h4 class="text-sm font-bold text-gray-700 mb-3"><i class="fas fa-table text-indigo-500 mr-1"></i> สรุปจำนวนและงบประมาณ แยกตามปี พ.ศ. และประเภทงบประมาณ (โครงการทั้งหมด)</h4>
+                    <div class="overflow-x-auto border border-gray-200 rounded custom-scrollbar max-h-64">
+                        <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
+                            <thead class="bg-indigo-50 text-indigo-800 sticky top-0 shadow-sm z-10">
+                                <tr>
+                                    <th class="p-2 w-24 border-b border-indigo-100 border-r">ปี พ.ศ.</th>
+                                    <th class="p-2 min-w-[200px] border-b border-indigo-100">ประเภทงบประมาณ</th>
+                                    <th class="p-2 w-32 text-center border-b border-indigo-100">จำนวนโครงการ</th>
+                                    <th class="p-2 w-48 text-right border-b border-indigo-100">งบประมาณรวม (บาท)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gd-summary-table-body" class="divide-y divide-gray-200 bg-white">
+                                <!-- Dynamic Content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Projects Table -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex-1 flex flex-col min-h-[300px]">
-                    <h4 class="text-sm font-bold text-gray-700 mb-3"><i class="fas fa-list text-blue-500 mr-1"></i> รายละเอียดโครงการที่ยังตกค้าง</h4>
+                    <h4 class="text-sm font-bold text-gray-700 mb-3"><i class="fas fa-list text-blue-500 mr-1"></i> สรุปโครงการที่ดำเนินการแล้วเสร็จ / อยู่ในระหว่างดำเนินการ / ตกค้าง</h4>
                     <div class="overflow-x-auto border border-gray-200 rounded custom-scrollbar flex-1">
                         <table class="w-full text-left text-sm whitespace-nowrap">
                             <thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm">
@@ -594,6 +616,7 @@
                                     <th class="p-2 w-20">ปี พ.ศ.</th>
                                     <th class="p-2 min-w-[250px]">ชื่อโครงการ</th>
                                     <th class="p-2 w-24">อำเภอ</th>
+                                    <th class="p-2 w-40">ประเภทงบประมาณ</th>
                                     <th class="p-2 w-48">สถานะปัจจุบัน</th>
                                     <th class="p-2 text-right w-32">งบประมาณ (บาท)</th>
                                 </tr>
@@ -1485,15 +1508,18 @@
             let completedProjects = 0;
             let pendingProjects = 0;
             
-            let pendingByYear = {};
+            let summaryByYear = {}; // { '2566': { total: 0, budgetTotal: 0, types: { 'ข้อบัญญัติ': {count: 0, budget: 0} } } }
+            let budgetTypesSet = new Set();
+            
             let pendingByStatus = {};
-            let pendingList = [];
+            let allProjectsList = []; // 🟢 เปลี่ยนมารองรับข้อมูลทั้งหมด
 
             for (let id in loadedMarkers) {
                 let data = loadedMarkers[id].projectData;
                 if (data.recordType === 'project') {
                     totalProjects++;
-                    totalBudget += (parseFloat(data.budget) || 0);
+                    let pBudget = parseFloat(data.budget) || 0;
+                    totalBudget += pBudget;
                     
                     let isCompleted = data.opStatus === 'ส่งมอบงาน (งวดสุดท้าย)' || data.color === '#2563eb';
                     
@@ -1501,18 +1527,32 @@
                         completedProjects++;
                     } else {
                         pendingProjects++;
-                        let year = data.docYear || 'ไม่ระบุ';
                         let status = data.opStatus || 'รอดำเนินการ (ไม่ระบุสถานะ)';
                         if (data.opSubStatus) status += ` (${data.opSubStatus})`;
                         
-                        if (!pendingByYear[year]) pendingByYear[year] = 0;
-                        pendingByYear[year]++;
-                        
                         if (!pendingByStatus[status]) pendingByStatus[status] = 0;
                         pendingByStatus[status]++;
-                        
-                        pendingList.push({ ...data, id: id }); // แนบ id เผื่อคลิกไปที่หมุด
                     }
+                    
+                    // 🟢 นำโครงการทั้งหมดใส่ใน list เพื่อไปแสดงในตาราง ไม่ว่าจะเสร็จหรือไม่ก็ตาม
+                    allProjectsList.push({ ...data, id: id, isCompleted: isCompleted });
+
+                    // 🟢 เก็บข้อมูลสถิติแยกตามปีและประเภทงบประมาณ (สรุปจากโครงการทั้งหมด)
+                    let year = data.docYear || 'ไม่ระบุ';
+                    let bType = data.budgetType || 'ไม่ระบุประเภทงบฯ';
+                    budgetTypesSet.add(bType);
+
+                    if (!summaryByYear[year]) {
+                        summaryByYear[year] = { total: 0, budgetTotal: 0, types: {} };
+                    }
+                    if (!summaryByYear[year].types[bType]) {
+                        summaryByYear[year].types[bType] = { count: 0, budget: 0 };
+                    }
+
+                    summaryByYear[year].total++;
+                    summaryByYear[year].budgetTotal += pBudget;
+                    summaryByYear[year].types[bType].count++;
+                    summaryByYear[year].types[bType].budget += pBudget;
                 }
             }
 
@@ -1521,63 +1561,127 @@
             setTxt('gd-completed-projects', completedProjects.toLocaleString('th-TH'));
             setTxt('gd-pending-projects', pendingProjects.toLocaleString('th-TH'));
 
-            // Sort pendingList by Year (descending)
-            pendingList.sort((a, b) => {
+            // Sort allProjectsList by Year (descending)
+            allProjectsList.sort((a, b) => {
                 let yA = parseInt(a.docYear) || 0;
                 let yB = parseInt(b.docYear) || 0;
                 return yB - yA;
             });
 
-            // Render Table
+            // 🟢 Render Projects Table 🟢
             const tbody = $id('gd-pending-table-body');
             if (tbody) {
-                tbody.innerHTML = pendingList.map((p, i) => `
-                    <tr class="hover:bg-red-50/50 transition cursor-pointer" onclick="window.selectProject('${p.id}'); $id('global-dashboard-modal').classList.add('hidden');" title="คลิกเพื่อดูหมุดโครงการนี้">
+                tbody.innerHTML = allProjectsList.map((p, i) => {
+                    let statusText = p.opStatus || '-';
+                    if (p.opSubStatus) statusText += ` (${p.opSubStatus})`;
+                    
+                    // 🟢 แยกสีระหว่างโครงการที่เสร็จแล้ว และโครงการที่ยังไม่เสร็จ
+                    let statusColor = p.isCompleted ? 'text-green-600' : 'text-orange-600';
+                    let hoverBg = p.isCompleted ? 'hover:bg-green-50/50' : 'hover:bg-orange-50/50';
+                    let yearColor = p.isCompleted ? 'text-green-700' : 'text-orange-600';
+
+                    return `
+                    <tr class="${hoverBg} transition cursor-pointer border-b border-gray-50" onclick="window.selectProject('${p.id}'); $id('global-dashboard-modal').classList.add('hidden');" title="คลิกเพื่อดูหมุดโครงการนี้">
                         <td class="p-2 text-center text-xs text-gray-500">${i + 1}</td>
-                        <td class="p-2 font-bold text-red-600">${p.docYear || '-'}</td>
+                        <td class="p-2 font-bold ${yearColor}">${p.docYear || '-'}</td>
                         <td class="p-2 font-medium text-gray-800 whitespace-normal min-w-[250px]">${p.name || 'ไม่มีชื่อ'}</td>
                         <td class="p-2 text-gray-600 text-xs">${p.district || '-'}</td>
-                        <td class="p-2 text-[10px] font-bold text-orange-600 whitespace-normal">${p.opStatus || '-'} ${p.opSubStatus ? `(${p.opSubStatus})` : ''}</td>
+                        <td class="p-2 text-indigo-600 text-[11px] font-semibold whitespace-normal">${p.budgetType || '-'}</td>
+                        <td class="p-2 text-[10px] font-bold ${statusColor} whitespace-normal">${statusText}</td>
                         <td class="p-2 text-right font-mono text-gray-700 font-semibold">${formatNumber(p.budget)}</td>
                     </tr>
-                `).join('');
-                if (pendingList.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500 font-bold"><i class="fas fa-check-circle text-green-500 mr-2 text-xl"></i> ไม่มีโครงการตกค้าง ดำเนินการเสร็จสิ้นทุกโครงการแล้ว!</td></tr>`;
+                    `;
+                }).join('');
+                
+                if (allProjectsList.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500 font-bold">ยังไม่มีข้อมูลโครงการในระบบ</td></tr>`;
                 }
             }
 
-            // Prepare Chart Data
-            const yearLabels = Object.keys(pendingByYear).sort((a, b) => {
+            // 🟢 Prepare Chart Data for Stacked Bar (Year & Budget Type) 🟢
+            const yearLabels = Object.keys(summaryByYear).sort((a, b) => {
                 if(a==='ไม่ระบุ') return 1; if(b==='ไม่ระบุ') return -1;
-                return a - b;
+                return a - b; // เรียงปีจากน้อยไปมาก
             });
-            const yearData = yearLabels.map(y => pendingByYear[y]);
+            const budgetTypes = Array.from(budgetTypesSet).sort();
+            
+            const typeColors = {
+                'ข้อบัญญัติ': '#3b82f6', // Blue
+                'จ่ายขาดเงินสะสม': '#10b981', // Green
+                'โอนตั้งจ่ายเป็นรายการใหม่': '#8b5cf6', // Purple
+                'งบอุดหนุนเฉพาะกิจ': '#f59e0b', // Orange
+                'ไม่ระบุประเภทงบฯ': '#64748b' // Gray
+            };
+            const fallbackColors = ['#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16'];
 
-            const statusLabels = Object.keys(pendingByStatus);
-            const statusData = statusLabels.map(s => pendingByStatus[s]);
+            let barDatasets = budgetTypes.map((type, index) => {
+                return {
+                    label: type,
+                    data: yearLabels.map(y => summaryByYear[y].types[type] ? summaryByYear[y].types[type].count : 0),
+                    backgroundColor: typeColors[type] || fallbackColors[index % fallbackColors.length],
+                    borderWidth: 0,
+                    borderRadius: 2
+                };
+            });
 
-            // Render Year Chart
+            // 🟢 Render Stacked Bar Chart 🟢
             const ctxYear = $id('gd-year-chart')?.getContext('2d');
             if (ctxYear) {
                 if (window.globalYearChart) window.globalYearChart.destroy();
                 window.globalYearChart = new Chart(ctxYear, {
                     type: 'bar',
-                    data: {
-                        labels: yearLabels,
-                        datasets: [{
-                            label: 'จำนวนโครงการตกค้าง',
-                            data: yearData,
-                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                            borderColor: 'rgb(220, 38, 38)',
-                            borderWidth: 1,
-                            borderRadius: 4
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Sarabun' } } }, x: { ticks: { font: { family: 'Sarabun' } } } } }
+                    data: { labels: yearLabels, datasets: barDatasets },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { position: 'top', labels: { font: { family: 'Sarabun', size: 10 } } },
+                            tooltip: { mode: 'index', intersect: false }
+                        }, 
+                        scales: { 
+                            x: { stacked: true, ticks: { font: { family: 'Sarabun' } } }, 
+                            y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Sarabun' } } } 
+                        } 
+                    }
                 });
             }
 
-            // Render Status Chart
+            // 🟢 Render Detailed Summary Table 🟢
+            const summaryTbody = $id('gd-summary-table-body');
+            if (summaryTbody) {
+                let html = '';
+                yearLabels.forEach(year => {
+                    let yearData = summaryByYear[year];
+                    let types = Object.keys(yearData.types).sort();
+                    
+                    types.forEach((type, idx) => {
+                        let d = yearData.types[type];
+                        html += `<tr class="hover:bg-gray-50 transition">
+                            ${idx === 0 ? `<td class="p-3 font-bold text-gray-800 border-r border-gray-200 align-top bg-gray-50/50" rowspan="${types.length}">${year}</td>` : ''}
+                            <td class="p-3 text-gray-700 font-medium">${type}</td>
+                            <td class="p-3 text-center font-bold text-blue-600 bg-blue-50/30">${d.count}</td>
+                            <td class="p-3 text-right font-mono font-semibold text-green-700 bg-green-50/30">${formatNumber(d.budget)}</td>
+                        </tr>`;
+                    });
+                    
+                    // Add subtotal row for the year
+                    html += `<tr class="bg-indigo-50/60 font-bold border-t-2 border-indigo-100">
+                        <td class="p-3 text-right text-indigo-800" colspan="2">รวมของปี ${year}</td>
+                        <td class="p-3 text-center text-indigo-800 text-base">${yearData.total}</td>
+                        <td class="p-3 text-right text-indigo-800 text-base font-mono">${formatNumber(yearData.budgetTotal)}</td>
+                    </tr>`;
+                });
+                
+                if (yearLabels.length === 0) {
+                    html = `<tr><td colspan="4" class="p-6 text-center text-gray-500">ยังไม่มีข้อมูลโครงการในระบบ</td></tr>`;
+                }
+                summaryTbody.innerHTML = html;
+            }
+
+            // 🟢 Render Status Doughnut Chart (เฉพาะโครงการรอดำเนินการ) 🟢
+            const statusLabels = Object.keys(pendingByStatus);
+            const statusData = statusLabels.map(s => pendingByStatus[s]);
+
             const ctxStatus = $id('gd-status-chart')?.getContext('2d');
             if (ctxStatus) {
                 if (window.globalStatusChart) window.globalStatusChart.destroy();
@@ -1588,10 +1692,18 @@
                         datasets: [{
                             data: statusData,
                             backgroundColor: ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#64748b', '#ef4444', '#ec4899', '#14b8a6', '#f97316'],
-                            borderWidth: 1
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
                         }]
                     },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { family: 'Sarabun', size: 10 } } } }, cutout: '60%' }
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { position: 'right', labels: { font: { family: 'Sarabun', size: 10 } } } 
+                        }, 
+                        cutout: '65%' 
+                    }
                 });
             }
         };
