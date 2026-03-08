@@ -580,7 +580,7 @@
                         <div class="relative w-full flex-1"><canvas id="gd-year-chart"></canvas></div>
                     </div>
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-[300px] flex flex-col">
-                        <h4 class="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-2"><i class="fas fa-tasks text-orange-500 mr-1"></i> สถานะโครงการที่กำลังดำเนินการ (ตกค้าง)</h4>
+                        <h4 class="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-2"><i class="fas fa-chart-pie text-orange-500 mr-1"></i> สัดส่วนสถานะโครงการทั้งหมด</h4>
                         <div class="relative w-full flex-1"><canvas id="gd-status-chart"></canvas></div>
                     </div>
                 </div>
@@ -1527,15 +1527,22 @@
                         completedProjects++;
                     } else {
                         pendingProjects++;
-                        let status = data.opStatus || 'รอดำเนินการ (ไม่ระบุสถานะ)';
-                        if (data.opSubStatus) status += ` (${data.opSubStatus})`;
-                        
-                        if (!pendingByStatus[status]) pendingByStatus[status] = 0;
-                        pendingByStatus[status]++;
                     }
                     
+                    // 🟢 ประมวลผลข้อความสถานะให้ตรงกับที่เลือกเป๊ะๆ (รวมสถานะย่อย/งวด)
+                    let fullStatus = data.opStatus || 'รอดำเนินการ (ไม่ระบุสถานะ)';
+                    if (data.opStatus === 'ส่งมอบงาน (ระบุงวด)' && data.opStatusInstallment) {
+                        fullStatus = `ส่งมอบงาน งวดที่ ${data.opStatusInstallment}`;
+                    } else if (data.opSubStatus) {
+                        fullStatus += ` (${data.opSubStatus})`;
+                    }
+
                     // 🟢 นำโครงการทั้งหมดใส่ใน list เพื่อไปแสดงในตาราง ไม่ว่าจะเสร็จหรือไม่ก็ตาม
-                    allProjectsList.push({ ...data, id: id, isCompleted: isCompleted });
+                    allProjectsList.push({ ...data, id: id, isCompleted: isCompleted, displayStatus: fullStatus });
+
+                    // 🟢 เก็บข้อมูลสถานะของ *ทุกโครงการ* เพื่อนำไปแสดงในกราฟวงกลม
+                    if (!pendingByStatus[fullStatus]) pendingByStatus[fullStatus] = 0;
+                    pendingByStatus[fullStatus]++;
 
                     // 🟢 เก็บข้อมูลสถิติแยกตามปีและประเภทงบประมาณ (สรุปจากโครงการทั้งหมด)
                     let year = data.docYear || 'ไม่ระบุ';
@@ -1572,13 +1579,21 @@
             const tbody = $id('gd-pending-table-body');
             if (tbody) {
                 tbody.innerHTML = allProjectsList.map((p, i) => {
-                    let statusText = p.opStatus || '-';
-                    if (p.opSubStatus) statusText += ` (${p.opSubStatus})`;
+                    let statusText = p.displayStatus || '-';
+                    // ถ้าเลือกสถานะที่เป็น "ปัญหา" ให้นำข้อความปัญหามาแสดงในตารางด้วย
+                    if (p.opProblem && p.opSubStatus && p.opSubStatus.includes('ปัญหา')) {
+                        statusText += ` : <span class="text-red-500">${p.opProblem}</span>`; 
+                    }
                     
-                    // 🟢 แยกสีระหว่างโครงการที่เสร็จแล้ว และโครงการที่ยังไม่เสร็จ
+                    // 🟢 แยกสีระหว่างโครงการที่เสร็จแล้ว โครงการที่ยังไม่เสร็จ และโครงการที่มีปัญหา
                     let statusColor = p.isCompleted ? 'text-green-600' : 'text-orange-600';
+                    if (statusText.includes('ปัญหา')) statusColor = 'text-red-600'; // ไฮไลต์สีแดงถ้ามีปัญหา
+                    
                     let hoverBg = p.isCompleted ? 'hover:bg-green-50/50' : 'hover:bg-orange-50/50';
+                    if (statusText.includes('ปัญหา')) hoverBg = 'hover:bg-red-50/50';
+                    
                     let yearColor = p.isCompleted ? 'text-green-700' : 'text-orange-600';
+                    if (statusText.includes('ปัญหา')) yearColor = 'text-red-600';
 
                     return `
                     <tr class="${hoverBg} transition cursor-pointer border-b border-gray-50" onclick="window.selectProject('${p.id}'); $id('global-dashboard-modal').classList.add('hidden');" title="คลิกเพื่อดูหมุดโครงการนี้">
@@ -1678,9 +1693,21 @@
                 summaryTbody.innerHTML = html;
             }
 
-            // 🟢 Render Status Doughnut Chart (เฉพาะโครงการรอดำเนินการ) 🟢
+            // 🟢 Render Status Doughnut Chart (แสดงทุกโครงการ) 🟢
             const statusLabels = Object.keys(pendingByStatus);
             const statusData = statusLabels.map(s => pendingByStatus[s]);
+            
+            // 🟢 กำหนดสีให้กราฟวงกลม (ตรวจจับคีย์เวิร์ดในสถานะย่อย)
+            const bgColors = statusLabels.map(s => {
+                if (s.includes('ปัญหา')) return '#ef4444'; // สีแดงแจ้งเตือนปัญหา (สำคัญสุด)
+                if (s.includes('ส่งมอบงาน (งวดสุดท้าย)')) return '#10b981'; // สีเขียว
+                if (s.includes('ส่งมอบงาน')) return '#0ea5e9'; // สีฟ้าอ่อน
+                if (s.includes('จัดทำแบบรูป')) return '#3b82f6'; // สีน้ำเงิน
+                if (s.includes('จัดทำราคากลาง')) return '#8b5cf6'; // สีม่วง
+                if (s.includes('ประกาศจัดซื้อจัดจ้าง')) return '#f59e0b'; // สีส้ม
+                if (s.includes('อยู่ระหว่างดำเนินการก่อสร้าง')) return '#14b8a6'; // สีเขียวอมฟ้า
+                return '#64748b'; // สีเทาสำหรับอื่นๆ
+            });
 
             const ctxStatus = $id('gd-status-chart')?.getContext('2d');
             if (ctxStatus) {
@@ -1691,7 +1718,7 @@
                         labels: statusLabels,
                         datasets: [{
                             data: statusData,
-                            backgroundColor: ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#64748b', '#ef4444', '#ec4899', '#14b8a6', '#f97316'],
+                            backgroundColor: bgColors,
                             borderWidth: 2,
                             borderColor: '#ffffff'
                         }]
@@ -1702,7 +1729,7 @@
                         plugins: { 
                             legend: { position: 'right', labels: { font: { family: 'Sarabun', size: 10 } } } 
                         }, 
-                        cutout: '65%' 
+                        cutout: '60%' 
                     }
                 });
             }
