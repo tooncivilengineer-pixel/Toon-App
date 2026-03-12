@@ -5,11 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบบริหารงานโครงการก่อสร้าง กองช่าง องค์การบริหารส่วนจังหวัดพิษณุโลก</title>
     
-    <!-- CSS & Frameworks -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -34,7 +31,6 @@
 </head>
 <body class="bg-gray-200">
 
-    <!-- UI Overlays -->
     <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
     <div id="clear-filter-container" class="hidden fixed top-24 left-1/2 transform -translate-x-1/2 z-[70] bg-indigo-50 border-2 border-indigo-200 text-indigo-800 px-5 py-2.5 rounded-full shadow-lg flex items-center gap-3 text-sm font-bold pointer-events-auto">
@@ -42,7 +38,7 @@
         <button id="btn-clear-filter" class="bg-indigo-600 text-white px-3 py-1.5 rounded hover:bg-indigo-700 shadow transition text-xs flex items-center gap-1"><i class="fas fa-times"></i> ล้างตัวกรอง</button>
     </div>
 
-    <!-- APP CONTAINER (FULL SCREEN) -->
+    <!-- APP CONTAINER -->
     <div id="app-wrapper" class="w-full h-screen flex flex-col bg-white">
         
         <header class="bg-slate-800 text-white h-16 flex items-center justify-between px-4 shrink-0 z-[60] shadow-md relative border-b-2 border-yellow-500">
@@ -59,17 +55,20 @@
             <main class="flex-1 relative z-0 flex flex-col">
                 <div id="map-container" class="absolute inset-0 z-0"></div>
 
-                <!-- 🟢 แถบค้นหาสถานที่บนแผนที่ (Search Bar) ปรับให้เล็กลง 50% 🟢 -->
-                <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-[50] w-[50%] md:w-[300px]">
-                    <div class="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg flex items-center px-4 py-3 border border-gray-200 pointer-events-auto">
+                <!-- 🟢 แถบค้นหาสถานที่ (มุมขวาบน) 🟢 -->
+                <div class="absolute top-4 right-4 z-[50] flex flex-col items-end pointer-events-none">
+                    <button id="btn-toggle-search" class="pointer-events-auto bg-white w-12 h-12 rounded-full shadow-lg text-blue-600 hover:bg-blue-50 hover:text-blue-700 flex items-center justify-center transition border border-gray-200 text-xl cursor-pointer" title="ค้นหาสถานที่">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <div id="search-input-container" class="hidden mt-2 w-[250px] md:w-[300px] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg flex items-center px-4 py-3 border border-gray-200 pointer-events-auto transition-all transform origin-top-right">
                         <i class="fas fa-search text-blue-500 mr-3 text-lg"></i>
-                        <input type="text" id="place-search-input" class="w-full outline-none text-sm md:text-base bg-transparent font-bold text-gray-700 placeholder-gray-400" placeholder="ค้นหาสถานที่...">
+                        <input type="text" id="place-search-input" class="w-full outline-none text-sm md:text-base bg-transparent font-bold text-gray-700 placeholder-gray-400" placeholder="ค้นหาสถานที่, อำเภอ, ตำบล...">
                         <button id="btn-clear-search" class="hidden text-gray-400 hover:text-red-500 cursor-pointer ml-2 transition flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100"><i class="fas fa-times text-lg"></i></button>
                     </div>
-                    <div id="search-results-container" class="hidden mt-2 bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200 max-h-64 overflow-y-auto custom-scrollbar pointer-events-auto"></div>
+                    <div id="search-results-container" class="hidden mt-2 w-[250px] md:w-[300px] bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200 max-h-64 overflow-y-auto custom-scrollbar pointer-events-auto"></div>
                 </div>
 
-                <!-- Left Menu -->
+                <!-- 🟢 Left Menu 🟢 -->
                 <div class="absolute top-4 left-4 z-[40] flex flex-col gap-2 w-12 md:w-48 pointer-events-none mt-16 md:mt-0">
                     <button id="btn-toggle-map" class="pointer-events-auto bg-white w-12 h-12 md:w-auto md:h-10 md:px-3 rounded-lg shadow-lg text-gray-700 hover:text-blue-600 font-bold flex items-center justify-center md:justify-start gap-2 transition border border-gray-200" title="สลับภาพดาวเทียม"><i class="fas fa-satellite"></i> <span class="text-xs hidden md:inline">ดาวเทียม</span></button>
                     <button id="btn-open-filter" class="pointer-events-auto bg-white w-12 h-12 md:w-auto md:h-10 md:px-3 rounded-lg shadow-lg text-indigo-700 hover:text-indigo-600 font-bold flex items-center justify-center md:justify-start gap-2 transition mt-1 border-2 border-indigo-100" title="ค้นหาโครงการ"><i class="fas fa-search-location text-indigo-500"></i> <span class="text-xs hidden md:inline">ค้นหาโครงการ</span></button>
@@ -77,7 +76,6 @@
                     <button id="btn-open-add" class="pointer-events-auto bg-white w-12 h-12 md:w-auto md:h-10 md:px-3 rounded-lg shadow-lg text-gray-700 hover:text-green-600 font-bold flex items-center justify-center md:justify-start gap-2 transition border border-gray-200" title="เพิ่มโครงการใหม่"><i class="fas fa-plus-circle text-green-500"></i> <span class="text-xs hidden md:inline">เพิ่มโครงการใหม่</span></button>
                     <button id="btn-street-view" class="pointer-events-auto bg-white w-12 h-12 md:w-auto md:h-10 md:px-3 rounded-lg shadow-lg text-gray-700 hover:text-orange-500 font-bold flex items-center justify-center md:justify-start gap-2 transition border border-gray-200" title="มุมมองสตรีทวิว"><i class="fas fa-street-view text-orange-500"></i> <span class="text-xs hidden md:inline text-orange-600">สตรีทวิว</span></button>
                     <div class="h-px w-full bg-gray-300 my-1 hidden md:block shadow-sm"></div>
-                    <button id="btn-open-analyze-list" class="pointer-events-auto bg-white w-12 h-12 md:w-auto md:h-10 md:px-3 rounded-lg shadow-lg text-gray-700 hover:text-blue-600 font-bold flex items-center justify-center md:justify-start gap-2 transition border border-gray-200" title="รายชื่อโครงการทั้งหมด"><i class="fas fa-list text-blue-500"></i> <span class="text-xs hidden md:inline text-blue-600">รายชื่อโครงการ</span></button>
                     <button id="btn-open-global-dashboard" class="pointer-events-auto bg-white w-12 h-12 md:w-auto md:h-10 md:px-3 rounded-lg shadow-lg text-gray-700 hover:text-emerald-600 font-bold flex items-center justify-center md:justify-start gap-2 transition border border-gray-200" title="สรุปภาพรวมทั้งหมด"><i class="fas fa-chart-line text-emerald-500"></i> <span class="text-xs hidden md:inline text-emerald-700">สรุปภาพรวมทั้งหมด</span></button>
                     <button id="btn-universal-import" class="pointer-events-auto bg-white w-12 h-12 md:w-auto md:h-10 md:px-3 rounded-lg shadow-lg text-gray-700 hover:text-purple-600 font-bold flex items-center justify-center md:justify-start gap-2 transition border border-gray-200" title="นำเข้าโครงการ"><i class="fas fa-file-import text-purple-500"></i> <span class="text-xs hidden md:inline text-purple-700">นำเข้าโครงการ</span></button>
                     <button id="btn-open-data-mgr" class="pointer-events-auto bg-white w-12 h-12 md:w-auto md:h-10 md:px-3 rounded-lg shadow-lg text-gray-700 hover:text-slate-600 font-bold flex items-center justify-center md:justify-start gap-2 transition border border-gray-200" title="จัดการข้อมูล"><i class="fas fa-database text-slate-500"></i> <span class="text-xs hidden md:inline text-slate-700">จัดการข้อมูล</span></button>
@@ -85,6 +83,7 @@
                     <input type="file" id="backup-file-upload" accept=".json" class="hidden">
                 </div>
                 
+                <!-- Zoom & Coordinates -->
                 <div class="absolute bottom-6 right-4 z-[40] flex flex-col gap-2 pointer-events-none">
                     <button id="zoom-in" class="pointer-events-auto bg-white w-10 h-10 flex items-center justify-center rounded shadow-lg text-gray-700 hover:bg-gray-50 font-bold border border-gray-200">+</button>
                     <button id="zoom-out" class="pointer-events-auto bg-white w-10 h-10 flex items-center justify-center rounded shadow-lg text-gray-700 hover:bg-gray-50 font-bold border border-gray-200">-</button>
@@ -115,7 +114,7 @@
             </div>
             
             <div class="p-4 flex-1 overflow-y-auto space-y-3 custom-scrollbar bg-white">
-                <!-- VIEW MODE (แสดงข้อมูล) -->
+                <!-- 👁️ VIEW MODE 👁️ -->
                 <div id="view-mode-details" class="space-y-3">
                     <div id="raw-data-section" class="hidden mb-3 bg-purple-50 p-3 rounded-lg border border-purple-200 shadow-inner">
                         <h4 class="text-xs font-bold text-purple-800 mb-2 border-b border-purple-200 pb-1"><i class="fas fa-database mr-1"></i> ข้อมูลที่ฝังมา (Properties)</h4>
@@ -141,50 +140,62 @@
                         <label class="block text-xs font-bold text-gray-700 mb-1">5. สถานะโครงการ</label>
                         <div id="v-op-status" class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white text-blue-800 font-semibold min-h-[38px] flex items-center shadow-sm">-</div>
                     </div>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">6. การดำเนินงาน/ปัญหาอุปสรรค</label><div id="v-operation-problem" class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-800 font-medium min-h-[38px] flex items-center whitespace-pre-wrap">-</div></div>
+
+                    <!-- Contract Section (Hidden by default) -->
                     <div id="v-contract-section" class="hidden space-y-3 pt-2 border-t border-gray-200">
-                        <div><label class="block text-xs font-bold text-gray-700 mb-1">6. สัญญาจ้างเลขที่</label><div id="v-contract-no" class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-800 font-medium min-h-[38px] flex items-center">-</div></div>
+                        <div><label class="block text-xs font-bold text-gray-700 mb-1">7. สัญญาจ้างเลขที่</label><div id="v-contract-no" class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-800 font-medium min-h-[38px] flex items-center">-</div></div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">7. ระยะเวลาสัญญา</label>
-                            <div class="grid grid-cols-2 gap-3">
+                            <label class="block text-xs font-bold text-gray-700 mb-1">8. ระยะเวลาสัญญา</label>
+                            <div class="grid grid-cols-3 gap-3">
                                 <div class="border border-gray-300 rounded px-3 py-2 bg-gray-50"><span class="text-[10px] text-gray-500 block mb-0.5">วันเริ่มสัญญา</span><span id="v-start-date" class="text-xs font-bold text-gray-800 block">-</span></div>
                                 <div class="border border-gray-300 rounded px-3 py-2 bg-gray-50"><span class="text-[10px] text-gray-500 block mb-0.5">วันสิ้นสุดสัญญา</span><span id="v-end-date" class="text-xs font-bold text-gray-800 block">-</span></div>
+                                <div class="border border-indigo-200 rounded px-3 py-2 bg-indigo-50"><span class="text-[10px] text-indigo-500 font-bold block mb-0.5">จำนวนวันตามสัญญา</span><span id="v-contract-days" class="text-sm font-bold text-indigo-700 block">-</span></div>
                             </div>
                         </div>
                         <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <label class="block text-xs font-bold text-gray-700 mb-2"><i class="fas fa-users mr-1 text-blue-600"></i>8. ช่างผู้รับผิดชอบ</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-2"><i class="fas fa-users mr-1 text-blue-600"></i>9. ช่างผู้รับผิดชอบ</label>
                             <div id="v-technicians-list" class="space-y-1.5 mt-1"></div>
                         </div>
                     </div>
+
                     <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                        <label class="block text-xs font-bold text-gray-700 mb-2">9. ข้อมูลตำแหน่งบนแผนที่</label>
-                        <div id="v-no-location" class="hidden bg-red-50 p-2.5 rounded border border-red-200 text-xs mb-1 text-center shadow-sm"><span class="text-red-600 font-bold"><i class="fas fa-exclamation-circle mr-1"></i> โครงการนี้ยังไม่ได้ระบุพิกัดบนแผนที่</span></div>
+                        <label class="block text-xs font-bold text-gray-700 mb-2">10. ข้อมูลตำแหน่งบนแผนที่</label>
+                        <div id="v-no-location" class="hidden bg-red-50 p-2.5 rounded border border-red-200 text-xs mb-1 text-center shadow-sm"><span class="text-red-600 font-bold"><i class="fas fa-exclamation-circle mr-1"></i> โครงการนี้ยังไม่ได้ระบุพิกัด</span></div>
                         <div id="v-distance-section" class="hidden bg-blue-50 p-2.5 rounded border border-blue-200 text-xs mb-1 text-center shadow-sm"><div class="mb-1 text-gray-600">ระยะทางรวมแผนที่: <span id="v-distance" class="font-bold text-gray-800 text-sm">0.00 ม.</span></div><div id="v-working-distance-wrapper" class="hidden border-t border-blue-200 pt-1.5 mt-1 text-green-700 font-bold">ระยะก่อสร้างจริง: <span id="v-working-distance" class="text-sm">0.00 ม.</span></div></div>
                         <div id="v-point-section" class="hidden bg-green-50 p-2.5 rounded border border-green-200 text-xs mb-1 text-center shadow-sm">พิกัดหมุด: <span id="v-coord" class="font-mono font-bold text-gray-800 bg-white px-2 py-1 rounded border ml-1">Lat, Lng</span></div>
                     </div>
+
                     <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                        <label class="block text-xs font-bold text-gray-700 mb-2"><i class="fas fa-camera mr-1 text-purple-500"></i>10. รูปถ่ายหน้างาน</label>
+                        <label class="block text-xs font-bold text-gray-700 mb-2"><i class="fas fa-camera mr-1 text-purple-500"></i>11. รูปถ่ายหน้างาน</label>
                         <div id="v-photo-gallery" class="flex gap-2 overflow-x-auto pb-1 custom-scrollbar"></div>
                         <p id="v-no-photo" class="text-xs text-gray-400 italic hidden text-center py-2">ไม่มีรูปถ่าย</p>
                     </div>
                 </div>
 
-                <!-- EDIT MODE (แก้ไขข้อมูล) -->
+                <!-- ✏️ EDIT MODE ✏️ -->
                 <div id="edit-mode-details" class="hidden space-y-3">
                     <div><label class="block text-xs font-bold text-gray-700 mb-1">1. ชื่อโครงการ</label><input type="text" id="e-name" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:border-blue-500 font-bold text-blue-800 bg-blue-50"></div>
                     <div><label class="block text-xs font-bold text-gray-700 mb-1">2. อำเภอ</label><select id="e-district" class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 font-medium text-gray-800"><option value="เมืองพิษณุโลก">เมืองพิษณุโลก</option><option value="นครไทย">นครไทย</option><option value="ชาติตระการ">ชาติตระการ</option><option value="บางระกำ">บางระกำ</option><option value="บางกระทุ่ม">บางกระทุ่ม</option><option value="พรหมพิราม">พรหมพิราม</option><option value="วัดโบสถ์">วัดโบสถ์</option><option value="วังทอง">วังทอง</option><option value="เนินมะปราง">เนินมะปราง</option></select></div>
                     <div><label class="block text-xs font-bold text-gray-700 mb-1">3. ประเภทงบประมาณ</label><select id="e-budget-type" class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50"><option value="ข้อบัญญัติ">ข้อบัญญัติ</option><option value="จ่ายขาดเงินสะสม">จ่ายขาดเงินสะสม</option><option value="โอนตั้งจ่ายเป็นรายการใหม่">โอนตั้งจ่ายเป็นรายการใหม่</option><option value="งบอุดหนุนเฉพาะกิจ">งบอุดหนุนเฉพาะกิจ</option></select></div>
                     <div><label class="block text-xs font-bold text-gray-700 mb-1">4. ข้อมูลอ้างอิงงบประมาณ</label><div class="grid grid-cols-4 gap-2 mb-2"><div><input type="number" id="e-doc-year" class="w-full border border-gray-300 rounded px-1 py-1 text-[10px]" placeholder="ปี พ.ศ."></div><div><input type="text" id="e-doc-vol" class="w-full border border-gray-300 rounded px-1 py-1 text-[10px]" placeholder="เล่ม"></div><div><input type="text" id="e-doc-page" class="w-full border border-gray-300 rounded px-1 py-1 text-[10px]" placeholder="หน้า"></div><div><input type="number" id="e-budget" step="any" class="w-full border border-green-300 rounded px-2 py-2 text-[10px] font-bold text-green-700 bg-green-50" placeholder="งบ(บาท)"></div></div><div class="grid grid-cols-2 gap-2"><div><input type="number" id="e-median-price" step="any" class="w-full border border-gray-300 rounded px-2 py-2 text-[10px] font-bold text-blue-700" placeholder="ราคากลาง(บาท)"></div><div><input type="number" id="e-contract-price" step="any" class="w-full border border-gray-300 rounded px-2 py-2 text-[10px] font-bold text-green-700" placeholder="ราคาจัดจ้าง(บาท)"></div></div></div>
+                    
                     <div class="bg-blue-50 p-2 rounded border border-blue-100"><label class="block text-xs font-bold text-gray-700 mb-1">5. สถานะโครงการ</label><select id="e-op-status" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs bg-gray-50"><option value="จัดทำแบบรูป">จัดทำแบบรูป</option><option value="จัดทำราคากลาง">จัดทำราคากลาง</option><option value="ประกาศจัดซื้อจัดจ้าง">ประกาศจัดซื้อจัดจ้าง</option><option value="อยู่ระหว่างดำเนินการก่อสร้าง">อยู่ระหว่างดำเนินการก่อสร้าง</option><option value="ส่งมอบงาน (ระบุงวด)">ส่งมอบงาน (ระบุงวด)</option><option value="ส่งมอบงาน (งวดสุดท้าย)">ส่งมอบงาน (งวดสุดท้าย)</option></select><div id="e-op-status-installment-container" class="hidden mt-2"><input type="number" id="e-op-status-installment" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs bg-indigo-50 font-bold text-indigo-700" placeholder="ระบุงวดที่ส่งมอบ"></div><div id="e-op-substatus-container" class="hidden mt-2"><select id="e-op-substatus" class="w-full border border-indigo-300 rounded px-2 py-1.5 text-xs bg-indigo-50 text-indigo-800"></select></div><div id="e-op-problem-container" class="hidden mt-2"><input type="text" id="e-op-problem" class="w-full border border-red-300 rounded px-2 py-1.5 text-xs bg-red-50 text-red-700 font-semibold" placeholder="ระบุรายละเอียดปัญหา..."></div></div>
+                    
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">6. การดำเนินงาน/ปัญหาอุปสรรค</label><textarea id="e-operation-problem" rows="2" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:border-blue-500 font-medium text-gray-800 bg-white" placeholder="ระบุการดำเนินงานหรือปัญหาอุปสรรค (ถ้ามี)..."></textarea></div>
+
+                    <!-- Contract Section -->
                     <div id="e-contract-section" class="hidden space-y-3 pt-2 border-t border-gray-200">
-                        <div><label class="block text-xs font-bold text-gray-700 mb-1">6. สัญญาจ้างเลขที่</label><input type="text" id="e-contract-no" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs" placeholder="ระบุเลขที่สัญญาจ้าง"></div>
-                        <div class="grid grid-cols-2 gap-2 mb-2"><div><label class="text-[10px] font-bold text-gray-600 block mb-1">7. วันเริ่มสัญญา</label><input type="date" id="e-start-date" class="w-full border rounded px-2 py-1 text-xs"></div><div><label class="text-[10px] font-bold text-gray-600 block mb-1">7. วันสิ้นสุดสัญญา</label><input type="date" id="e-end-date" class="w-full border rounded px-2 py-1 text-xs"></div></div>
-                        <div class="bg-gray-50 p-3 rounded border border-gray-200"><div class="flex justify-between items-center mb-2"><label class="text-[10px] font-bold text-gray-700 block"><i class="fas fa-users mr-1"></i>8. ช่างผู้รับผิดชอบ</label><button type="button" id="btn-e-add-tech" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold hover:bg-blue-200 transition"><i class="fas fa-plus mr-1"></i>เพิ่มรายชื่อ</button></div><div id="e-tech-list" class="space-y-2"></div></div>
+                        <div><label class="block text-xs font-bold text-gray-700 mb-1">7. สัญญาจ้างเลขที่</label><input type="text" id="e-contract-no" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs" placeholder="ระบุเลขที่สัญญาจ้าง"></div>
+                        <div class="grid grid-cols-3 gap-2 mb-2"><div><label class="text-[10px] font-bold text-gray-600 block mb-1">8. วันเริ่มสัญญา</label><input type="date" id="e-start-date" class="w-full border rounded px-2 py-1 text-xs"></div><div><label class="text-[10px] font-bold text-gray-600 block mb-1">8. วันสิ้นสุดสัญญา</label><input type="date" id="e-end-date" class="w-full border rounded px-2 py-1 text-xs"></div><div><label class="text-[10px] font-bold text-indigo-600 block mb-1">จำนวนวัน</label><div id="e-contract-days" class="w-full border border-indigo-200 rounded px-2 py-1 text-xs bg-indigo-50 text-center font-bold text-indigo-700 h-[26px] flex items-center justify-center">-</div></div></div>
+                        <div class="bg-gray-50 p-3 rounded border border-gray-200"><div class="flex justify-between items-center mb-2"><label class="text-[10px] font-bold text-gray-700 block"><i class="fas fa-users mr-1"></i>9. ช่างผู้รับผิดชอบ</label><button type="button" id="btn-e-add-tech" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold hover:bg-blue-200 transition"><i class="fas fa-plus mr-1"></i>เพิ่มรายชื่อ</button></div><div id="e-tech-list" class="space-y-2"></div></div>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded border border-gray-200"><label class="block text-xs font-bold text-gray-700 mb-2">9. กำหนดพิกัด/ตำแหน่งโครงการใหม่</label><select id="e-p-type" class="w-full border border-gray-300 rounded px-3 py-2 text-sm mb-3 bg-white"><option value="point">📍 ปักหมุดจุด (Point)</option><option value="line">🛣️ วาดแนวเส้นทาง (Line)</option></select>
+
+                    <div class="bg-gray-50 p-3 rounded border border-gray-200"><label class="block text-xs font-bold text-gray-700 mb-2">10. กำหนดพิกัด/ตำแหน่ง</label><select id="e-p-type" class="w-full border border-gray-300 rounded px-3 py-2 text-sm mb-3 bg-white"><option value="point">📍 ปักหมุดจุด (Point)</option><option value="line">🛣️ วาดแนวเส้นทาง (Line)</option></select>
                         <div id="e-style-point-section" class="mb-2 pb-2 hidden"><div class="grid grid-cols-2 gap-2 mb-2"><div><input type="number" id="e-lat" step="any" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" placeholder="Lat"></div><div><input type="number" id="e-lng" step="any" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" placeholder="Lng"></div></div><div class="grid grid-cols-3 gap-2 mb-2 bg-green-50 p-2 rounded border border-green-100"><div><label class="block text-[10px] font-bold mb-1 text-green-700">สีหมุด</label><select id="e-point-color" class="w-full border border-gray-300 rounded p-1 text-[10px] bg-white"><option value="#16a34a">🟢 เขียว</option><option value="#dc2626">🔴 แดง</option><option value="#2563eb">🔵 น้ำเงิน</option><option value="#eab308">🟡 เหลือง</option><option value="#9333ea">🟣 ม่วง</option><option value="#71717a">⚪ เทา</option></select></div><div><label class="block text-[10px] font-bold mb-1 text-green-700">ไอคอน</label><select id="e-point-icon" class="w-full border border-gray-300 rounded p-1 text-[10px] bg-white"><option value="fa-map-marker-alt">📍 มาตรฐาน</option><option value="fa-hard-hat">👷 หมวกนิรภัย</option><option value="fa-road">🛣️ ถนน</option><option value="fa-building">🏢 อาคาร</option><option value="fa-bridge">🌉 สะพาน</option></select></div><div><label class="block text-[10px] font-bold mb-1 text-green-700">ขนาด</label><select id="e-point-size" class="w-full border border-gray-300 rounded p-1 text-[10px] bg-white"><option value="24">เล็ก</option><option value="32">กลาง</option><option value="48">ใหญ่</option><option value="64">ใหญ่มาก</option></select></div></div><button type="button" id="btn-e-pick-point" class="w-full bg-white border border-blue-300 text-blue-700 text-xs font-bold py-2 rounded shadow-sm hover:bg-blue-50 transition"><i class="fas fa-crosshairs"></i> คลิกปักหมุดตำแหน่งใหม่บนแผนที่</button></div>
                         <div id="e-style-line-section" class="mb-2 pb-2 hidden"><div class="bg-blue-50 p-2 rounded border border-blue-200 text-xs mb-2 text-center">จุด: <span id="e-line-points-count" class="font-bold">0</span> | ระยะแผนที่: <span id="e-line-distance" class="font-bold">0.00</span> ม.</div><div class="grid grid-cols-3 gap-2 mb-2 bg-blue-50 p-2 rounded border border-blue-100"><div><label class="block text-[10px] font-bold mb-1 text-blue-700">สีเส้น</label><input type="color" id="e-line-color" value="#3b82f6" class="w-full h-7 cursor-pointer border border-gray-300 rounded p-0 bg-white"></div><div><label class="block text-[10px] font-bold mb-1 text-blue-700">ชนิด</label><select id="e-line-style" class="w-full border border-gray-300 rounded text-[10px] p-1 h-7 bg-white"><option value="solid">ทึบ</option><option value="dashed">ประ</option></select></div><div><label class="block text-[10px] font-bold mb-1 text-blue-700">หนา</label><input type="number" id="e-line-weight" value="6" min="1" max="20" class="w-full border border-gray-300 rounded text-[10px] p-1 h-7 bg-white"></div></div><div class="mb-2 bg-white border border-blue-200 rounded p-2 shadow-sm"><div class="flex justify-between items-center mb-1.5 border-b border-gray-100 pb-1.5"><label class="text-[9px] font-bold text-blue-800"><i class="fas fa-list-ol mr-1"></i>รายการช่วงถนน</label></div><div id="e-segment-list" class="space-y-1.5 max-h-24 overflow-y-auto custom-scrollbar pr-1"></div></div><button type="button" id="btn-e-pick-line" class="w-full mb-3 bg-white border border-blue-300 text-blue-700 text-xs font-bold py-2 rounded shadow-sm hover:bg-blue-50 transition"><i class="fas fa-plus mr-1"></i> เริ่มวาดเส้นใหม่บนแผนที่</button><div class="grid grid-cols-1 gap-2 pt-2 border-t border-gray-200"><div class="flex justify-between items-center"><span class="text-[10px] font-bold text-gray-600">ระยะทางรวมแผนที่</span><span id="e-distance-display" class="font-bold text-gray-600 text-xs">0.00 ม.</span></div><div><label class="text-[10px] font-bold text-green-700 block mb-1">ระยะทางก่อสร้างจริง (ม.)</label><input type="number" id="e-working-distance" step="any" class="w-full border border-green-300 rounded px-2 py-2 text-sm text-green-700 font-bold bg-green-50 focus:outline-none focus:border-green-500"></div></div></div>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded border border-gray-200"><label class="block text-xs font-bold text-gray-700 mb-1">10. อัปเดตรูปถ่าย</label><input type="file" id="e-photo" accept="image/*" multiple class="w-full text-[10px] text-gray-500 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 file:px-2 file:py-1 hover:file:bg-blue-100 cursor-pointer border border-gray-300 rounded p-1 bg-white"><div id="e-photo-preview-container" class="hidden mt-2 flex gap-2 overflow-x-auto custom-scrollbar pb-1"></div></div>
+                    <div class="bg-gray-50 p-3 rounded border border-gray-200"><label class="block text-xs font-bold text-gray-700 mb-1">11. อัปเดตรูปถ่าย</label><input type="file" id="e-photo" accept="image/*" multiple class="w-full text-[10px] text-gray-500 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 file:px-2 file:py-1 hover:file:bg-blue-100 cursor-pointer border border-gray-300 rounded p-1 bg-white"><div id="e-photo-preview-container" class="hidden mt-2 flex gap-2 overflow-x-auto custom-scrollbar pb-1"></div><p class="text-[9px] text-gray-400 mt-1 italic">* หากเลือกไฟล์ใหม่ จะแสดงผลแทนที่ภาพชุดเดิมทั้งหมด</p></div>
                 </div>
             </div>
 
@@ -194,13 +205,21 @@
                     <button id="btn-delete-project" class="px-3 py-2 bg-white text-red-600 border border-gray-300 rounded-lg text-xs font-bold hover:bg-red-50 shadow-sm transition cursor-pointer"><i class="fas fa-trash"></i> ลบ</button>
                     <button id="btn-navigate" class="px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-xs font-bold hover:bg-gray-50 shadow-sm transition cursor-pointer"><i class="fas fa-location-arrow"></i> นำทาง</button>
                 </div>
-                <div id="view-mode-buttons"><button id="btn-edit-details" class="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 shadow-md cursor-pointer transition"><i class="fas fa-edit mr-1"></i> แก้ไขข้อมูล</button></div>
-                <div id="edit-mode-buttons" class="hidden flex gap-2"><button id="btn-cancel-edit" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-200 cursor-pointer transition">ยกเลิก</button><button id="btn-save-edit" class="px-5 py-2 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 shadow-md cursor-pointer transition"><i class="fas fa-save mr-1"></i> บันทึก</button></div>
+                
+                <div id="view-mode-buttons" class="flex gap-2">
+                    <button id="btn-analyze-project" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-bold hover:bg-purple-700 shadow-md cursor-pointer transition"><i class="fas fa-chart-area mr-1"></i> วิเคราะห์แผนงาน</button>
+                    <button id="btn-edit-details" class="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 shadow-md cursor-pointer transition"><i class="fas fa-edit mr-1"></i> แก้ไขข้อมูล</button>
+                </div>
+                
+                <div id="edit-mode-buttons" class="hidden flex gap-2">
+                    <button id="btn-cancel-edit" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-200 cursor-pointer transition">ยกเลิก</button>
+                    <button id="btn-save-edit" class="px-5 py-2 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 shadow-md cursor-pointer transition"><i class="fas fa-save mr-1"></i> บันทึก</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- 🟢 OTHER MODALS 🟢 -->
     <div id="image-lightbox-modal" class="hidden fixed inset-0 bg-black/90 z-[10000] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300"><button id="btn-close-lightbox" class="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:text-gray-300 text-3xl w-12 h-12 flex items-center justify-center cursor-pointer z-10 bg-black/50 rounded-full"><i class="fas fa-times"></i></button><img id="lightbox-image" src="" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl transform scale-95 transition-transform duration-300"></div>
 
     <div id="filter-modal" class="hidden absolute inset-0 bg-black/60 z-[80] flex items-center justify-center p-4">
@@ -244,20 +263,22 @@
                     <div id="new-p-op-problem-container" class="hidden mt-1"><input type="text" id="new-p-op-problem" class="w-full border border-red-300 rounded px-3 py-2 text-sm bg-red-50" placeholder="ระบุรายละเอียดปัญหา..."></div>
                 </div>
 
+                <div><label class="block text-xs font-bold text-gray-700 mb-1">6. การดำเนินงาน/ปัญหาอุปสรรค</label><textarea id="new-p-operation-problem" rows="2" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:border-green-500" placeholder="ระบุการดำเนินงานหรือปัญหาอุปสรรค (ถ้ามี)..."></textarea></div>
+
                 <div id="new-p-contract-section" class="hidden space-y-3 pt-3 border-t border-gray-200 mt-2">
-                    <div><label class="block text-xs font-bold text-gray-700 mb-1">6. สัญญาจ้างเลขที่</label><input type="text" id="new-p-contract-no" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="ระบุเลขที่สัญญาจ้าง"></div>
-                    <div><label class="block text-xs font-bold text-gray-700 mb-1">7. ระยะเวลาสัญญา</label><div class="grid grid-cols-2 gap-3"><div><label class="block text-[10px] text-gray-500 mb-0.5">วันเริ่มสัญญา</label><input type="date" id="new-p-start-date" class="w-full border border-gray-300 rounded px-2 py-2 text-sm"></div><div><label class="block text-[10px] text-gray-500 mb-0.5">วันสิ้นสุดสัญญา</label><input type="date" id="new-p-end-date" class="w-full border border-gray-300 rounded px-2 py-2 text-sm"></div></div></div>
-                    <div class="bg-gray-50 p-3 rounded border border-gray-200"><div class="flex justify-between items-center mb-2"><label class="block text-xs font-bold text-gray-700"><i class="fas fa-users mr-1"></i>8. ช่างผู้รับผิดชอบ</label><button type="button" id="btn-new-p-add-tech" class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded font-bold"><i class="fas fa-plus mr-1"></i>เพิ่มรายชื่อ</button></div><div id="new-p-tech-list" class="space-y-2"></div></div>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">7. สัญญาจ้างเลขที่</label><input type="text" id="new-p-contract-no" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="ระบุเลขที่สัญญาจ้าง"></div>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">8. ระยะเวลาสัญญา</label><div class="grid grid-cols-3 gap-3"><div><label class="block text-[10px] text-gray-500 mb-0.5">วันเริ่มสัญญา</label><input type="date" id="new-p-start-date" class="w-full border border-gray-300 rounded px-2 py-2 text-sm"></div><div><label class="block text-[10px] text-gray-500 mb-0.5">วันสิ้นสุดสัญญา</label><input type="date" id="new-p-end-date" class="w-full border border-gray-300 rounded px-2 py-2 text-sm"></div><div><label class="block text-[10px] text-indigo-500 mb-0.5 font-bold">จำนวนวัน</label><div id="new-p-contract-days" class="w-full border border-indigo-200 rounded px-2 py-2 text-sm bg-indigo-50 text-center font-bold text-indigo-700 h-[38px] flex items-center justify-center">-</div></div></div></div>
+                    <div class="bg-gray-50 p-3 rounded border border-gray-200"><div class="flex justify-between items-center mb-2"><label class="block text-xs font-bold text-gray-700"><i class="fas fa-users mr-1"></i>9. ช่างผู้รับผิดชอบ</label><button type="button" id="btn-new-p-add-tech" class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded font-bold"><i class="fas fa-plus mr-1"></i>เพิ่มรายชื่อ</button></div><div id="new-p-tech-list" class="space-y-2"></div></div>
                 </div>
 
                 <div class="bg-gray-50 p-3 rounded border border-gray-200">
-                    <label class="block text-xs font-bold text-gray-700 mb-2">9. ประเภทรูปแบบตำแหน่งบนแผนที่ <span class="text-gray-500 font-normal text-[10px]">(ระบุภายหลังได้)</span></label>
+                    <label class="block text-xs font-bold text-gray-700 mb-2">10. ประเภทรูปแบบตำแหน่งบนแผนที่ <span class="text-gray-500 font-normal text-[10px]">(ระบุภายหลังได้)</span></label>
                     <select id="new-p-type" class="w-full border border-gray-300 rounded px-3 py-2 text-sm mb-2"><option value="point">📍 ปักหมุดจุด (Point)</option><option value="line">🛣️ วาดแนวเส้นทาง (Line)</option></select>
                     <div id="point-settings-container"><div class="grid grid-cols-2 gap-2 mb-2"><div><input type="number" id="new-p-lat" step="any" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" placeholder="Lat"></div><div><input type="number" id="new-p-lng" step="any" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" placeholder="Lng"></div></div><div class="grid grid-cols-3 gap-2 mb-2 bg-green-50 p-2 rounded border border-green-100"><div><label class="block text-[10px] font-bold mb-1">สี</label><select id="new-p-color" class="w-full border rounded p-1 text-[10px]"><option value="#16a34a">เขียว</option><option value="#dc2626">แดง</option><option value="#2563eb">น้ำเงิน</option><option value="#eab308">เหลือง</option><option value="#9333ea">ม่วง</option></select></div><div><label class="block text-[10px] font-bold mb-1">ไอคอน</label><select id="new-p-icon" class="w-full border rounded p-1 text-[10px]"><option value="fa-map-marker-alt">หมุด</option><option value="fa-hard-hat">หมวก</option><option value="fa-road">ถนน</option><option value="fa-building">อาคาร</option></select></div><div><label class="block text-[10px] font-bold mb-1">ขนาด</label><select id="new-p-pin-size" class="w-full border rounded p-1 text-[10px]"><option value="24">เล็ก</option><option value="32" selected>กลาง</option><option value="48">ใหญ่</option></select></div></div></div>
                     <div id="line-settings-container" class="hidden mb-2"><div class="bg-blue-50 p-2 rounded border border-blue-200 text-xs mb-2 text-center">จุด: <span id="line-points-count" class="font-bold">0</span> | ระยะ: <span id="line-distance" class="font-bold">0.00</span> ม.</div><div class="grid grid-cols-3 gap-2 bg-blue-50 p-2 rounded border border-blue-100"><div><label class="block text-[10px] font-bold mb-1">สีเส้น</label><input type="color" id="new-l-color" value="#3b82f6" class="w-full h-7 border border-blue-300 rounded p-0"></div><div><label class="block text-[10px] font-bold mb-1">ชนิด</label><select id="new-l-style" class="w-full border rounded text-[10px] p-1 h-7"><option value="solid">ทึบ</option><option value="dashed">ประ</option></select></div><div><label class="block text-[10px] font-bold mb-1">หนา</label><input type="number" id="new-l-weight" value="6" min="1" max="20" class="w-full border rounded text-[10px] p-1 h-7"></div></div></div>
                     <button id="btn-pick-location" class="w-full bg-white border border-blue-300 text-blue-700 text-xs font-bold py-2 rounded shadow-sm hover:bg-blue-50"><i class="fas fa-crosshairs"></i> คลิกปักหมุด/วาดเส้นบนแผนที่</button>
                 </div>
-                <div class="bg-gray-50 p-3 rounded border border-gray-200"><label class="block text-xs font-bold text-gray-700 mb-1">10. รูปถ่าย</label><input type="file" id="new-p-photo" accept="image/*" multiple class="w-full text-[10px] file:rounded file:border-0 file:bg-green-50 file:text-green-700"><div id="new-p-photo-preview-container" class="hidden mt-2 flex gap-2 overflow-x-auto"></div></div>
+                <div class="bg-gray-50 p-3 rounded border border-gray-200"><label class="block text-xs font-bold text-gray-700 mb-1">11. รูปถ่าย</label><input type="file" id="new-p-photo" accept="image/*" multiple class="w-full text-[10px] file:rounded file:border-0 file:bg-green-50 file:text-green-700"><div id="new-p-photo-preview-container" class="hidden mt-2 flex gap-2 overflow-x-auto"></div></div>
             </div>
             <div class="bg-gray-100 px-4 py-3 border-t border-gray-200 flex justify-end gap-2 shrink-0">
                 <button id="btn-cancel-add" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded text-sm font-bold hover:bg-gray-200">ยกเลิก</button>
@@ -269,13 +290,8 @@
     <!-- Confirm Modal -->
     <div id="custom-confirm-modal" class="hidden fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col transform transition-all">
-            <div class="bg-red-600 text-white px-4 py-3 flex justify-between items-center shrink-0">
-                <h3 id="confirm-modal-title" class="font-bold"><i class="fas fa-exclamation-triangle mr-2"></i>ยืนยันการดำเนินการ</h3>
-            </div>
-            <div class="p-5 text-center bg-gray-50 flex-1">
-                <i class="fas fa-question-circle text-4xl text-red-500 mb-3"></i>
-                <div id="confirm-modal-message" class="text-sm text-gray-700 font-medium">คุณต้องการดำเนินการนี้ใช่หรือไม่?</div>
-            </div>
+            <div class="bg-red-600 text-white px-4 py-3 flex justify-between items-center shrink-0"><h3 id="confirm-modal-title" class="font-bold"><i class="fas fa-exclamation-triangle mr-2"></i>ยืนยันการดำเนินการ</h3></div>
+            <div class="p-5 text-center bg-gray-50 flex-1"><i class="fas fa-question-circle text-4xl text-red-500 mb-3"></i><div id="confirm-modal-message" class="text-sm text-gray-700 font-medium">คุณต้องการดำเนินการนี้ใช่หรือไม่?</div></div>
             <div class="bg-white px-4 py-3 border-t border-gray-200 flex justify-center gap-3 shrink-0">
                 <button id="btn-custom-cancel" class="px-5 py-2 bg-gray-100 border border-gray-300 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-200 transition w-1/2 cursor-pointer">ปิด / ยกเลิก</button>
                 <button id="btn-custom-confirm" class="px-5 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 shadow-md transition w-1/2 cursor-pointer">ยืนยัน</button>
@@ -286,47 +302,23 @@
     <!-- Import Confirm Modal -->
     <div id="import-confirm-modal" class="hidden absolute inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div id="import-modal-header" class="bg-purple-600 text-white px-4 py-3 flex justify-between items-center shrink-0">
-                <h3 class="font-bold"><i class="fas fa-file-import mr-2"></i>ตรวจสอบและยืนยันการนำเข้าข้อมูล</h3>
-                <button id="btn-close-import-modal" class="text-white hover:text-purple-200 cursor-pointer"><i class="fas fa-times"></i></button>
-            </div>
+            <div id="import-modal-header" class="bg-purple-600 text-white px-4 py-3 flex justify-between items-center shrink-0"><h3 class="font-bold"><i class="fas fa-file-import mr-2"></i>ตรวจสอบและยืนยันการนำเข้าข้อมูล</h3><button id="btn-close-import-modal" class="text-white hover:text-purple-200 cursor-pointer"><i class="fas fa-times"></i></button></div>
             <div class="p-4 flex-1 overflow-y-auto bg-gray-50 custom-scrollbar">
-                <div id="import-modal-info" class="bg-purple-50 text-purple-800 p-3 rounded-lg border border-purple-200 text-sm mb-4">
-                    <i class="fas fa-info-circle mr-1"></i> ระบบได้วิเคราะห์ไฟล์และดึงข้อมูลมาให้แล้ว คุณสามารถตรวจสอบและ <b>แก้ไขชื่อที่ต้องการ</b> ได้ที่นี่ก่อนนำเข้าแผนที่
-                </div>
-                <div class="flex justify-between items-end mb-2 border-b border-gray-200 pb-2">
-                    <p class="text-xs font-bold text-gray-700">ไฟล์ที่เลือก: <span id="import-file-name" class="text-purple-600 font-mono"></span></p>
-                    <p class="text-xs font-bold text-gray-700">พบข้อมูลที่ใช้งานได้: <span id="import-count" class="text-purple-600 text-base">0</span> รายการ</p>
-                </div>
+                <div id="import-modal-info" class="bg-purple-50 text-purple-800 p-3 rounded-lg border border-purple-200 text-sm mb-4"><i class="fas fa-info-circle mr-1"></i> ระบบได้วิเคราะห์ไฟล์และดึงข้อมูลมาให้แล้ว สามารถแก้ไขชื่อก่อนนำเข้าแผนที่</div>
+                <div class="flex justify-between items-end mb-2 border-b border-gray-200 pb-2"><p class="text-xs font-bold text-gray-700">ไฟล์: <span id="import-file-name" class="text-purple-600 font-mono"></span></p><p class="text-xs font-bold text-gray-700">พบข้อมูล: <span id="import-count" class="text-purple-600 text-base">0</span> รายการ</p></div>
                 <div id="import-items-list" class="space-y-3"></div>
             </div>
-            <div class="bg-white px-4 py-3 border-t border-gray-200 flex justify-end gap-2 shrink-0">
-                <button id="btn-cancel-import" class="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-200 transition cursor-pointer">ยกเลิก</button>
-                <button id="btn-confirm-import" class="px-6 py-2 bg-purple-600 text-white rounded-lg text-sm font-bold hover:bg-purple-700 shadow-md transition cursor-pointer"><i class="fas fa-save mr-1"></i> ยืนยันบันทึกข้อมูล</button>
-            </div>
+            <div class="bg-white px-4 py-3 border-t border-gray-200 flex justify-end gap-2 shrink-0"><button id="btn-cancel-import" class="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-200 transition cursor-pointer">ยกเลิก</button><button id="btn-confirm-import" class="px-6 py-2 bg-purple-600 text-white rounded-lg text-sm font-bold hover:bg-purple-700 shadow-md transition cursor-pointer"><i class="fas fa-save mr-1"></i> ยืนยันบันทึกข้อมูล</button></div>
         </div>
     </div>
 
     <!-- Data Manager Modal -->
     <div id="data-mgr-modal" class="hidden absolute inset-0 bg-black/60 z-[90] flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col">
-            <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center shrink-0">
-                <h3 class="font-bold"><i class="fas fa-database mr-2 text-blue-400"></i>ศูนย์จัดการข้อมูล</h3>
-                <button id="btn-close-data-mgr" class="text-white hover:text-gray-300 cursor-pointer"><i class="fas fa-times"></i></button>
-            </div>
+            <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center shrink-0"><h3 class="font-bold"><i class="fas fa-database mr-2 text-blue-400"></i>ศูนย์จัดการข้อมูล</h3><button id="btn-close-data-mgr" class="text-white hover:text-gray-300 cursor-pointer"><i class="fas fa-times"></i></button></div>
             <div class="p-5 flex-1 bg-gray-50">
-                <div class="text-center mb-6">
-                    <i class="fas fa-hdd text-4xl text-slate-400 mb-2"></i>
-                    <p class="text-sm text-gray-600">จัดการข้อมูลที่จัดเก็บอยู่ในระบบปัจจุบัน</p>
-                    <div class="mt-2 text-xs font-bold bg-blue-100 text-blue-800 py-1 px-3 rounded-full inline-block">จำนวนข้อมูลในระบบทั้งหมด: <span id="local-project-count">0</span></div>
-                </div>
-                <div class="space-y-3">
-                    <button id="btn-export-data" class="w-full bg-white border border-blue-300 text-blue-700 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-50 flex items-center justify-center gap-2 cursor-pointer"><i class="fas fa-download"></i> สำรองข้อมูลทั้งหมด (Export JSON)</button>
-                    <button id="btn-import-data" class="w-full bg-white border border-green-300 text-green-700 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-green-50 flex items-center justify-center gap-2 cursor-pointer"><i class="fas fa-upload"></i> นำเข้าข้อมูลที่สำรองไว้ (Restore JSON)</button>
-                    <input type="file" id="backup-file-upload" accept=".json" class="hidden">
-                    <div class="border-t border-gray-200 my-4"></div>
-                    <button id="btn-clear-all-data" class="w-full bg-red-50 border border-red-200 text-red-600 py-2 rounded-lg text-xs font-bold hover:bg-red-100 flex items-center justify-center gap-2 cursor-pointer"><i class="fas fa-trash-alt"></i> ล้างข้อมูลทั้งหมดเพื่อเริ่มใหม่</button>
-                </div>
+                <div class="text-center mb-6"><i class="fas fa-hdd text-4xl text-slate-400 mb-2"></i><p class="text-sm text-gray-600">จัดการข้อมูลที่จัดเก็บอยู่ในระบบปัจจุบัน</p><div class="mt-2 text-xs font-bold bg-blue-100 text-blue-800 py-1 px-3 rounded-full inline-block">จำนวนในระบบ: <span id="local-project-count">0</span></div></div>
+                <div class="space-y-3"><button id="btn-export-data" class="w-full bg-white border border-blue-300 text-blue-700 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-50 flex items-center justify-center gap-2 cursor-pointer"><i class="fas fa-download"></i> สำรองข้อมูลทั้งหมด (Export JSON)</button><button id="btn-import-data" class="w-full bg-white border border-green-300 text-green-700 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-green-50 flex items-center justify-center gap-2 cursor-pointer"><i class="fas fa-upload"></i> นำเข้าข้อมูลที่สำรองไว้ (Restore JSON)</button><input type="file" id="backup-file-upload" accept=".json" class="hidden"><div class="border-t border-gray-200 my-4"></div><button id="btn-clear-all-data" class="w-full bg-red-50 border border-red-200 text-red-600 py-2 rounded-lg text-xs font-bold hover:bg-red-100 flex items-center justify-center gap-2 cursor-pointer"><i class="fas fa-trash-alt"></i> ล้างข้อมูลทั้งหมดเพื่อเริ่มใหม่</button></div>
             </div>
         </div>
     </div>
@@ -334,96 +326,39 @@
     <!-- 🟢 Global Dashboard Modal 🟢 -->
     <div id="global-dashboard-modal" class="hidden absolute inset-0 bg-black/80 z-[100] flex items-center justify-center p-2 md:p-6">
         <div class="bg-gray-100 rounded-xl shadow-2xl w-full h-full max-w-6xl overflow-hidden flex flex-col">
-            <div class="bg-emerald-700 text-white px-4 py-3 flex justify-between items-center shrink-0">
-                <h2 class="text-lg font-bold"><i class="fas fa-chart-line mr-2"></i> สรุปภาพรวมโครงการทั้งหมด (Executive Summary)</h2>
-                <button id="btn-close-global-dashboard" class="text-white hover:text-emerald-200 text-xl w-8 h-8 flex items-center justify-center cursor-pointer"><i class="fas fa-times"></i></button>
-            </div>
+            <div class="bg-emerald-700 text-white px-4 py-3 flex justify-between items-center shrink-0"><h2 class="text-lg font-bold"><i class="fas fa-chart-line mr-2"></i> สรุปภาพรวมโครงการทั้งหมด</h2><button id="btn-close-global-dashboard" class="text-white hover:text-emerald-200 text-xl w-8 h-8 flex items-center justify-center cursor-pointer"><i class="fas fa-times"></i></button></div>
             <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 custom-scrollbar">
-                <!-- KPI Cards -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-blue-500 flex flex-col justify-center">
-                        <p class="text-[10px] md:text-xs text-gray-500 font-bold">จำนวนโครงการทั้งหมด</p>
-                        <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mt-1" id="gd-total-projects">0</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-green-500 flex flex-col justify-center">
-                        <p class="text-[10px] md:text-xs text-gray-500 font-bold">งบประมาณรวม (บาท)</p>
-                        <h3 class="text-lg md:text-2xl font-bold text-green-700 mt-1 truncate" id="gd-total-budget" title="งบประมาณรวม">0.00</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-indigo-500 flex flex-col justify-center">
-                        <p class="text-[10px] md:text-xs text-gray-500 font-bold">ส่งมอบแล้วเสร็จ</p>
-                        <h3 class="text-2xl md:text-3xl font-bold text-indigo-700 mt-1" id="gd-completed-projects">0</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-red-500 flex flex-col justify-center relative overflow-hidden">
-                        <div class="absolute -right-4 -top-4 opacity-10 text-red-500 text-6xl"><i class="fas fa-exclamation-circle"></i></div>
-                        <p class="text-[10px] md:text-xs text-gray-500 font-bold relative z-10">รอดำเนินการ / ตกค้าง</p>
-                        <h3 class="text-2xl md:text-3xl font-bold text-red-600 mt-1 relative z-10" id="gd-pending-projects">0</h3>
-                    </div>
-                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0"><div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-blue-500 flex flex-col justify-center"><p class="text-[10px] md:text-xs text-gray-500 font-bold">จำนวนโครงการทั้งหมด</p><h3 class="text-2xl md:text-3xl font-bold text-gray-800 mt-1" id="gd-total-projects">0</h3></div><div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-green-500 flex flex-col justify-center"><p class="text-[10px] md:text-xs text-gray-500 font-bold">งบประมาณรวม (บาท)</p><h3 class="text-lg md:text-2xl font-bold text-green-700 mt-1 truncate" id="gd-total-budget" title="งบประมาณรวม">0.00</h3></div><div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-indigo-500 flex flex-col justify-center"><p class="text-[10px] md:text-xs text-gray-500 font-bold">ส่งมอบแล้วเสร็จ</p><h3 class="text-2xl md:text-3xl font-bold text-indigo-700 mt-1" id="gd-completed-projects">0</h3></div><div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-red-500 flex flex-col justify-center relative overflow-hidden"><div class="absolute -right-4 -top-4 opacity-10 text-red-500 text-6xl"><i class="fas fa-exclamation-circle"></i></div><p class="text-[10px] md:text-xs text-gray-500 font-bold relative z-10">รอดำเนินการ / ตกค้าง</p><h3 class="text-2xl md:text-3xl font-bold text-red-600 mt-1 relative z-10" id="gd-pending-projects">0</h3></div></div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 shrink-0"><div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-[300px] flex flex-col"><h4 class="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-2"><i class="fas fa-chart-bar text-blue-500 mr-1"></i> สัดส่วนโครงการแยกตามปีและประเภทงบ</h4><div class="relative w-full flex-1"><canvas id="gd-year-chart"></canvas></div></div><div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-[300px] flex flex-col"><h4 class="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-2"><i class="fas fa-chart-pie text-orange-500 mr-1"></i> สัดส่วนสถานะโครงการทั้งหมด</h4><div class="relative w-full flex-1"><canvas id="gd-status-chart"></canvas></div></div></div>
                 
-                <!-- Charts -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 shrink-0">
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-[300px] flex flex-col">
-                        <h4 class="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-2"><i class="fas fa-chart-bar text-blue-500 mr-1"></i> สัดส่วนโครงการแยกตามปีและประเภทงบประมาณ</h4>
-                        <div class="relative w-full flex-1"><canvas id="gd-year-chart"></canvas></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-[300px] flex flex-col">
-                        <h4 class="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-2"><i class="fas fa-chart-pie text-orange-500 mr-1"></i> สัดส่วนสถานะโครงการทั้งหมด</h4>
-                        <div class="relative w-full flex-1"><canvas id="gd-status-chart"></canvas></div>
+                <!-- 🟢 NEW: District Performance Chart 🟢 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 shrink-0">
+                    <h4 class="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-2"><i class="fas fa-trophy text-yellow-500 mr-1"></i> เปรียบเทียบประสิทธิภาพการทำงานรายอำเภอ (District Performance)</h4>
+                    <div class="relative w-full h-[300px] mt-4">
+                        <canvas id="gd-district-chart"></canvas>
                     </div>
                 </div>
 
-                <!-- Detailed Summary Table -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 shrink-0">
-                    <h4 class="text-sm font-bold text-gray-700 mb-3"><i class="fas fa-table text-indigo-500 mr-1"></i> สรุปจำนวนและงบประมาณ แยกตามปี พ.ศ. และประเภทงบประมาณ</h4>
-                    <div class="overflow-x-auto border border-gray-200 rounded custom-scrollbar max-h-64">
-                        <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
-                            <thead class="bg-indigo-50 text-indigo-800 sticky top-0 shadow-sm z-10">
-                                <tr>
-                                    <th class="p-2 w-24 border-b border-indigo-100 border-r">ปี พ.ศ.</th>
-                                    <th class="p-2 min-w-[200px] border-b border-indigo-100">ประเภทงบประมาณ</th>
-                                    <th class="p-2 w-32 text-center border-b border-indigo-100">จำนวนโครงการ</th>
-                                    <th class="p-2 w-48 text-right border-b border-indigo-100">งบประมาณรวม (บาท)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="gd-summary-table-body" class="divide-y divide-gray-200 bg-white">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Projects Table -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex-1 flex flex-col min-h-[300px]">
-                    <h4 class="text-sm font-bold text-gray-700 mb-3"><i class="fas fa-list text-blue-500 mr-1"></i> สรุปโครงการที่ดำเนินการแล้วเสร็จ / อยู่ในระหว่างดำเนินการ / ตกค้าง</h4>
-                    <div class="overflow-x-auto border border-gray-200 rounded custom-scrollbar flex-1">
-                        <table class="w-full text-left text-sm whitespace-nowrap">
-                            <thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm">
-                                <tr>
-                                    <th class="p-2 w-10 text-center">#</th>
-                                    <th class="p-2 w-20">ปี พ.ศ.</th>
-                                    <th class="p-2 min-w-[250px]">ชื่อโครงการ</th>
-                                    <th class="p-2 w-24">อำเภอ</th>
-                                    <th class="p-2 w-40">ประเภทงบประมาณ</th>
-                                    <th class="p-2 w-48">สถานะปัจจุบัน</th>
-                                    <th class="p-2 text-right w-32">งบประมาณ (บาท)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="gd-pending-table-body" class="divide-y divide-gray-200 bg-white">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 shrink-0"><h4 class="text-sm font-bold text-gray-700 mb-3"><i class="fas fa-table text-indigo-500 mr-1"></i> สรุปจำนวนและงบประมาณ</h4><div class="overflow-x-auto border border-gray-200 rounded custom-scrollbar max-h-64"><table class="w-full text-left text-sm whitespace-nowrap border-collapse"><thead class="bg-indigo-50 text-indigo-800 sticky top-0 shadow-sm z-10"><tr><th class="p-2 w-24 border-b border-indigo-100 border-r">ปี พ.ศ.</th><th class="p-2 min-w-[200px] border-b border-indigo-100">ประเภทงบประมาณ</th><th class="p-2 w-32 text-center border-b border-indigo-100">จำนวนโครงการ</th><th class="p-2 w-48 text-right border-b border-indigo-100">งบประมาณรวม (บาท)</th></tr></thead><tbody id="gd-summary-table-body" class="divide-y divide-gray-200 bg-white"></tbody></table></div></div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex-1 flex flex-col min-h-[300px]"><h4 class="text-sm font-bold text-gray-700 mb-3"><i class="fas fa-list text-blue-500 mr-1"></i> สรุปโครงการที่ดำเนินการแล้วเสร็จ / อยู่ในระหว่างดำเนินการ / ตกค้าง</h4><div class="overflow-x-auto border border-gray-200 rounded custom-scrollbar flex-1"><table class="w-full text-left text-sm whitespace-nowrap"><thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm"><tr><th class="p-2 w-10 text-center">#</th><th class="p-2 w-20">ปี พ.ศ.</th><th class="p-2 min-w-[250px]">ชื่อโครงการ</th><th class="p-2 w-24">อำเภอ</th><th class="p-2 w-40">ประเภทงบประมาณ</th><th class="p-2 w-48">สถานะปัจจุบัน</th><th class="p-2 text-right w-32">งบประมาณ (บาท)</th></tr></thead><tbody id="gd-pending-table-body" class="divide-y divide-gray-200 bg-white"></tbody></table></div></div>
             </div>
         </div>
     </div>
 
-    <!-- Analyze List Modal (รายชื่อโครงการ) -->
-    <div id="analyze-list-modal" class="hidden absolute inset-0 bg-black/60 z-[90] flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-blue-600 text-white px-4 py-3 flex justify-between items-center shrink-0">
-                <h3 class="font-bold"><i class="fas fa-list mr-2"></i>รายชื่อโครงการทั้งหมด</h3>
-                <button id="btn-close-analyze-list" class="text-white hover:text-blue-200 cursor-pointer"><i class="fas fa-times"></i></button>
+    <!-- 🟢 Simple Analysis & Tracking Modal 🟢 -->
+    <div id="simple-analysis-modal" class="hidden fixed inset-0 bg-black/80 z-[110] flex items-center justify-center p-4">
+        <div class="bg-gray-50 rounded-xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[95vh]">
+            <div class="bg-purple-700 text-white px-4 py-3 flex justify-between items-center shrink-0"><div class="flex items-center gap-3"><div class="bg-purple-800 p-2 rounded-lg hidden sm:block"><i class="fas fa-chart-area"></i></div><div><h3 class="font-bold">วิเคราะห์และติดตามความก้าวหน้าโครงการ (S-Curve Tracking)</h3><p id="analysis-project-name" class="text-[10px] text-purple-200 truncate max-w-[300px] md:max-w-[500px]">ชื่อโครงการ...</p></div></div><button id="btn-close-analysis" class="text-white hover:text-purple-200 cursor-pointer w-8 h-8 flex items-center justify-center rounded-full hover:bg-purple-600 transition"><i class="fas fa-times text-lg"></i></button></div>
+            <div class="p-4 flex-1 overflow-y-auto custom-scrollbar space-y-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col"><h4 class="text-sm font-bold text-gray-700 mb-3 border-b border-gray-100 pb-2"><i class="fas fa-chart-line text-purple-500 mr-2"></i>กราฟเปรียบเทียบ S-Curve (แผน VS ทำจริง)</h4><div class="relative w-full h-[250px] flex-1"><canvas id="project-scurve-chart"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col"><h4 class="text-sm font-bold text-gray-700 mb-3 border-b border-gray-100 pb-2"><i class="fas fa-chart-bar text-blue-500 mr-2"></i>แผนการเบิกจ่ายงบประมาณรายเดือน</h4><div class="relative w-full h-[250px] flex-1"><canvas id="project-bar-chart"></canvas></div></div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-3 border-b border-gray-100 pb-3"><h4 class="text-sm font-bold text-gray-700"><i class="fas fa-clipboard-check text-orange-500 mr-2"></i>ตารางอัปเดตผลงานก่อสร้างรายเดือน</h4><button id="btn-save-progress" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md transition flex items-center gap-1 cursor-pointer"><i class="fas fa-save"></i> บันทึกผลงาน</button></div>
+                    <div class="overflow-x-auto custom-scrollbar"><table class="w-full text-left text-sm whitespace-nowrap border-collapse"><thead class="bg-slate-100 text-slate-700"><tr><th class="p-2.5 border-b border-slate-200 w-24">งวดงาน</th><th class="p-2.5 border-b border-slate-200 text-center w-32">แผนสะสม (%)</th><th class="p-2.5 border-b border-slate-200 w-48">กรอกผลงานจริงสะสม (%)</th><th class="p-2.5 border-b border-slate-200 min-w-[150px]">สถานะเมื่อเทียบกับแผน</th></tr></thead><tbody id="progress-table-body" class="divide-y divide-slate-100 bg-white"></tbody></table></div>
+                </div>
             </div>
-            <div class="p-4 flex-1 overflow-y-auto custom-scrollbar bg-gray-50" id="analyze-project-list-container"></div>
         </div>
     </div>
 
@@ -444,6 +379,20 @@
         const formatNumber = (num) => num ? parseFloat(num).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00';
         const formatDate = (dateStr) => { if(!dateStr) return '-'; const d = new Date(dateStr); return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }); };
 
+        window.updateContractDays = function(prefix) {
+            const sStr = val(`${prefix}-start-date`);
+            const eStr = val(`${prefix}-end-date`);
+            const dEl = $id(`${prefix}-contract-days`);
+            if(dEl) {
+                if(sStr && eStr) {
+                    const start = new Date(sStr);
+                    const end = new Date(eStr);
+                    const diffTime = end - start;
+                    if(diffTime >= 0) { dEl.innerText = (Math.floor(diffTime / 86400000) + 1) + ' วัน'; } else { dEl.innerText = '-'; }
+                } else { dEl.innerText = '-'; }
+            }
+        };
+
         const myFirebaseConfig = { apiKey: "AIzaSyCyhXtTQA-eY9SwyrYOpquKNfGQIfcp-yk", authDomain: "construction-map-dc954.firebaseapp.com", projectId: "construction-map-dc954", storageBucket: "construction-map-dc954.firebasestorage.app", messagingSenderId: "260577065917", appId: "1:260577065917:web:3b89ac529d57699112b0d4" };
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'construction-map-dc954';
@@ -458,6 +407,8 @@
         let coordFormat = 'latlng';
         let placeSearchMarker = null;
         let searchTimeout = null;
+        let projectSCurveInstance = null;
+        let projectBarChartInstance = null;
 
         async function initAuth() {
             if (isUsingCloudServer && window.FirebaseModule) {
@@ -496,6 +447,7 @@
             if(saveD.linePoints) saveD.linePointsStr = JSON.stringify(saveD.linePoints);
             if(saveD.importedRawData) saveD.importedRawDataStr = JSON.stringify(saveD.importedRawData);
             if(saveD.technicians) saveD.techniciansStr = JSON.stringify(saveD.technicians);
+            if(saveD.actualProgress) saveD.actualProgressStr = JSON.stringify(saveD.actualProgress);
 
             let localDb = JSON.parse(localStorage.getItem('pmis_projects_db') || '{}'); 
             localDb[id] = saveD; 
@@ -507,7 +459,7 @@
             if (isUsingCloudServer && !authFailed && db && currentUser && window.FirebaseModule) {
                 const { doc, setDoc } = window.FirebaseModule;
                 try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pmis_projects', id), saveD, { merge: true }); } 
-                catch(e) { console.warn("ไม่สามารถบันทึกขึ้น Cloud ได้ จะบันทึกลงในเครื่องแทน", e); }
+                catch(e) { console.warn("ไม่สามารถบันทึกขึ้น Cloud ได้", e); }
             }
             return id;
         }
@@ -517,6 +469,7 @@
             if (parsed.linePointsStr) parsed.linePoints = JSON.parse(parsed.linePointsStr);
             if (parsed.importedRawDataStr) parsed.importedRawData = JSON.parse(parsed.importedRawDataStr);
             if (parsed.techniciansStr) parsed.technicians = JSON.parse(parsed.techniciansStr);
+            if (parsed.actualProgressStr) parsed.actualProgress = JSON.parse(parsed.actualProgressStr);
             return parsed;
         }
 
@@ -718,27 +671,6 @@
 
         function readFileAsArrayBuffer(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = rej; r.readAsArrayBuffer(file); }); }
 
-        window.setDevice = function(type) {
-            const wrapper = $id('app-wrapper'); const btnPc = $id('btn-device-pc'); const btnIpad = $id('btn-device-ipad');
-            window.appCurrentMode = type;
-            if (type === 'ipad') {
-                if(wrapper) { wrapper.style.maxWidth = '768px'; wrapper.style.height = '1024px'; wrapper.style.maxHeight = '90vh'; }
-                if(btnIpad) { btnIpad.classList.replace('bg-gray-100', 'bg-blue-600'); btnIpad.classList.replace('text-gray-700', 'text-white'); }
-                if(btnPc) { btnPc.classList.replace('bg-blue-600', 'bg-gray-100'); btnPc.classList.replace('text-white', 'text-gray-700'); }
-            } else {
-                if(wrapper) { wrapper.style.maxWidth = '100%'; wrapper.style.height = '90vh'; }
-                if(btnPc) { btnPc.classList.replace('bg-gray-100', 'bg-blue-600'); btnPc.classList.replace('text-gray-700', 'text-white'); }
-                if(btnIpad) { btnIpad.classList.replace('bg-blue-600', 'bg-gray-100'); btnIpad.classList.replace('text-white', 'text-gray-700'); }
-            }
-            setTimeout(() => { if (window.gdYearChartInstance) window.gdYearChartInstance.resize(); if (window.gdStatusChartInstance) window.gdStatusChartInstance.resize(); if(map) map.invalidateSize(); }, 350);
-        };
-
-        window.toggleFullscreen = function(elementId, btn) {
-            const el = $id(elementId); if (!el) return; const icon = btn.querySelector('i');
-            if (el.classList.contains('chart-fullscreen')) { el.classList.remove('chart-fullscreen'); icon.classList.remove('fa-compress'); icon.classList.add('fa-expand'); btn.title = "ขยายเต็มจอ"; } 
-            else { el.classList.add('chart-fullscreen'); icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); btn.title = "ย่อหน้าต่าง"; }
-        };
-
         function appendAddTechRow() {
             const list = $id('new-p-tech-list'); if(!list) return;
             list.insertAdjacentHTML('beforeend', `<div class="flex gap-2 items-center tech-row"><input type="text" class="tech-name w-1/2 border border-gray-300 rounded px-2 py-1.5 text-xs focus:border-blue-500 outline-none" placeholder="ชื่อ-สกุล"><input type="text" class="tech-role w-1/2 border border-gray-300 rounded px-2 py-1.5 text-xs focus:border-blue-500 outline-none" placeholder="ตำแหน่ง"><button type="button" class="text-red-500 hover:text-red-700 w-6 h-6 flex items-center justify-center shrink-0 cursor-pointer" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button></div>`);
@@ -829,6 +761,7 @@
             setTxt('v-median-price', formatNumber(data.medianPrice));
             setTxt('v-contract-price', formatNumber(data.contractPrice));
             setTxt('v-op-status', displayOpStatus);
+            setTxt('v-operation-problem', data.operationProblem || '-');
             
             const vContractSec = $id('v-contract-section');
             if (vContractSec) {
@@ -837,6 +770,14 @@
                     setTxt('v-contract-no', data.contractNo || '-');
                     setTxt('v-start-date', formatDate(data.startDate));
                     setTxt('v-end-date', formatDate(data.endDate));
+                    
+                    let cDays = '-';
+                    if(data.startDate && data.endDate) {
+                        const sDt = new Date(data.startDate); const eDt = new Date(data.endDate);
+                        if(eDt >= sDt) cDays = (Math.floor((eDt - sDt) / 86400000) + 1) + ' วัน';
+                    }
+                    setTxt('v-contract-days', cDays);
+
                     const vTechList = $id('v-technicians-list');
                     if (data.technicians && data.technicians.length > 0) {
                         vTechList.innerHTML = data.technicians.map(t => `<div class="flex justify-between items-center text-xs bg-white p-2 border border-gray-200 rounded"><span class="font-bold text-gray-800"><i class="fas fa-user text-blue-500 mr-1.5 w-3 text-center"></i>${t.name}</span><span class="text-gray-500">${t.role || '-'}</span></div>`).join(''); 
@@ -855,8 +796,9 @@
             
             editPhotosBase64 = []; const ePc = $id('e-photo-preview-container'); if(ePc) { ePc.innerHTML = ''; ePc.classList.add('hidden'); }
             
-            setVal('e-name', displayTitle || ''); setVal('e-district', data.district || 'เมืองพิษณุโลก'); setVal('e-op-status', data.opStatus || 'จัดทำแบบรูป'); setVal('e-budget-type', data.budgetType || 'ข้อบัญญัติ'); setVal('e-doc-year', data.docYear || ''); setVal('e-doc-vol', data.docVol || ''); setVal('e-doc-page', data.docPage || ''); setVal('e-contract-no', data.contractNo || ''); setVal('e-median-price', data.medianPrice || ''); setVal('e-contract-price', data.contractPrice || ''); setVal('e-start-date', data.startDate || ''); setVal('e-end-date', data.endDate || ''); setVal('e-budget', data.budget || ''); setVal('e-photo', '');
-            
+            setVal('e-name', displayTitle || ''); setVal('e-district', data.district || 'เมืองพิษณุโลก'); setVal('e-op-status', data.opStatus || 'จัดทำแบบรูป'); setVal('e-budget-type', data.budgetType || 'ข้อบัญญัติ'); setVal('e-doc-year', data.docYear || ''); setVal('e-doc-vol', data.docVol || ''); setVal('e-doc-page', data.docPage || ''); setVal('e-contract-no', data.contractNo || ''); setVal('e-median-price', data.medianPrice || ''); setVal('e-contract-price', data.contractPrice || ''); setVal('e-start-date', data.startDate || ''); setVal('e-end-date', data.endDate || ''); setVal('e-budget', data.budget || ''); setVal('e-photo', ''); setVal('e-operation-problem', data.operationProblem || '');
+            window.updateContractDays('e');
+
             const noLocEl = $id('v-no-location'); if (noLocEl) noLocEl.classList.add('hidden');
             const vDistSec = $id('v-distance-section'); const vPtSec = $id('v-point-section');
             const eLSec = $id('e-style-line-section'); const ePSec = $id('e-style-point-section');
@@ -898,7 +840,6 @@
             $id('view-mode-buttons').classList.remove('hidden');
             $id('edit-mode-buttons').classList.add('hidden');
             
-            // เปิดหน้าต่าง Modal ขึ้นมากลางหน้าจอ
             const dm = $id('detail-modal');
             if (dm) { dm.classList.remove('hidden'); }
             
@@ -917,7 +858,7 @@
         };
 
         const handleFileUploadWrapper = async (e) => {
-            const file = e.target.files[0]; if (!file) return; const ext = file.name.split('.').pop().toLowerCase(); pendingImportData = []; 
+            const file = e.target.files[0]; if (!file) return; const ext = file.name.split('.').pop().toLowerCase(); let pendingImportData = []; 
             try {
                 if (ext === 'json') {
                     window.showToast(`กำลังกู้คืนข้อมูล...`, 'info');
@@ -996,6 +937,16 @@
                             listContainer.innerHTML += `<div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm flex gap-3 items-start"><div class="w-8 h-8 rounded-full ${colorCls} flex items-center justify-center font-bold text-sm shrink-0 mt-1">${index + 1}</div><div class="flex-1 min-w-0"><label class="text-[10px] font-bold text-gray-500 mb-1 block">ชื่อที่ระบบดึงมา (แก้ไขได้):</label><input type="text" class="import-name-input w-full border border-gray-300 rounded px-2 py-1.5 text-sm outline-none font-bold text-gray-700 focus:ring-1 ${iconCls}" value="${item.name}" data-index="${index}"><p class="text-[10px] text-gray-500 mt-1">${subtitle}</p>${rawDataHtml}</div></div>`;
                         });
                         const icm = $id('import-confirm-modal'); if(icm) icm.classList.remove('hidden');
+                        
+                        safeClick('btn-confirm-import', async () => { 
+                            document.querySelectorAll('.import-name-input').forEach(input => { pendingImportData[input.getAttribute('data-index')].name = input.value || `รายการนำเข้า`; }); 
+                            $id('import-confirm-modal').classList.add('hidden'); 
+                            window.showToast('กำลังบันทึกข้อมูล...', 'info'); 
+                            let c = 0; 
+                            for (const d of pendingImportData) { d.isProcessed = false; await saveDataToDB(d); c++; } 
+                            window.showToast(`นำเข้าสำเร็จ ${c} รายการ`, 'success'); 
+                            pendingImportData = []; 
+                        });
                     } else { window.showToast('ไม่พบข้อมูลพิกัดในไฟล์นี้', 'warning'); }
                 }
             } catch (error) { console.error(error); window.showToast('เกิดข้อผิดพลาดในการอ่านไฟล์', 'error'); }
@@ -1007,17 +958,69 @@
             let totalProjects = 0; let totalBudget = 0; let completed = 0; let pending = 0;
             let statusData = {}; let summaryMap = {}; const projectsArr = [];
 
+            // ข้อมูลสำหรับกราฟอำเภอ
+            let districtStats = {
+                'เมืองพิษณุโลก': { total: 0, completed: 0, normal: 0, delayed: 0 },
+                'นครไทย': { total: 0, completed: 0, normal: 0, delayed: 0 },
+                'ชาติตระการ': { total: 0, completed: 0, normal: 0, delayed: 0 },
+                'บางระกำ': { total: 0, completed: 0, normal: 0, delayed: 0 },
+                'บางกระทุ่ม': { total: 0, completed: 0, normal: 0, delayed: 0 },
+                'พรหมพิราม': { total: 0, completed: 0, normal: 0, delayed: 0 },
+                'วัดโบสถ์': { total: 0, completed: 0, normal: 0, delayed: 0 },
+                'วังทอง': { total: 0, completed: 0, normal: 0, delayed: 0 },
+                'เนินมะปราง': { total: 0, completed: 0, normal: 0, delayed: 0 }
+            };
+
             for (let id in loadedMarkers) {
                 let pData = loadedMarkers[id].projectData;
                 if (pData.recordType === 'project') {
                     totalProjects++; let b = parseFloat(pData.budget) || 0; totalBudget += b;
                     let isCompleted = pData.opStatus && pData.opStatus.includes('ส่งมอบงาน (งวดสุดท้าย)');
                     if (isCompleted) completed++; else pending++;
+                    
                     let y = pData.docYear || 'ไม่ระบุ'; let type = pData.budgetType || 'ไม่ระบุ'; let st = pData.opStatus || 'ไม่ระบุ';
                     statusData[st] = (statusData[st] || 0) + 1;
+                    
                     if (!summaryMap[y]) summaryMap[y] = {}; if (!summaryMap[y][type]) summaryMap[y][type] = { count: 0, budget: 0 };
                     summaryMap[y][type].count++; summaryMap[y][type].budget += b;
+                    
                     if (!isCompleted) projectsArr.push(pData);
+
+                    // 🟢 จัดกลุ่มสถานะรายอำเภอ 🟢
+                    let dist = pData.district || 'ไม่ระบุ';
+                    if (districtStats[dist]) {
+                        districtStats[dist].total++;
+                        let isDelayed = false;
+                        
+                        // เช็คความล่าช้าจากปัญหา หรือ สีแดง
+                        if (pData.opSubStatus && pData.opSubStatus.includes('ปัญหา')) isDelayed = true;
+                        if (pData.color === '#dc2626' || pData.lineColor === '#dc2626') isDelayed = true;
+
+                        // ถ้ามีการกรอก S-Curve จริง ให้เช็คจาก S-Curve ด้วย
+                        if (!isCompleted && !isDelayed && pData.startDate && pData.endDate && pData.actualProgress && pData.actualProgress.length > 0) {
+                            const sDate = new Date(pData.startDate); const eDate = new Date(pData.endDate); const now = new Date();
+                            if (now >= sDate) {
+                                let monthsTotal = (eDate.getFullYear() - sDate.getFullYear()) * 12 + (eDate.getMonth() - sDate.getMonth()) + 1;
+                                let currentMonthIdx = (now.getFullYear() - sDate.getFullYear()) * 12 + (now.getMonth() - sDate.getMonth());
+                                if (currentMonthIdx >= 0) {
+                                    if (currentMonthIdx >= monthsTotal) currentMonthIdx = monthsTotal - 1;
+                                    let plannedProgress = ((1 - Math.cos(Math.PI * ((currentMonthIdx + 1) / monthsTotal))) / 2) * 100;
+                                    let actual = null;
+                                    for(let k = currentMonthIdx; k >= 0; k--) {
+                                        if (pData.actualProgress[k] !== null && pData.actualProgress[k] !== undefined && pData.actualProgress[k] !== '') {
+                                            actual = parseFloat(pData.actualProgress[k]); break;
+                                        }
+                                    }
+                                    // ถ้างวดปัจจุบัน Actual ช้ากว่า Plan มากกว่า 15% ถือว่าล่าช้า
+                                    if (actual !== null && (actual - plannedProgress) <= -15) isDelayed = true; 
+                                }
+                            }
+                        }
+
+                        if (isCompleted) districtStats[dist].completed++;
+                        else if (isDelayed) districtStats[dist].delayed++;
+                        else districtStats[dist].normal++;
+                    }
                 }
             }
             
@@ -1044,12 +1047,49 @@
                 if(html === '') html = '<tr><td colspan="7" class="p-4 text-center text-gray-500">ไม่มีข้อมูลโครงการค้างดำเนินการ</td></tr>'; pendTb.innerHTML = html;
             }
             
-            if (window.gdYearChartInstance) window.gdYearChartInstance.destroy(); if (window.gdStatusChartInstance) window.gdStatusChartInstance.destroy();
+            if (window.gdYearChartInstance) window.gdYearChartInstance.destroy(); 
+            if (window.gdStatusChartInstance) window.gdStatusChartInstance.destroy();
+            if (window.gdDistrictChartInstance) window.gdDistrictChartInstance.destroy();
+
             let yLabels = []; let yCounts = [];
             Object.keys(summaryMap).sort((a,b)=>a-b).forEach(y => { yLabels.push('ปี ' + y); let sum = 0; Object.keys(summaryMap[y]).forEach(t => sum += summaryMap[y][t].count); yCounts.push(sum); });
             
             const cy = $id('gd-year-chart'); if (cy) { window.gdYearChartInstance = new Chart(cy.getContext('2d'), { type: 'bar', data: { labels: yLabels, datasets: [{ label: 'จำนวนโครงการ', data: yCounts, backgroundColor: '#3b82f6', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }); }
             const cs = $id('gd-status-chart'); if (cs) { window.gdStatusChartInstance = new Chart(cs.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(statusData), datasets: [{ data: Object.values(statusData), backgroundColor: ['#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#64748b'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: {font:{family:'Sarabun', size:10}} } } } }); }
+            
+            // 🟢 กราฟ District Performance 🟢
+            const cDist = $id('gd-district-chart');
+            if (cDist) {
+                let dLabels = Object.keys(districtStats);
+                let dCompleted = dLabels.map(d => districtStats[d].completed);
+                let dNormal = dLabels.map(d => districtStats[d].normal);
+                let dDelayed = dLabels.map(d => districtStats[d].delayed);
+
+                window.gdDistrictChartInstance = new Chart(cDist.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: dLabels,
+                        datasets: [
+                            { label: 'เสร็จสิ้นแล้ว', data: dCompleted, backgroundColor: '#10b981', borderRadius: 2 }, // Green
+                            { label: 'อยู่ระหว่างดำเนินการ (ปกติ)', data: dNormal, backgroundColor: '#3b82f6', borderRadius: 2 }, // Blue
+                            { label: 'ล่าช้า / ติดปัญหา', data: dDelayed, backgroundColor: '#ef4444', borderRadius: 2 } // Red
+                        ]
+                    },
+                    options: {
+                        indexAxis: 'y', // เปลี่ยนเป็นกราฟแนวนอน
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top', labels: { font: { family: 'Sarabun', size: 12 } } },
+                            tooltip: { mode: 'index', intersect: false }
+                        },
+                        scales: {
+                            x: { stacked: true, ticks: { stepSize: 1, font: { family: 'Sarabun' } } },
+                            y: { stacked: true, ticks: { font: { family: 'Sarabun', size: 12, weight: 'bold' } } }
+                        }
+                    }
+                });
+            }
         };
 
         window.showFilterStep = function(step) {
@@ -1078,8 +1118,8 @@
                     let btn = document.createElement('div'); btn.className = 'w-full bg-white border border-gray-300 rounded-lg p-3 text-left hover:bg-indigo-50 hover:border-indigo-400 transition shadow-sm cursor-pointer'; btn.innerHTML = `<h4 class="font-bold text-sm text-gray-800 mb-1 leading-tight">${d.name || 'ไม่มีชื่อโครงการ'}</h4><div class="flex justify-between items-center text-[10px] mt-2 border-t pt-2 border-gray-100"><span class="text-gray-500 font-medium"><i class="fas fa-money-bill-wave mr-1 text-green-500"></i> ${formatNumber(d.budget)} บาท</span><span class="font-bold ${statusColors[d.color] || 'text-gray-500'}">${statusMap[d.color] || 'ทั่วไป'}</span></div>`;
                     btn.onclick = () => { 
                         applyFilter(true); 
-                        if (d.type === 'point' && d.lat && d.lng && map) { map.flyTo([d.lat, d.lng], 16); } 
-                        else if (l.getBounds && map) { map.fitBounds(l.getBounds(), { padding: [50, 50] }); } 
+                        if (d.type === 'point' && d.lat && d.lng && map) { map.flyTo([d.lat, d.lng], 17, { duration: 1.5 }); } 
+                        else if (l.getBounds && map) { map.flyToBounds(l.getBounds(), { padding: [50, 50], duration: 1.5 }); } 
                         setTimeout(() => { if (l.openPopup) l.openPopup(); }, 800); 
                     }; 
                     container.appendChild(btn);
@@ -1105,7 +1145,6 @@
             const cfc = $id('clear-filter-container'); if(cfc) cfc.classList.add('hidden'); currentFilter = { district: null, budgetType: null, year: null }; window.showToast('ล้างตัวกรอง', 'info'); map.setView([16.8211, 100.2659], 10); window.closeDetailPanel();
         }
         
-        // 🟢 ฟังก์ชันสำหรับแถบค้นหาสถานที่ (Nominatim API) 🟢
         function setupPlaceSearch() {
             const input = $id('place-search-input');
             const resultsContainer = $id('search-results-container');
@@ -1187,12 +1226,180 @@
             });
         }
 
-        // 🟢 BIND ALL EVENTS 🟢
         function bindAllEvents() {
             const safeClick = (id, fn) => { const el = $id(id); if(el) el.addEventListener('click', fn); };
             const safeChange = (id, fn) => { const el = $id(id); if(el) el.addEventListener('change', fn); };
 
             setupPlaceSearch(); 
+            
+            safeChange('new-p-start-date', () => window.updateContractDays('new-p'));
+            safeChange('new-p-end-date', () => window.updateContractDays('new-p'));
+            safeChange('e-start-date', () => window.updateContractDays('e'));
+            safeChange('e-end-date', () => window.updateContractDays('e'));
+
+            window.openProjectAnalysis = function(data) {
+                if (!data.startDate || !data.endDate) {
+                    window.showToast('กรุณาระบุวันเริ่มและวันสิ้นสุดสัญญาในโหมดแก้ไขข้อมูลก่อนทำการวิเคราะห์', 'warning');
+                    return;
+                }
+                const sDate = new Date(data.startDate); const eDate = new Date(data.endDate);
+                if (sDate >= eDate) { window.showToast('วันที่สิ้นสุดสัญญาต้องมากกว่าวันเริ่มสัญญา', 'warning'); return; }
+
+                let months = (eDate.getFullYear() - sDate.getFullYear()) * 12 + (eDate.getMonth() - sDate.getMonth()) + 1;
+                if (months <= 0) months = 1; if (months > 60) months = 60; 
+
+                let labels = ['เริ่มโครงการ'];
+                let cumulativePlan = [0]; 
+                let monthlyBudget = [0]; 
+                let totalBudget = parseFloat(data.budget) || 0;
+                let currentVal = 0;
+                
+                let actualProgress = data.actualProgress || []; 
+                let actualDataForChart = [0]; 
+
+                const tbody = $id('progress-table-body');
+                if (tbody) tbody.innerHTML = '';
+
+                for (let i = 1; i <= months; i++) {
+                    labels.push(`เดือนที่ ${i}`);
+                    let p = ((1 - Math.cos(Math.PI * (i / months))) / 2) * 100;
+                    let monthPercent = p - currentVal;
+                    cumulativePlan.push(p.toFixed(2));
+                    monthlyBudget.push(parseFloat((totalBudget * monthPercent / 100).toFixed(2)));
+                    currentVal = p;
+
+                    let actualVal = (actualProgress[i-1] !== undefined && actualProgress[i-1] !== null) ? actualProgress[i-1] : '';
+                    if (actualVal !== '') actualDataForChart.push(parseFloat(actualVal));
+                    else actualDataForChart.push(null); 
+
+                    let statusHtml = '<span class="text-gray-400">-</span>';
+                    if(actualVal !== '') {
+                        let diff = parseFloat(actualVal) - p;
+                        if(diff >= 0) statusHtml = `<span class="text-green-600 font-bold bg-green-50 px-2 py-1 rounded"><i class="fas fa-arrow-up"></i> เร็วกว่าแผน (+${diff.toFixed(2)}%)</span>`;
+                        else if(diff >= -15) statusHtml = `<span class="text-yellow-600 font-bold bg-yellow-50 px-2 py-1 rounded"><i class="fas fa-exclamation-triangle"></i> ล่าช้าเล็กน้อย (${diff.toFixed(2)}%)</span>`;
+                        else statusHtml = `<span class="text-red-600 font-bold bg-red-50 px-2 py-1 rounded animate-pulse"><i class="fas fa-times-circle"></i> ล่าช้าวิกฤต (${diff.toFixed(2)}%)</span>`;
+                    }
+
+                    if (tbody) {
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-blue-50 transition">
+                                <td class="p-2.5 font-bold text-gray-700">เดือนที่ ${i}</td>
+                                <td class="p-2.5 text-center text-blue-600 font-bold bg-blue-50/50">${p.toFixed(2)}%</td>
+                                <td class="p-2.5"><div class="flex items-center"><input type="number" class="actual-progress-input w-24 border border-gray-300 rounded px-2 py-1.5 text-sm focus:border-orange-500 font-bold text-orange-600 text-center outline-none shadow-inner" data-month-index="${i-1}" value="${actualVal}" min="0" max="100" step="any" placeholder="0.00"><span class="ml-2 text-xs font-bold text-gray-500">%</span></div></td>
+                                <td class="p-2.5 text-xs">${statusHtml}</td>
+                            </tr>
+                        `;
+                    }
+                }
+
+                setTxt('analysis-project-name', data.name || 'ไม่มีชื่อโครงการ');
+                const analysisModal = $id('simple-analysis-modal');
+                if (analysisModal) analysisModal.classList.remove('hidden');
+
+                const fontConfig = { family: 'Sarabun', size: 12 };
+
+                const ctxS = $id('project-scurve-chart');
+                if (ctxS) {
+                    if (projectSCurveInstance) projectSCurveInstance.destroy();
+                    projectSCurveInstance = new Chart(ctxS.getContext('2d'), {
+                        type: 'line',
+                        data: { 
+                            labels: labels, 
+                            datasets: [
+                                { 
+                                    label: 'แผนงานสะสม (%)', 
+                                    data: cumulativePlan, 
+                                    borderColor: '#3b82f6', 
+                                    borderDash: [5, 5], 
+                                    borderWidth: 3, 
+                                    fill: false, 
+                                    tension: 0.4, 
+                                    pointRadius: 3, 
+                                    pointBackgroundColor: '#3b82f6' 
+                                },
+                                { 
+                                    label: 'ผลงานจริงสะสม (%)', 
+                                    data: actualDataForChart, 
+                                    borderColor: '#ef4444', 
+                                    backgroundColor: 'rgba(239, 68, 68, 0.15)', 
+                                    borderWidth: 4, 
+                                    fill: true, 
+                                    spanGaps: false, 
+                                    tension: 0.4, 
+                                    pointRadius: 6, 
+                                    pointBackgroundColor: '#ef4444',
+                                    pointBorderColor: '#fff',
+                                    pointBorderWidth: 2
+                                }
+                            ] 
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: fontConfig } }, tooltip: { callbacks: { label: function(ctx) { return ' ' + ctx.dataset.label.replace(' (%)','') + ': ' + ctx.parsed.y + '%'; } } } }, scales: { y: { min: 0, max: 100, ticks: { font: fontConfig, callback: v => v + '%' } }, x: { ticks: { font: fontConfig } } } }
+                    });
+                }
+
+                const ctxB = $id('project-bar-chart');
+                if (ctxB) {
+                    if (projectBarChartInstance) projectBarChartInstance.destroy();
+                    projectBarChartInstance = new Chart(ctxB.getContext('2d'), {
+                        type: 'bar',
+                        data: { labels: labels, datasets: [{ label: 'เป้าหมายเบิกจ่ายรายเดือน (บาท)', data: monthlyBudget, backgroundColor: '#8b5cf6', borderRadius: 4 }] },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: fontConfig } }, tooltip: { callbacks: { label: function(ctx) { return ' งบประมาณ: ' + ctx.parsed.y.toLocaleString('th-TH', {minimumFractionDigits: 2}) + ' บาท'; } } } }, scales: { y: { beginAtZero: true, ticks: { font: fontConfig, callback: v => v.toLocaleString('th-TH') } }, x: { ticks: { font: fontConfig } } } }
+                    });
+                }
+            };
+
+            safeClick('btn-save-progress', async function() {
+                if (!currentSelectedProjectId) return;
+                if (this.disabled) return;
+                this.disabled = true;
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> บันทึก...';
+                
+                try {
+                    let pData = loadedMarkers[currentSelectedProjectId].projectData;
+                    let inputs = document.querySelectorAll('.actual-progress-input');
+                    let newActuals = [];
+                    inputs.forEach(input => {
+                        let idx = parseInt(input.getAttribute('data-month-index'));
+                        newActuals[idx] = input.value !== '' ? parseFloat(input.value) : null;
+                    });
+                    
+                    pData.actualProgress = newActuals;
+                    await saveDataToDB(pData, currentSelectedProjectId);
+                    
+                    window.showToast('บันทึกความก้าวหน้าสำเร็จ', 'success');
+                    
+                    window.openProjectAnalysis(pData);
+                } catch(e) {
+                    window.showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
+                } finally {
+                    this.disabled = false;
+                    if(document.getElementById('btn-save-progress')) document.getElementById('btn-save-progress').innerHTML = originalText;
+                }
+            });
+
+            safeClick('btn-analyze-project', () => {
+                if (!currentSelectedProjectId) return;
+                const pData = loadedMarkers[currentSelectedProjectId].projectData;
+                window.openProjectAnalysis(pData);
+            });
+
+            safeClick('btn-close-analysis', () => {
+                $id('simple-analysis-modal').classList.add('hidden');
+            });
+
+            safeClick('btn-toggle-search', () => {
+                const container = $id('search-input-container');
+                const resContainer = $id('search-results-container');
+                const input = $id('place-search-input');
+                if (container.classList.contains('hidden')) {
+                    container.classList.remove('hidden');
+                    if(input) input.focus();
+                } else {
+                    container.classList.add('hidden');
+                    if(resContainer) resContainer.classList.add('hidden');
+                }
+            });
 
             safeClick('btn-toggle-map', () => { if (!map) return; if(currentMapType === 'street') { map.removeLayer(googleStreets); googleSat.addTo(map); currentMapType = 'sat'; } else { map.removeLayer(googleSat); googleStreets.addTo(map); currentMapType = 'street'; } });
             safeClick('zoom-in', () => { if(map) map.zoomIn(); });
@@ -1213,7 +1420,6 @@
             safeClick('btn-close-add-modal', closeAddProjectModal); 
             safeClick('btn-cancel-add', closeAddProjectModal);
             
-            // เปลี่ยน Type วาดพิกัด
             safeChange('new-p-type', () => { const t = val('new-p-type'); if (t === 'point') { $id('point-settings-container').classList.remove('hidden'); $id('line-settings-container').classList.add('hidden'); } else if (t === 'line') { $id('point-settings-container').classList.add('hidden'); $id('line-settings-container').classList.remove('hidden'); } });
             safeChange('e-p-type', () => { const t = val('e-p-type'); if (t === 'point') { $id('e-style-point-section').classList.remove('hidden'); $id('e-style-line-section').classList.add('hidden'); } else if (t === 'line') { $id('e-style-point-section').classList.add('hidden'); $id('e-style-line-section').classList.remove('hidden'); } });
             
@@ -1260,8 +1466,7 @@
             safeChange('universal-file-upload', handleFileUploadWrapper);
             safeClick('btn-close-import-modal', () => { $id('import-confirm-modal').classList.add('hidden'); pendingImportData = []; }); 
             safeClick('btn-cancel-import', () => { $id('import-confirm-modal').classList.add('hidden'); pendingImportData = []; });
-            safeClick('btn-confirm-import', async () => { document.querySelectorAll('.import-name-input').forEach(input => { pendingImportData[input.getAttribute('data-index')].name = input.value || `รายการนำเข้า`; }); $id('import-confirm-modal').classList.add('hidden'); window.showToast('กำลังบันทึกข้อมูล...', 'info'); let c = 0; for (const d of pendingImportData) { d.isProcessed = false; await saveDataToDB(d); c++; } window.showToast(`นำเข้าสำเร็จ ${c} รายการ`, 'success'); pendingImportData = []; });
-
+            
             safeClick('btn-open-data-mgr', () => { $id('data-mgr-modal').classList.remove('hidden'); updateProjectCount(); }); 
             safeClick('btn-close-data-mgr', () => { $id('data-mgr-modal').classList.add('hidden'); });
             safeClick('btn-export-data', () => { const ex = {}; for (let id in loadedMarkers) { ex[id] = loadedMarkers[id].projectData; } const ds = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(ex)); const a = document.createElement('a'); a.setAttribute("href", ds); a.setAttribute("download", "pmis_backup.json"); a.click(); window.showToast('สำรองข้อมูลเรียบร้อย', 'success'); });
@@ -1272,60 +1477,45 @@
             safeClick('btn-open-global-dashboard', window.openGlobalDashboard); 
             safeClick('btn-close-global-dashboard', () => { $id('global-dashboard-modal').classList.add('hidden'); });
 
-            // 🟢 การเปิดลิสต์รายชื่อโปรเจกต์ 🟢
-            safeClick('btn-open-analyze-list', () => {
-                const c = $id('analyze-project-list-container'); if(!c) return; c.innerHTML = ''; let hasP = false; let grp = {};
-                for (let id in loadedMarkers) { let d = loadedMarkers[id].projectData; if (d.recordType === 'project') { hasP = true; let y = d.docYear||'ไม่ระบุปี', t = d.budgetType||'ไม่ระบุงบ'; if(!grp[y]) grp[y] = {}; if(!grp[y][t]) grp[y][t] = []; grp[y][t].push({id, data: d, isUnmapped: loadedMarkers[id].isUnmapped}); } }
-                if(!hasP) { c.innerHTML = '<div class="text-center text-gray-500 py-4">ไม่มีข้อมูล</div>'; }
-                else {
-                    Object.keys(grp).sort((a,b)=>a==='ไม่ระบุปี'?1:b==='ไม่ระบุปี'?-1:a-b).forEach(y => {
-                        let yd = document.createElement('div'); yd.className = 'mb-4'; yd.innerHTML = `<h3 class="text-base font-bold text-indigo-800 border-b-2 border-indigo-200 pb-1 mb-2">${y}</h3>`;
-                        Object.keys(grp[y]).sort().forEach(t => {
-                            let td = document.createElement('div'); td.className = 'ml-2 mb-3'; td.innerHTML = `<h4 class="text-sm font-bold text-gray-700 mb-2">${t}</h4>`;
-                            let pd = document.createElement('div'); pd.className = 'space-y-2 ml-4 border-l-2 pl-3';
-                            grp[y][t].forEach(item => {
-                                let st = item.data.opStatus || '-';
-                                let badge = item.isUnmapped ? `<span class="bg-red-100 text-red-600 text-[9px] px-1.5 py-0.5 rounded border border-red-200 ml-2">ยังไม่ระบุพิกัด</span>` : '';
-                                let cd = document.createElement('div'); cd.className = 'bg-white p-3 rounded-lg shadow-sm border flex justify-between items-center cursor-pointer hover:bg-indigo-50 transition';
-                                cd.innerHTML = `<div class="flex-1 pr-2"><h5 class="text-xs font-bold truncate text-gray-800">${item.data.name||'-'} ${badge}</h5><p class="text-[10px] text-gray-500 mt-0.5">สถานะ: ${st}</p></div><button class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded text-[10px] font-bold border border-blue-200">เปิดดู</button>`;
-                                cd.onclick = () => { $id('analyze-list-modal').classList.add('hidden'); window.selectProject(item.id); };
-                                pd.appendChild(cd);
-                            }); td.appendChild(pd); yd.appendChild(td);
-                        }); c.appendChild(yd);
-                    });
-                } $id('analyze-list-modal').classList.remove('hidden'); 
-            });
-            safeClick('btn-close-analyze-list', () => $id('analyze-list-modal').classList.add('hidden'));
-
-            // 🟢 เซฟโปรเจกต์ใหม่ (รองรับการไม่ใส่พิกัด) 🟢
-            safeClick('btn-save-project', async () => {
-                const type = val('new-p-type');
-                const pd = { recordType: 'project', name: val('new-p-name') || 'โครงการใหม่', district: val('new-p-district') || 'เมืองพิษณุโลก', type: type, color: type === 'line' ? (val('new-l-color') || '#3b82f6') : (val('new-p-color') || '#16a34a'), icon: val('new-p-icon') || 'fa-map-marker-alt', pinSize: parseInt(val('new-p-pin-size')) || 32, opStatus: val('new-p-op-status') || '', budgetType: val('new-p-budget-type') || '', docYear: val('new-p-year') || '', docVol: val('new-p-vol') || '', docPage: val('new-p-page') || '', contractNo: val('new-p-contract-no') || '', medianPrice: parseFloat(val('new-p-median-price')) || 0, contractPrice: parseFloat(val('new-p-contract-price')) || 0, budget: parseFloat(val('new-p-budget')) || 0, startDate: val('new-p-start-date') || '', endDate: val('new-p-end-date') || '', photos: tempPhotosBase64, createdAt: Date.now() };
-                if (pd.opStatus === 'ส่งมอบงาน (ระบุงวด)') pd.opStatusInstallment = val('new-p-op-status-installment'); else if (statusSubOptions[pd.opStatus]) { pd.opSubStatus = val('new-p-op-substatus'); if (pd.opSubStatus.includes('ปัญหา')) pd.opProblem = val('new-p-op-problem'); }
-                pd.technicians = getTechniciansFromDOM('new-p-tech-list');
-                
-                let hasLoc = false;
-                if (type === 'point') { 
-                    pd.lat = parseFloat(val('new-p-lat')); pd.lng = parseFloat(val('new-p-lng')); 
-                    if (!isNaN(pd.lat) && !isNaN(pd.lng)) { hasLoc = true; if(map) { try{ map.flyTo([pd.lat, pd.lng], 14, { duration: 1.5 }); }catch(e){} } } 
-                    else { pd.lat = null; pd.lng = null; }
-                } 
-                else if (type === 'line') { 
-                    let ptCount = tempLinePoints.reduce((s, seg) => s + (Array.isArray(seg) ? seg.length : 1), 0);
-                    if (tempPolyline && ptCount >= 2) {
-                        pd.linePoints = tempLinePoints.filter(seg => Array.isArray(seg) ? seg.length > 0 : true); 
-                        pd.lineColor = val('new-l-color') || '#3b82f6'; pd.lineStyle = val('new-l-style') || 'solid'; pd.lineWeight = val('new-l-weight') || 6; pd.distance = currentDistance; 
-                        hasLoc = true; if(map) { try{ map.fitBounds(L.polyline(pd.linePoints).getBounds()); }catch(e){} } 
-                    } else { pd.linePoints = []; }
-                }
+            safeClick('btn-save-project', async function() {
+                if (this.disabled) return;
+                this.disabled = true;
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> บันทึก...';
                 
                 try {
+                    const type = val('new-p-type');
+                    const pd = { recordType: 'project', name: val('new-p-name') || 'โครงการใหม่', district: val('new-p-district') || 'เมืองพิษณุโลก', type: type, color: type === 'line' ? (val('new-l-color') || '#3b82f6') : (val('new-p-color') || '#16a34a'), icon: val('new-p-icon') || 'fa-map-marker-alt', pinSize: parseInt(val('new-p-pin-size')) || 32, opStatus: val('new-p-op-status') || '', budgetType: val('new-p-budget-type') || '', docYear: val('new-p-year') || '', docVol: val('new-p-vol') || '', docPage: val('new-p-page') || '', contractNo: val('new-p-contract-no') || '', medianPrice: parseFloat(val('new-p-median-price')) || 0, contractPrice: parseFloat(val('new-p-contract-price')) || 0, budget: parseFloat(val('new-p-budget')) || 0, startDate: val('new-p-start-date') || '', endDate: val('new-p-end-date') || '', operationProblem: val('new-p-operation-problem') || '', photos: tempPhotosBase64, createdAt: Date.now() };
+                    if (pd.opStatus === 'ส่งมอบงาน (ระบุงวด)') pd.opStatusInstallment = val('new-p-op-status-installment'); else if (statusSubOptions[pd.opStatus]) { pd.opSubStatus = val('new-p-op-substatus'); if (pd.opSubStatus.includes('ปัญหา')) pd.opProblem = val('new-p-op-problem'); }
+                    pd.technicians = getTechniciansFromDOM('new-p-tech-list');
+                    
+                    let hasLoc = false;
+                    if (type === 'point') { 
+                        pd.lat = parseFloat(val('new-p-lat')); pd.lng = parseFloat(val('new-p-lng')); 
+                        if (!isNaN(pd.lat) && !isNaN(pd.lng)) { hasLoc = true; if(map) { try{ map.flyTo([pd.lat, pd.lng], 14, { duration: 1.5 }); }catch(e){} } } 
+                        else { pd.lat = null; pd.lng = null; }
+                    } 
+                    else if (type === 'line') { 
+                        let ptCount = tempLinePoints.reduce((s, seg) => s + (Array.isArray(seg) ? seg.length : 1), 0);
+                        if (tempPolyline && ptCount >= 2) {
+                            pd.linePoints = tempLinePoints.filter(seg => Array.isArray(seg) ? seg.length > 0 : true); 
+                            pd.lineColor = val('new-l-color') || '#3b82f6'; pd.lineStyle = val('new-l-style') || 'solid'; pd.lineWeight = val('new-l-weight') || 6; pd.distance = currentDistance; 
+                            hasLoc = true; if(map) { try{ map.fitBounds(L.polyline(pd.linePoints).getBounds()); }catch(e){} } 
+                        } else { pd.linePoints = []; }
+                    }
+                    
                     await saveDataToDB(pd); 
                     window.showToast(hasLoc ? 'บันทึกโครงการสำเร็จ!' : 'บันทึกโครงการสำเร็จ (ยังไม่ระบุพิกัด)', 'success');
                     if (tempPolyline && map) { map.removeLayer(tempPolyline); tempPolyline = null; } tempLinePoints = []; setTxt('line-points-count', '0'); setTxt('line-distance', '0.00'); currentDistance = 0; tempPhotosBase64 = [];
-                    ['new-p-name', 'new-p-budget', 'new-p-median-price', 'new-p-contract-price', 'new-p-year', 'new-p-vol', 'new-p-page', 'new-p-contract-no', 'new-p-lat', 'new-p-lng'].forEach(id => setVal(id, '')); $id('new-p-tech-list').innerHTML = ''; $id('new-p-photo-preview-container').classList.add('hidden'); closeAddProjectModal();
+                    ['new-p-name', 'new-p-budget', 'new-p-median-price', 'new-p-contract-price', 'new-p-year', 'new-p-vol', 'new-p-page', 'new-p-contract-no', 'new-p-lat', 'new-p-lng', 'new-p-operation-problem'].forEach(id => setVal(id, '')); 
+                    $id('new-p-tech-list').innerHTML = ''; $id('new-p-photo-preview-container').classList.add('hidden'); 
+                    setTxt('new-p-contract-days', '-');
+                    closeAddProjectModal();
                 } catch (e) {
                     window.showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
+                } finally {
+                    this.disabled = false;
+                    this.innerHTML = originalText;
                 }
             });
 
@@ -1355,37 +1545,43 @@
             
             safeClick('btn-delete-project', () => { if (!currentSelectedProjectId) return; window.showConfirm('<i class="fas fa-trash-alt mr-2"></i>ยืนยันลบข้อมูล', 'ต้องการลบข้อมูลนี้ใช่หรือไม่?', async () => { const id = currentSelectedProjectId; try { let localDb = JSON.parse(localStorage.getItem('pmis_projects_db') || '{}'); delete localDb[id]; localStorage.setItem('pmis_projects_db', JSON.stringify(localDb)); removeProjectFromMap(id); updateProjectCount(); if (isUsingCloudServer && !authFailed && db && currentUser && window.FirebaseModule) { await window.FirebaseModule.deleteDoc(window.FirebaseModule.doc(db, 'artifacts', appId, 'public', 'data', 'pmis_projects', id)); } window.showToast('ลบเรียบร้อย', 'success'); window.closeDetailPanel(); } catch (e) { window.showToast('เกิดข้อผิดพลาด', 'error'); } }); });
 
-            safeClick('btn-save-edit', async () => {
-                if(!currentSelectedProjectId) return; const pData = loadedMarkers[currentSelectedProjectId].projectData;
-                pData.name = val('e-name') || 'โครงการไม่มีชื่อ'; pData.district = val('e-district') || 'เมืองพิษณุโลก';
-                
-                let eType = val('e-p-type');
-                pData.type = eType || pData.type;
-                
-                let hasLoc = false;
-                if (pData.type === 'line' || pData.type === 'kml') { 
-                    pData.color = val('e-line-color') || '#3b82f6'; pData.lineColor = val('e-line-color') || '#3b82f6'; pData.lineStyle = val('e-line-style') || 'solid'; pData.lineWeight = val('e-line-weight') || 6; pData.workingDistance = parseFloat(val('e-working-distance')) || pData.distance; 
-                    let ePtCount = editTempLinePoints.reduce((s, seg) => s + (Array.isArray(seg) ? seg.length : 1), 0);
-                    if (editTempPolyline && ePtCount >= 2) { 
-                        pData.linePoints = editTempLinePoints.filter(seg => Array.isArray(seg) ? seg.length > 0 : true); 
-                        pData.distance = editCurrentDistance; 
-                    }
-                    let finalPtCount = (pData.linePoints || []).reduce((s, seg) => s + (Array.isArray(seg) ? seg.length : 1), 0);
-                    hasLoc = finalPtCount >= 2;
-                } 
-                else if (pData.type === 'point') { 
-                    pData.color = val('e-point-color') || '#16a34a'; pData.icon = val('e-point-icon') || 'fa-map-marker-alt'; pData.pinSize = parseInt(val('e-point-size')) || 32; 
-                    pData.lat = parseFloat(val('e-lat')) || null; pData.lng = parseFloat(val('e-lng')) || null; 
-                    hasLoc = pData.lat !== null && pData.lng !== null;
-                }
-                
-                pData.isProcessed = true; 
-                pData.opStatus = val('e-op-status') || ''; 
-                if (pData.opStatus === 'ส่งมอบงาน (ระบุงวด)') pData.opStatusInstallment = val('e-op-status-installment'); else if (statusSubOptions[pData.opStatus]) { pData.opSubStatus = val('e-op-substatus'); if (pData.opSubStatus.includes('ปัญหา')) pData.opProblem = val('e-op-problem'); }
-                pData.technicians = getTechniciansFromDOM('e-tech-list'); pData.budgetType = val('e-budget-type') || ''; pData.docYear = val('e-doc-year') || ''; pData.docVol = val('e-doc-vol') || ''; pData.docPage = val('e-doc-page') || ''; pData.contractNo = val('e-contract-no') || ''; pData.medianPrice = parseFloat(val('e-median-price')) || 0; pData.contractPrice = parseFloat(val('e-contract-price')) || 0; pData.startDate = val('e-start-date') || ''; pData.endDate = val('e-end-date') || ''; pData.budget = parseFloat(val('e-budget')) || 0;
-                if (editPhotosBase64 && editPhotosBase64.length > 0) { pData.photos = editPhotosBase64; delete pData.photo; }
-                
+            safeClick('btn-save-edit', async function() {
+                if(!currentSelectedProjectId) return; 
+                if (this.disabled) return;
+                this.disabled = true;
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> บันทึก...';
+
                 try {
+                    const pData = loadedMarkers[currentSelectedProjectId].projectData;
+                    pData.name = val('e-name') || 'โครงการไม่มีชื่อ'; pData.district = val('e-district') || 'เมืองพิษณุโลก';
+                    
+                    let eType = val('e-p-type');
+                    pData.type = eType || pData.type;
+                    
+                    let hasLoc = false;
+                    if (pData.type === 'line' || pData.type === 'kml') { 
+                        pData.color = val('e-line-color') || '#3b82f6'; pData.lineColor = val('e-line-color') || '#3b82f6'; pData.lineStyle = val('e-line-style') || 'solid'; pData.lineWeight = val('e-line-weight') || 6; pData.workingDistance = parseFloat(val('e-working-distance')) || pData.distance; 
+                        let ePtCount = editTempLinePoints.reduce((s, seg) => s + (Array.isArray(seg) ? seg.length : 1), 0);
+                        if (editTempPolyline && ePtCount >= 2) { 
+                            pData.linePoints = editTempLinePoints.filter(seg => Array.isArray(seg) ? seg.length > 0 : true); 
+                            pData.distance = editCurrentDistance; 
+                        }
+                        let finalPtCount = (pData.linePoints || []).reduce((s, seg) => s + (Array.isArray(seg) ? seg.length : 1), 0);
+                        hasLoc = finalPtCount >= 2;
+                    } 
+                    else if (pData.type === 'point') { 
+                        pData.color = val('e-point-color') || '#16a34a'; pData.icon = val('e-point-icon') || 'fa-map-marker-alt'; pData.pinSize = parseInt(val('e-point-size')) || 32; 
+                        pData.lat = parseFloat(val('e-lat')) || null; pData.lng = parseFloat(val('e-lng')) || null; 
+                        hasLoc = pData.lat !== null && pData.lng !== null;
+                    }
+                    
+                    pData.isProcessed = true; 
+                    pData.opStatus = val('e-op-status') || ''; 
+                    if (pData.opStatus === 'ส่งมอบงาน (ระบุงวด)') pData.opStatusInstallment = val('e-op-status-installment'); else if (statusSubOptions[pData.opStatus]) { pData.opSubStatus = val('e-op-substatus'); if (pData.opSubStatus.includes('ปัญหา')) pData.opProblem = val('e-op-problem'); }
+                    pData.technicians = getTechniciansFromDOM('e-tech-list'); pData.budgetType = val('e-budget-type') || ''; pData.docYear = val('e-doc-year') || ''; pData.docVol = val('e-doc-vol') || ''; pData.docPage = val('e-doc-page') || ''; pData.contractNo = val('e-contract-no') || ''; pData.medianPrice = parseFloat(val('e-median-price')) || 0; pData.contractPrice = parseFloat(val('e-contract-price')) || 0; pData.startDate = val('e-start-date') || ''; pData.endDate = val('e-end-date') || ''; pData.budget = parseFloat(val('e-budget')) || 0; pData.operationProblem = val('e-operation-problem') || '';
+                    if (editPhotosBase64 && editPhotosBase64.length > 0) { pData.photos = editPhotosBase64; delete pData.photo; }
+                    
                     await saveDataToDB(pData, currentSelectedProjectId); window.showToast('อัปเดตข้อมูลสำเร็จ', 'success'); 
                     
                     if (editTempPolyline && map) { map.removeLayer(editTempPolyline); editTempPolyline = null; } 
@@ -1396,22 +1592,22 @@
                     window.selectProject(currentSelectedProjectId);
                 } catch (e) {
                     window.showToast('เกิดข้อผิดพลาดในการอัปเดต', 'error');
+                } finally {
+                    this.disabled = false;
+                    this.innerHTML = originalText;
                 }
             });
-
-            safeClick('btn-device-pc', () => window.setDevice('pc')); 
-            safeClick('btn-device-ipad', () => window.setDevice('ipad'));
         }
 
-        // 🟢 INITIALIZATION 🟢
-        window.addEventListener('load', function() {
-            initMap();
-            try { bindAllEvents(); } catch(e) { console.error('Bind Event Error:', e); }
-            window.addEventListener('resize', () => { if (window.map) window.map.invalidateSize(); if (window.gdYearChartInstance) window.gdYearChartInstance.resize(); if (window.gdStatusChartInstance) window.gdStatusChartInstance.resize(); });
-            
-            // ให้แผนที่คำนวณขนาดตัวเองใหม่ตอนโหลดเสร็จ
-            setTimeout(() => { if (window.map) window.map.invalidateSize(); }, 500);
-        });
+        if (!window.__pmis_initialized) {
+            window.__pmis_initialized = true;
+            window.addEventListener('load', function() {
+                initMap();
+                try { bindAllEvents(); } catch(e) { console.error('Bind Event Error:', e); }
+                window.addEventListener('resize', () => { if (window.map) window.map.invalidateSize(); if (window.gdYearChartInstance) window.gdYearChartInstance.resize(); if (window.gdStatusChartInstance) window.gdStatusChartInstance.resize(); if (window.gdDistrictChartInstance) window.gdDistrictChartInstance.resize(); });
+                setTimeout(() => { if (window.map) window.map.invalidateSize(); }, 500);
+            });
+        }
     </script>
 </body>
 </html>
