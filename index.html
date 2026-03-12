@@ -1552,7 +1552,9 @@
                     pData.opStatus = val('e-op-status') || ''; 
                     if (pData.opStatus === 'ส่งมอบงาน (ระบุงวด)') pData.opStatusInstallment = val('e-op-status-installment'); else if (statusSubOptions[pData.opStatus]) { pData.opSubStatus = val('e-op-substatus'); if (pData.opSubStatus.includes('ปัญหา')) pData.opProblem = val('e-op-problem'); }
                     pData.technicians = getTechniciansFromDOM('e-tech-list'); pData.budgetType = val('e-budget-type') || ''; pData.docYear = val('e-doc-year') || ''; pData.docVol = val('e-doc-vol') || ''; pData.docPage = val('e-doc-page') || ''; pData.contractNo = val('e-contract-no') || ''; pData.medianPrice = parseFloat(val('e-median-price')) || 0; pData.contractPrice = parseFloat(val('e-contract-price')) || 0; pData.startDate = val('e-start-date') || ''; pData.endDate = val('e-end-date') || ''; pData.budget = parseFloat(val('e-budget')) || 0; pData.operationProblem = val('e-operation-problem') || '';
-                    if (editPhotosBase64 && editPhotosBase64.length > 0) { pData.photos = editPhotosBase64; delete pData.photo; }
+                    
+                    pData.photos = editPhotosBase64; // กำหนดค่าอาเรย์รูปภาพล่าสุด (อนุญาตให้เป็น [] ได้ถ้าลบหมด)
+                    delete pData.photo; // เคลียร์ฟิลด์เก่าทิ้ง
                     
                     await saveDataToDB(pData, currentSelectedProjectId); window.showToast('อัปเดตข้อมูลสำเร็จ', 'success'); 
                     
