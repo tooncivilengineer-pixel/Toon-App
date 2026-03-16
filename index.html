@@ -145,8 +145,8 @@
     <main class="flex-1 relative no-print">
         
         <!-- Cloud Sync Loader -->
-        <div id="cloudLoader" class="absolute bottom-14 right-4 z-[500] bg-white px-4 py-2 rounded-full shadow border border-gray-300 flex items-center gap-2 text-sm font-bold text-blue-700">
-            <i class="fa-solid fa-cloud-arrow-down fa-bounce"></i> ซิงค์ข้อมูลจากคลาวด์...
+        <div id="cloudLoader" class="absolute bottom-14 right-4 z-[500] bg-white px-4 py-2 rounded-full shadow border border-gray-300 flex items-center gap-2 text-sm font-bold text-blue-700 hidden">
+            <i class="fa-solid fa-cloud-arrow-down fa-bounce"></i> <span id="cloudLoaderText">ซิงค์ข้อมูลจากคลาวด์...</span>
         </div>
 
         <div id="drawToolbar" class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-4 py-2 rounded-full shadow-lg z-[2000] hidden items-center gap-3 border border-blue-500">
@@ -168,7 +168,6 @@
                 <i id="mapIcon" class="fa-solid fa-satellite text-blue-600 w-3 text-center"></i>
                 <span id="mapText">เปิดแผนที่ดาวเทียม</span>
             </button>
-            <!-- admin-only class added -->
             <button onclick="openModal()" class="admin-only bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-1.5 px-2.5 border border-blue-700 rounded shadow-sm flex items-center gap-1.5 transition-all font-bold text-white">
                 <i class="fa-solid fa-plus-circle w-3 text-center"></i>
                 <span>ป้อนรายละเอียดโครงการ</span>
@@ -177,7 +176,6 @@
                 <i class="fa-solid fa-magnifying-glass-chart text-blue-600 w-3 text-center"></i>
                 <span>ค้นหา/แก้ไขโครงการ</span>
             </button>
-            <!-- admin-only class added -->
             <button onclick="openDataManagementModal()" class="admin-only bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium py-1.5 px-2.5 border border-teal-700 rounded shadow-sm flex items-center gap-1.5 transition-all mt-1 font-bold text-white">
                 <i class="fa-solid fa-database w-3 text-center"></i>
                 <span>จัดการข้อมูล (Import/Export)</span>
@@ -761,7 +759,6 @@
         window.onload = function() {
             initMap();
             // เมื่อใช้ Firebase ระบบจะดึงข้อมูลจาก Cloud เองผ่าน Listener
-            // renderMarkers() จะถูกเรียกเมื่อข้อมูลจาก Cloud โหลดเสร็จ
         };
 
         // --- ระบบ Login & Roles ---
@@ -805,7 +802,9 @@
             if(!document.getElementById('dashboardModal').classList.contains('hidden')) renderDashboard();
             
             const cloudLoader = document.getElementById('cloudLoader');
-            if(cloudLoader) cloudLoader.classList.add('hidden');
+            if(cloudLoader && !cloudLoader.classList.contains('uploading')) {
+                cloudLoader.classList.add('hidden');
+            }
         };
 
         function clearAllData() {
@@ -1731,12 +1730,15 @@
             currentDrawingSegId = null; 
         }
 
+        // ฟังก์ชันคำนวณเงินและน้ำหนักงานอัตโนมัติ
         function calculateActivityRows() {
             const rows = document.querySelectorAll('.activity-entry');
             let totalAmount = 0;
             
+            // ดึงราคาตามสัญญาจากช่องข้อมูลด้านบน
             const contractPriceInput = parseFloat(document.getElementById('pContractPrice').value) || 0;
             
+            // วนรอบแรก: คำนวณเป็นเงินของแต่ละแถว (ปริมาณ x ราคา) และรวมเงินทั้งหมด
             rows.forEach(row => {
                 const qty = parseFloat(row.querySelector('.act-qty').value) || 0;
                 const price = parseFloat(row.querySelector('.act-price').value) || 0;
@@ -1747,11 +1749,14 @@
                     amount = qty * price;
                     amountInput.value = amount.toFixed(2);
                 } else {
+                    // กรณีพิมพ์เป็นเงินมาดื้อๆ โดยไม่ใส่ปริมาณราคา (รองรับข้อมูลเก่า)
                     amount = parseFloat(amountInput.value) || 0;
                 }
                 totalAmount += amount;
             });
 
+            // วนรอบสอง: คำนวณค่างาน (%)
+            // ให้ยึด "ราคาตามสัญญา" เป็นหลักในการคำนวณ 100% ถ้าไม่มีให้ยึดผลรวมเงินทั้งหมดแทน
             let basePrice = contractPriceInput > 0 ? contractPriceInput : totalAmount;
 
             if (basePrice > 0) {
@@ -1763,6 +1768,7 @@
             }
         }
 
+        // ฟังก์ชันสร้างแถวแผนงาน (เพิ่มฟิลด์ หน่วย, ปริมาณ, ราคา, เป็นเงิน) และดึง Datalist มาใช้
         function addActivity(name = '', unit = '', qty = '', unitPrice = '', amount = '', weight = '', actual = 0, start = '', end = '') {
             const container = document.getElementById('activitiesContainer');
             if(container.querySelector('p.italic')) container.innerHTML = '';
@@ -2105,6 +2111,8 @@
                         <td colspan="${sCurveData.labelsV124.length}" class="border border-gray-800 bg-gray-100"></td>
                     </tr>
                 `;
+
+                const emptyCols = `<td colspan="7" class="border-r border-gray-800"></td>`;
 
                 tableHTML += `<tr><td colspan="7" class="border border-gray-800 p-1 text-right font-bold">แผนงานประจำเดือน (%)</td>`;
                 sCurveData.plannedMonthly.forEach(val => tableHTML += `<td class="border border-gray-800 p-1 text-center">${val}</td>`);
@@ -2584,14 +2592,17 @@
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, {type: 'array'});
                     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                     const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-                    jsonData.forEach(row => {
+                    let importedCount = 0;
+                    const importPromises = []; // เก็บ Promise ของการอัปโหลดแต่ละแถว
+
+                    jsonData.forEach((row, index) => {
                         const name = row['ชื่อโครงการ'] || row['Name'] || '';
                         if (!name || name === 'โครงการตัวอย่าง (ลบแถวนี้ทิ้งได้)') return;
 
@@ -2601,8 +2612,11 @@
                         const medianPrice = parseFloat(String(row['ราคากลาง (บาท)'] || row['ราคากลาง'] || 0).replace(/,/g, '')) || 0;
                         const contractPrice = parseFloat(String(row['ราคาตามสัญญา (บาท)'] || row['ราคาตามสัญญา'] || 0).replace(/,/g, '')) || 0;
 
+                        // แก้ปัญหา ID ซ้ำกันด้วยการนำ index มาต่อท้าย และใช้ค่าสุ่ม
+                        const uniqueId = Date.now().toString() + "_" + index + "_" + Math.floor(Math.random() * 10000).toString();
+
                         const projData = {
-                            id: Date.now().toString() + Math.floor(Math.random() * 1000).toString(),
+                            id: uniqueId,
                             name: name,
                             workType: row['ประเภทงาน'] || 'ไม่ระบุ',
                             district: row['อำเภอ'] || '',
@@ -2627,16 +2641,42 @@
                         };
                         
                         if (window.saveProjectToCloud) {
-                            window.saveProjectToCloud(projData);
+                            importPromises.push(window.saveProjectToCloud(projData));
+                            importedCount++;
                         }
                     });
 
-                    alert(`ส่งคำสั่งนำเข้าข้อมูลขึ้นระบบคลาวด์แล้ว กรุณารอสักครู่ให้ข้อมูลซิงค์กลับมา`);
+                    // ตรวจสอบว่ามีข้อมูลส่งขึ้น Cloud หรือไม่
+                    if (importPromises.length > 0) {
+                        // แสดง Loader
+                        const cloudLoader = document.getElementById('cloudLoader');
+                        if(cloudLoader) {
+                            cloudLoader.classList.remove('hidden');
+                            cloudLoader.classList.add('uploading');
+                            document.getElementById('cloudLoaderText').innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> กำลังอัปโหลดข้อมูลเข้าสู่ระบบคลาวด์...';
+                        }
+
+                        // รอให้การอัปโหลดทั้งหมดเสร็จสิ้น (Async/Await)
+                        await Promise.all(importPromises);
+
+                        // ปิด Loader
+                        if(cloudLoader) {
+                            cloudLoader.classList.remove('uploading');
+                            document.getElementById('cloudLoaderText').innerHTML = 'ซิงค์ข้อมูลจากคลาวด์...';
+                            cloudLoader.classList.add('hidden');
+                        }
+
+                        alert(`นำเข้าข้อมูลขึ้นระบบคลาวด์สำเร็จจำนวน ${importedCount} โครงการ\nระบบอัปเดตข้อมูลเรียบร้อยแล้ว`);
+                    } else {
+                        alert("ไม่พบข้อมูลโครงการใหม่ในไฟล์ Excel ที่สามารถนำเข้าได้");
+                    }
+
                     closeDataManagementModal();
                     event.target.value = '';
                 } catch (error) {
-                    console.error(error);
-                    alert('เกิดข้อผิดพลาดในการอ่านไฟล์');
+                    console.error("Import Error:", error);
+                    alert('เกิดข้อผิดพลาดในการอ่านไฟล์หรือการอัปโหลดข้อมูล');
+                    document.getElementById('cloudLoader')?.classList.add('hidden');
                 }
             };
             reader.readAsArrayBuffer(file);
