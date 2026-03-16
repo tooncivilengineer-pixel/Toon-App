@@ -2570,56 +2570,67 @@
 
         // --- Export / Import Data ---
         function exportToExcel() {
-            if (projects.length === 0) return alert("ไม่มีข้อมูลโครงการให้ดาวน์โหลด");
-            
-            // แปลงข้อมูล projects ให้อยู่ในรูปแบบ Array of Objects ที่พร้อมจัดลงตาราง
-            const data = projects.map((p, i) => {
-                const supsStr = p.supervisors && p.supervisors.length > 0 ? p.supervisors.map(s => s.name).join(', ') : '-';
-                return {
-                    'ลำดับ': i + 1,
-                    'ชื่อโครงการ': p.name,
-                    'ประเภทงาน': p.workType || '-',
-                    'อำเภอ': p.district || '',
-                    'ประเภทของงบประมาณ': p.budgetType || '-',
-                    'ปีงบประมาณ พ.ศ.': p.year || '-',
-                    'เล่ม': p.volume || '-',
-                    'หน้า': p.page || '-',
-                    'งบประมาณ (บาท)': p.budget || 0,
-                    'ราคากลาง (บาท)': p.medianPrice || 0,
-                    'ราคาตามสัญญา (บาท)': p.contractPrice || 0,
-                    'วันเริ่มต้นสัญญา': p.contractStartDate || '-',
-                    'วันสิ้นสุดสัญญา': p.contractEndDate || '-',
-                    'สถานะ': p.status || '-',
-                    'ผู้ควบคุมงาน': supsStr
-                };
-            });
+            try {
+                if (projects.length === 0) return alert("ไม่มีข้อมูลโครงการให้ดาวน์โหลด");
+                if (typeof XLSX === 'undefined') return alert("ระบบกำลังโหลดโปรแกรมอ่านไฟล์ หรืออินเทอร์เน็ตมีปัญหา กรุณารอสักครู่หรือรีเฟรชหน้าเว็บอีกครั้ง");
+                
+                const data = projects.map((p, i) => {
+                    const supsStr = p.supervisors && p.supervisors.length > 0 ? p.supervisors.map(s => s.name).join(', ') : '-';
+                    return {
+                        'ลำดับ': i + 1,
+                        'ชื่อโครงการ': p.name || '-',
+                        'ประเภทงาน': p.workType || '-',
+                        'อำเภอ': p.district || '-',
+                        'ประเภทของงบประมาณ': p.budgetType || '-',
+                        'ปีงบประมาณ พ.ศ.': p.year || '-',
+                        'เล่ม': p.volume || '-',
+                        'หน้า': p.page || '-',
+                        'งบประมาณ (บาท)': p.budget || 0,
+                        'ราคากลาง (บาท)': p.medianPrice || 0,
+                        'ราคาตามสัญญา (บาท)': p.contractPrice || 0,
+                        'วันเริ่มต้นสัญญา': p.contractStartDate || '-',
+                        'วันสิ้นสุดสัญญา': p.contractEndDate || '-',
+                        'สถานะ': p.status || '-',
+                        'ผู้ควบคุมงาน': supsStr
+                    };
+                });
 
-            // ใช้ SheetJS สร้างไฟล์ Excel
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Projects");
-            
-            // สั่งดาวน์โหลด
-            XLSX.writeFile(wb, "Phitsanulok_Projects_Database.xlsx");
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Projects");
+                XLSX.writeFile(wb, "Phitsanulok_Projects_Database.xlsx");
+            } catch (error) {
+                console.error(error);
+                alert("เกิดข้อผิดพลาดในการส่งออกไฟล์: " + error.message);
+            }
         }
 
         function downloadTemplate() {
-            // สร้างข้อมูลสำหรับ Template
-            const headers = ['ชื่อโครงการ', 'ประเภทงาน', 'อำเภอ', 'ประเภทของงบประมาณ', 'ปีงบประมาณ พ.ศ.', 'เล่ม', 'หน้า', 'งบประมาณ (บาท)', 'ราคากลาง (บาท)', 'ราคาตามสัญญา (บาท)', 'วันเริ่มต้นสัญญา', 'วันสิ้นสุดสัญญา'];
-            const sampleRow = ['โครงการตัวอย่าง (ลบแถวนี้ทิ้งได้)', 'งานทาง', 'เมืองพิษณุโลก', 'ข้อบัญญัติ', '2567', '1', '15', 1500000, 1500000, 1480000, '2024-02-01', '2024-08-31'];
+            try {
+                if (typeof XLSX === 'undefined') return alert("ระบบกำลังโหลดโปรแกรมอ่านไฟล์ หรืออินเทอร์เน็ตมีปัญหา กรุณารอสักครู่หรือรีเฟรชหน้าเว็บอีกครั้ง");
 
-            // ใช้ SheetJS สร้างไฟล์ Excel จาก Array
-            const ws = XLSX.utils.aoa_to_sheet([headers, sampleRow]);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Template");
-            
-            // สั่งดาวน์โหลด
-            XLSX.writeFile(wb, "Template_Import_Projects.xlsx");
+                const headers = ['ชื่อโครงการ', 'ประเภทงาน', 'อำเภอ', 'ประเภทของงบประมาณ', 'ปีงบประมาณ พ.ศ.', 'เล่ม', 'หน้า', 'งบประมาณ (บาท)', 'ราคากลาง (บาท)', 'ราคาตามสัญญา (บาท)', 'วันเริ่มต้นสัญญา', 'วันสิ้นสุดสัญญา'];
+                const sampleRow = ['โครงการตัวอย่าง (ลบแถวนี้ทิ้งได้)', 'งานทาง', 'เมืองพิษณุโลก', 'ข้อบัญญัติ', '2567', '1', '15', 1500000, 1500000, 1480000, '2024-02-01', '2024-08-31'];
+
+                const ws = XLSX.utils.aoa_to_sheet([headers, sampleRow]);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Template");
+                XLSX.writeFile(wb, "Template_Import_Projects.xlsx");
+            } catch (error) {
+                console.error(error);
+                alert("เกิดข้อผิดพลาดในการโหลดเทมเพลต: " + error.message);
+            }
         }
 
         function handleImportFile(event) {
             const file = event.target.files[0];
             if (!file) return;
+
+            if (typeof XLSX === 'undefined') {
+                alert("ระบบกำลังโหลดโปรแกรมอ่านไฟล์ หรืออินเทอร์เน็ตมีปัญหา กรุณารอสักครู่หรือรีเฟรชหน้าเว็บอีกครั้ง");
+                event.target.value = '';
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = async function(e) {
@@ -2710,9 +2721,13 @@
                     event.target.value = '';
                 } catch (error) {
                     console.error("Import Error:", error);
-                    alert('เกิดข้อผิดพลาดในการอ่านไฟล์หรือการอัปโหลดข้อมูล');
-                    document.getElementById('cloudLoader')?.classList.add('hidden');
+                    alert('เกิดข้อผิดพลาดในการอ่านไฟล์หรือการอัปโหลดข้อมูล: ' + error.message);
+                    const cloudLoader = document.getElementById('cloudLoader');
+                    if (cloudLoader) cloudLoader.classList.add('hidden');
                 }
+            };
+            reader.onerror = function(error) {
+                alert('เกิดข้อผิดพลาดในการอ่านไฟล์จากเครื่องของคุณ');
             };
             reader.readAsArrayBuffer(file);
         }
