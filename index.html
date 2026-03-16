@@ -1298,6 +1298,10 @@
                     alert("บันทึกการอัปเดตผลงานหน้างานบนระบบคลาวด์เรียบร้อยแล้ว");
                     closeProgressModal();
                 });
+            } else {
+                saveData();
+                alert("บันทึกการอัปเดตผลงานหน้างานเรียบร้อยแล้ว (โหมดออฟไลน์)");
+                closeProgressModal();
             }
         }
 
@@ -1317,6 +1321,13 @@
                     window.deleteProjectFromCloud(projectToDeleteId).then(() => {
                         closeDeleteModal();
                     });
+                } else {
+                    projects = projects.filter(p => p.id.toString() !== projectToDeleteId.toString());
+                    saveData();
+                    renderMarkers();
+                    openSearchModal(); 
+                    closeDeleteModal();
+                    alert("ลบข้อมูลโครงการเรียบร้อยแล้ว (โหมดออฟไลน์)");
                 }
             }
         }
@@ -1476,6 +1487,8 @@
 
             if (editingProjectId) {
                 updatedData.id = editingProjectId;
+            } else if (!window.saveProjectToCloud) {
+                updatedData.id = Date.now().toString(); // สร้าง ID กรณีออฟไลน์
             }
             
             if (window.saveProjectToCloud) {
@@ -1483,6 +1496,18 @@
                     alert(editingProjectId ? "อัปเดตข้อมูลโครงการบนระบบคลาวด์สำเร็จ" : "เพิ่มโครงการใหม่บนระบบคลาวด์สำเร็จ");
                     closeModal();
                 });
+            } else {
+                if (editingProjectId) {
+                    const idx = projects.findIndex(p => p.id.toString() === editingProjectId.toString());
+                    if (idx > -1) projects[idx] = { ...projects[idx], ...updatedData };
+                    alert("อัปเดตข้อมูลโครงการสำเร็จ (โหมดออฟไลน์)");
+                } else {
+                    projects.push(updatedData);
+                    alert("เพิ่มโครงการใหม่สำเร็จ (โหมดออฟไลน์)");
+                }
+                saveData(); 
+                renderMarkers();
+                closeModal();
             }
         }
 
@@ -2546,45 +2571,50 @@
         // --- Export / Import Data ---
         function exportToExcel() {
             if (projects.length === 0) return alert("ไม่มีข้อมูลโครงการให้ดาวน์โหลด");
-            let tableHTML = '<table border="1"><thead><tr bgcolor="#1e40af" style="color:white"><th>ลำดับ</th><th>ชื่อโครงการ</th><th>ประเภทงาน</th><th>อำเภอ</th><th>ประเภทของงบประมาณ</th><th>ปีงบประมาณ พ.ศ.</th><th>เล่ม</th><th>หน้า</th><th>งบประมาณ (บาท)</th><th>ราคากลาง (บาท)</th><th>ราคาตามสัญญา (บาท)</th><th>วันเริ่มต้นสัญญา</th><th>วันสิ้นสุดสัญญา</th><th>สถานะ</th><th>ผู้ควบคุมงาน</th></tr></thead><tbody>';
-            projects.forEach((p, i) => { 
-                const supsStr = p.supervisors && p.supervisors.length > 0 ? p.supervisors.map(s => s.name).join(', ') : '-';
-                tableHTML += `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.workType || '-'}</td><td>${p.district}</td><td>${p.budgetType || '-'}</td><td>${p.year || '-'}</td><td>${p.volume || '-'}</td><td>${p.page || '-'}</td><td>${p.budget}</td><td>${p.medianPrice || 0}</td><td>${p.contractPrice || 0}</td><td>${p.contractStartDate || '-'}</td><td>${p.contractEndDate || '-'}</td><td>${p.status}</td><td>${supsStr}</td></tr>`; 
-            });
-            tableHTML += '</tbody></table>';
             
-            const uri = 'data:application/vnd.ms-excel;base64,';
-            const template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>{table}</body></html>';
-            const base64 = function(s) { return window.btoa(unescape(encodeURIComponent(s))) };
-            const format = function(s, c) { return s.replace(/{(\w+)}/g, function(m, p) { return c[p]; }) };
+            // แปลงข้อมูล projects ให้อยู่ในรูปแบบ Array of Objects ที่พร้อมจัดลงตาราง
+            const data = projects.map((p, i) => {
+                const supsStr = p.supervisors && p.supervisors.length > 0 ? p.supervisors.map(s => s.name).join(', ') : '-';
+                return {
+                    'ลำดับ': i + 1,
+                    'ชื่อโครงการ': p.name,
+                    'ประเภทงาน': p.workType || '-',
+                    'อำเภอ': p.district || '',
+                    'ประเภทของงบประมาณ': p.budgetType || '-',
+                    'ปีงบประมาณ พ.ศ.': p.year || '-',
+                    'เล่ม': p.volume || '-',
+                    'หน้า': p.page || '-',
+                    'งบประมาณ (บาท)': p.budget || 0,
+                    'ราคากลาง (บาท)': p.medianPrice || 0,
+                    'ราคาตามสัญญา (บาท)': p.contractPrice || 0,
+                    'วันเริ่มต้นสัญญา': p.contractStartDate || '-',
+                    'วันสิ้นสุดสัญญา': p.contractEndDate || '-',
+                    'สถานะ': p.status || '-',
+                    'ผู้ควบคุมงาน': supsStr
+                };
+            });
 
-            const link = document.createElement("a");
-            link.download = "Phitsanulok_Projects_Database.xls";
-            link.href = uri + base64(format(template, { table: tableHTML }));
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // ใช้ SheetJS สร้างไฟล์ Excel
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Projects");
+            
+            // สั่งดาวน์โหลด
+            XLSX.writeFile(wb, "Phitsanulok_Projects_Database.xlsx");
         }
 
         function downloadTemplate() {
-            let tableHTML = '<table border="1"><thead><tr bgcolor="#f97316" style="color:white">';
+            // สร้างข้อมูลสำหรับ Template
             const headers = ['ชื่อโครงการ', 'ประเภทงาน', 'อำเภอ', 'ประเภทของงบประมาณ', 'ปีงบประมาณ พ.ศ.', 'เล่ม', 'หน้า', 'งบประมาณ (บาท)', 'ราคากลาง (บาท)', 'ราคาตามสัญญา (บาท)', 'วันเริ่มต้นสัญญา', 'วันสิ้นสุดสัญญา'];
-            headers.forEach(h => { tableHTML += `<th>${h}</th>`; });
-            tableHTML += '</tr></thead><tbody>';
-            tableHTML += '<tr><td>โครงการตัวอย่าง (ลบแถวนี้ทิ้งได้)</td><td>งานทาง</td><td>เมืองพิษณุโลก</td><td>ข้อบัญญัติ</td><td>2567</td><td>1</td><td>15</td><td>1500000</td><td>1500000</td><td>1480000</td><td>2024-02-01</td><td>2024-08-31</td></tr>';
-            tableHTML += '</tbody></table>';
+            const sampleRow = ['โครงการตัวอย่าง (ลบแถวนี้ทิ้งได้)', 'งานทาง', 'เมืองพิษณุโลก', 'ข้อบัญญัติ', '2567', '1', '15', 1500000, 1500000, 1480000, '2024-02-01', '2024-08-31'];
 
-            const uri = 'data:application/vnd.ms-excel;base64,';
-            const template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>{table}</body></html>';
-            const base64 = function(s) { return window.btoa(unescape(encodeURIComponent(s))) };
-            const format = function(s, c) { return s.replace(/{(\w+)}/g, function(m, p) { return c[p]; }) };
-
-            const link = document.createElement("a");
-            link.download = "Template_Import_Projects.xls";
-            link.href = uri + base64(format(template, { table: tableHTML }));
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // ใช้ SheetJS สร้างไฟล์ Excel จาก Array
+            const ws = XLSX.utils.aoa_to_sheet([headers, sampleRow]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Template");
+            
+            // สั่งดาวน์โหลด
+            XLSX.writeFile(wb, "Template_Import_Projects.xlsx");
         }
 
         function handleImportFile(event) {
@@ -2600,7 +2630,9 @@
                     const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
                     let importedCount = 0;
-                    const importPromises = []; // เก็บ Promise ของการอัปโหลดแต่ละแถว
+                    const importPromises = []; 
+                    
+                    const isCloudActive = typeof window.saveProjectToCloud === 'function';
 
                     jsonData.forEach((row, index) => {
                         const name = row['ชื่อโครงการ'] || row['Name'] || '';
@@ -2612,7 +2644,6 @@
                         const medianPrice = parseFloat(String(row['ราคากลาง (บาท)'] || row['ราคากลาง'] || 0).replace(/,/g, '')) || 0;
                         const contractPrice = parseFloat(String(row['ราคาตามสัญญา (บาท)'] || row['ราคาตามสัญญา'] || 0).replace(/,/g, '')) || 0;
 
-                        // แก้ปัญหา ID ซ้ำกันด้วยการนำ index มาต่อท้าย และใช้ค่าสุ่ม
                         const uniqueId = Date.now().toString() + "_" + index + "_" + Math.floor(Math.random() * 10000).toString();
 
                         const projData = {
@@ -2640,35 +2671,39 @@
                             images: []
                         };
                         
-                        if (window.saveProjectToCloud) {
+                        if (isCloudActive) {
                             importPromises.push(window.saveProjectToCloud(projData));
-                            importedCount++;
+                        } else {
+                            projects.push(projData);
                         }
+                        importedCount++;
                     });
 
-                    // ตรวจสอบว่ามีข้อมูลส่งขึ้น Cloud หรือไม่
-                    if (importPromises.length > 0) {
-                        // แสดง Loader
-                        const cloudLoader = document.getElementById('cloudLoader');
-                        if(cloudLoader) {
-                            cloudLoader.classList.remove('hidden');
-                            cloudLoader.classList.add('uploading');
-                            document.getElementById('cloudLoaderText').innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> กำลังอัปโหลดข้อมูลเข้าสู่ระบบคลาวด์...';
+                    if (importedCount > 0) {
+                        if (isCloudActive) {
+                            const cloudLoader = document.getElementById('cloudLoader');
+                            if(cloudLoader) {
+                                cloudLoader.classList.remove('hidden');
+                                cloudLoader.classList.add('uploading');
+                                document.getElementById('cloudLoaderText').innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> กำลังอัปโหลดข้อมูลเข้าสู่ระบบคลาวด์...';
+                            }
+
+                            await Promise.all(importPromises);
+
+                            if(cloudLoader) {
+                                cloudLoader.classList.remove('uploading');
+                                document.getElementById('cloudLoaderText').innerHTML = 'ซิงค์ข้อมูลจากคลาวด์...';
+                                cloudLoader.classList.add('hidden');
+                            }
+
+                            alert(`นำเข้าข้อมูลขึ้นระบบคลาวด์สำเร็จจำนวน ${importedCount} โครงการ\nระบบอัปเดตข้อมูลเรียบร้อยแล้ว`);
+                        } else {
+                            saveData();
+                            renderMarkers();
+                            alert(`นำเข้าข้อมูลสำเร็จจำนวน ${importedCount} โครงการ (โหมดออฟไลน์)\n(กรุณาใช้เมนู "ค้นหา/แก้ไขโครงการ" เพื่อเพิ่มพิกัดและแผนงาน)`);
                         }
-
-                        // รอให้การอัปโหลดทั้งหมดเสร็จสิ้น (Async/Await)
-                        await Promise.all(importPromises);
-
-                        // ปิด Loader
-                        if(cloudLoader) {
-                            cloudLoader.classList.remove('uploading');
-                            document.getElementById('cloudLoaderText').innerHTML = 'ซิงค์ข้อมูลจากคลาวด์...';
-                            cloudLoader.classList.add('hidden');
-                        }
-
-                        alert(`นำเข้าข้อมูลขึ้นระบบคลาวด์สำเร็จจำนวน ${importedCount} โครงการ\nระบบอัปเดตข้อมูลเรียบร้อยแล้ว`);
                     } else {
-                        alert("ไม่พบข้อมูลโครงการใหม่ในไฟล์ Excel ที่สามารถนำเข้าได้");
+                        alert("ไม่พบข้อมูลโครงการใหม่ในไฟล์ Excel ที่สามารถนำเข้าได้\n(โปรดตรวจสอบว่าได้ระบุ 'ชื่อโครงการ' หรือลบแถวตัวอย่างทิ้งแล้ว)");
                     }
 
                     closeDataManagementModal();
