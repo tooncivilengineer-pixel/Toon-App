@@ -25,10 +25,12 @@
     <style>
         body { font-family: 'Sarabun', sans-serif; }
         .leaflet-control-container { z-index: 400; }
-        .custom-popup .leaflet-popup-content-wrapper { border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2); width: 480px !important; }
+        /* ปรับขนาด Popup ให้พอดี (กว้าง 360px) */
+        .custom-popup .leaflet-popup-content-wrapper { border-radius: 1rem; box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15); padding: 4px; }
+        .custom-popup .leaflet-popup-content { margin: 10px; width: 360px !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         details > summary { list-style: none; outline: none; }
         details > summary::-webkit-details-marker { display: none; }
         details[open] summary ~ * { animation: fadeIn 0.3s ease-in-out; }
@@ -290,17 +292,17 @@
         </div>
     </div>
 
-    <!-- 2. Search Modal -->
+    <!-- 2. Search Modal (Grid by District Layout) -->
     <div id="searchModal" class="fixed inset-0 bg-black/60 z-[2000] hidden justify-center items-center p-4 backdrop-blur-sm no-print">
-        <div id="searchModalContent" class="bg-white rounded-[2rem] shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden relative">
-            <div id="searchModalHeader" class="bg-blue-600 text-white px-8 py-6 flex justify-between items-center font-black cursor-move">
-                <h2 class="text-xl tracking-tight uppercase tracking-widest"><i class="fa-solid fa-magnifying-glass-chart mr-3"></i> ค้นหาและจัดการโครงการ</h2>
-                <button type="button" onclick="closeSearchModal()" class="hover:bg-blue-700 rounded-full w-10 h-10 flex items-center justify-center transition-all"><i class="fa-solid fa-times text-2xl text-white"></i></button>
+        <div id="searchModalContent" class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden relative">
+            <div id="searchModalHeader" class="bg-blue-600 text-white px-6 py-4 flex justify-between items-center font-bold cursor-move">
+                <h2 class="text-lg tracking-tight"><i class="fa-solid fa-magnifying-glass-chart mr-2"></i> ค้นหาและจัดการโครงการ</h2>
+                <button type="button" onclick="closeSearchModal()" class="hover:bg-blue-700 rounded-full w-8 h-8 flex items-center justify-center transition-all"><i class="fa-solid fa-times text-xl text-white"></i></button>
             </div>
-            <div class="p-6 bg-slate-100 border-b border-slate-200">
-                <input type="text" id="pSearchInput" onkeyup="renderSearchList()" class="w-full px-6 py-4 rounded-2xl border-2 border-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none font-bold text-lg shadow-sm transition-all text-blue-900" placeholder="🔍 พิมพ์ชื่อโครงการ หรือ อำเภอ เพื่อค้นหา...">
+            <div class="p-4 bg-slate-100 border-b border-slate-200">
+                <input type="text" id="pSearchInput" onkeyup="renderSearchList()" class="w-full px-5 py-2.5 rounded-xl border border-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-sm shadow-sm transition-all text-blue-900" placeholder="🔍 พิมพ์ชื่อโครงการ หรือ อำเภอ เพื่อค้นหา...">
             </div>
-            <div id="searchContent" class="p-6 md:p-8 overflow-y-auto flex-1 bg-slate-200 custom-scrollbar space-y-6"></div>
+            <div id="searchContent" class="p-4 md:p-6 overflow-y-auto flex-1 bg-slate-200 custom-scrollbar space-y-4"></div>
         </div>
     </div>
 
@@ -602,7 +604,7 @@
                             <button onclick="openReportV124('${p.id}')" class="bg-purple-600 text-white py-1.5 rounded text-[11px] font-bold shadow-sm hover:bg-purple-700"><i class="fa-solid fa-file-invoice mr-1"></i>รายงาน ว124</button>
                         </div>`;
                     let supsHtml = (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => `<li>${s.name} (${s.position})</li>`).join('') : '-';
-                    let imgsHtml = (p.images && p.images.length > 0) ? `<div class="flex gap-2 overflow-x-auto mt-1 pb-1 custom-scrollbar">` + p.images.map(img => `<a href="${img}" target="_blank"><img src="${img}" class="h-16 w-16 object-cover rounded border border-gray-300 hover:opacity-80 transition-opacity"></a>`).join('') + `</div>` : '<span class="text-gray-400 font-normal">ไม่มีรูปภาพ</span>';
+                    let imgsHtml = (p.images && p.images.length > 0) ? `<div class="flex gap-2 overflow-x-auto mt-1 pb-1 custom-scrollbar">` + p.images.map(img => `<a href="${img}" target="_blank"><img src="${img}" class="h-16 w-16 object-cover rounded border border-gray-300 hover:opacity-80 transition-opacity"></a>`).join('') + `</div>` : '<span class="text-gray-400 font-normal text-xs">ไม่มีรูปภาพ</span>';
                     const sDate = p.contractStartDate ? new Date(p.contractStartDate).toLocaleDateString('th-TH', { year: '2-digit', month: 'short', day: 'numeric' }) : '-';
                     const eDate = p.contractEndDate ? new Date(p.contractEndDate).toLocaleDateString('th-TH', { year: '2-digit', month: 'short', day: 'numeric' }) : '-';
                     let statDateStr = p.statusDate ? ` (อัปเดต: ${new Date(p.statusDate).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'})})` : '';
@@ -610,34 +612,34 @@
                     let popupContent = `
                         <div class="font-sans w-full max-h-[450px] flex flex-col">
                             <div class="mb-2 shrink-0">
-                                <h3 class="font-bold text-blue-800 text-lg leading-tight border-b-2 border-blue-500 pb-1">${p.name}</h3>
-                                <div class="flex justify-between mt-1 text-xs text-gray-600 font-bold">
+                                <h3 class="font-bold text-blue-800 text-base leading-tight border-b-2 border-blue-500 pb-1">${p.name}</h3>
+                                <div class="flex justify-between mt-1 text-[10px] text-gray-600 font-bold">
                                     <span>${p.workType || 'ไม่ระบุงาน'}</span>
                                     <span><i class="fa-solid fa-location-dot text-red-500"></i> อ.${p.district || '-'}</span>
                                 </div>
                             </div>
                             <div class="overflow-y-auto pr-1 flex-1 text-xs space-y-2 custom-scrollbar">
                                 <div class="bg-gray-50 p-2 rounded border border-gray-200">
-                                    <div class="grid grid-cols-2 gap-1.5">
-                                        <div class="col-span-2"><span class="text-gray-500">ประเภทงบ:</span> <b class="text-sm">${p.budgetType || '-'}</b> (ปี ${p.year || '-'} เล่ม ${p.volume||'-'}/${p.page||'-'})</div>
-                                        <div class="col-span-2"><span class="text-gray-500">งบประมาณ:</span> <b class="text-blue-600 text-sm">฿${(p.budget||0).toLocaleString()}</b></div>
-                                        <div class="col-span-2"><span class="text-gray-500">ราคากลาง:</span> <b class="text-sm">฿${(p.medianPrice||0).toLocaleString()}</b></div>
-                                        <div class="col-span-2"><span class="text-gray-500">ราคาตามสัญญา:</span> <b class="text-green-600 text-sm">฿${(p.contractPrice||0).toLocaleString()}</b></div>
+                                    <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                                        <div class="col-span-2"><span class="text-gray-500">ประเภทงบ:</span> <b>${p.budgetType || '-'}</b> (ปี ${p.year || '-'} เล่ม ${p.volume||'-'}/${p.page||'-'})</div>
+                                        <div class="col-span-2"><span class="text-gray-500">งบประมาณ:</span> <b class="text-blue-600">฿${(p.budget||0).toLocaleString()}</b></div>
+                                        <div class="col-span-2"><span class="text-gray-500">ราคากลาง:</span> <b>฿${(p.medianPrice||0).toLocaleString()}</b></div>
+                                        <div class="col-span-2"><span class="text-gray-500">ราคาตามสัญญา:</span> <b class="text-green-600">฿${(p.contractPrice||0).toLocaleString()}</b></div>
                                     </div>
                                 </div>
-                                <div class="bg-gray-50 p-2 rounded border border-gray-200">
-                                    <div class="mb-1.5"><span class="text-gray-500">สถานะ:</span> <b class="text-orange-600 text-sm">${p.status || '-'}</b>${statDateStr}</div>
+                                <div class="bg-gray-50 p-2 rounded border border-gray-200 text-[11px]">
+                                    <div class="mb-1.5"><span class="text-gray-500">สถานะ:</span> <b class="text-orange-600">${p.status || '-'}</b><span class="text-gray-400 italic">${statDateStr}</span></div>
                                     <div class="flex justify-between">
                                         <span><span class="text-gray-500">เริ่ม:</span> <b>${sDate}</b></span>
                                         <span><span class="text-gray-500">สิ้นสุด:</span> <b>${eDate}</b></span>
                                     </div>
                                 </div>
-                                <div class="bg-yellow-50 p-2 rounded border border-yellow-200">
+                                <div class="bg-yellow-50 p-2 rounded border border-yellow-200 text-[11px]">
                                     <div class="text-gray-500 font-bold mb-1">ผู้ควบคุมงาน:</div>
                                     <ul class="list-disc list-inside pl-1 text-gray-700 font-bold">${supsHtml !== '-' ? supsHtml : '<li class="list-none text-gray-400 font-normal">ไม่มีข้อมูล</li>'}</ul>
                                 </div>
                                 <div class="bg-white p-2 rounded border border-gray-200">
-                                    <div class="text-gray-500 font-bold mb-1">รูปภาพหน้างาน:</div>${imgsHtml}
+                                    <div class="text-gray-500 font-bold mb-1 text-[11px]">รูปภาพหน้างาน:</div>${imgsHtml}
                                 </div>
                             </div>
                             <div class="mt-2 pt-2 border-t border-gray-200 shrink-0">
@@ -646,7 +648,7 @@
                         </div>
                     `;
 
-                    const popupOptions = { minWidth: 400, maxWidth: 480, className: 'custom-popup' };
+                    const popupOptions = { minWidth: 320, maxWidth: 360, className: 'custom-popup' };
 
                     if (p.geomType==='line') {
                         p.segments.forEach(s=>{ if(s.coordinates&&s.coordinates.length>=2){ const dsh=p.lineStyle==='dashed'?'10, 10':null; const pl=L.polyline(s.coordinates,{color:color,weight:weight,dashArray:dsh}).addTo(map).bindPopup(popupContent, popupOptions); markers.push(pl); const m1=L.circleMarker(s.coordinates[0],{radius:4,color:color,fillColor:'white',fillOpacity:1,weight:2}).addTo(map); const m2=L.circleMarker(s.coordinates[s.coordinates.length-1],{radius:4,color:color,fillColor:'white',fillOpacity:1,weight:2}).addTo(map); markers.push(m1,m2); } });
@@ -678,11 +680,10 @@
             const fp=projects.filter(p=>p.name.toLowerCase().includes(q)||p.district.toLowerCase().includes(q));
             
             if(fp.length===0){ 
-                con.innerHTML='<div class="text-center py-16 text-slate-400"><i class="fa-solid fa-folder-open text-6xl mb-4 text-slate-300"></i><br><span class="text-lg font-black tracking-widest">ไม่พบข้อมูลโครงการ</span></div>'; 
+                con.innerHTML='<div class="text-center py-16 text-slate-400"><i class="fa-solid fa-folder-open text-6xl mb-4 text-slate-300"></i><br><span class="text-sm font-bold">ไม่พบข้อมูลโครงการ</span></div>'; 
                 return; 
             }
 
-            // จัดกลุ่มโครงการตาม "อำเภอ"
             const groupedProjects = {};
             fp.forEach(p => {
                 const dist = p.district || 'ไม่ได้ระบุอำเภอ';
@@ -690,65 +691,73 @@
                 groupedProjects[dist].push(p);
             });
 
-            // สร้างส่วนแสดงผลแบบแยกกล่อง
+            let html = '<div class="space-y-4">';
+            
             for (const [dist, pjs] of Object.entries(groupedProjects)) {
-                let html = `
-                <details class="group bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden" open>
-                    <summary class="p-6 bg-slate-50 font-black text-slate-700 cursor-pointer flex justify-between items-center hover:bg-slate-100 transition-colors select-none border-b border-slate-200">
-                        <span class="flex items-center gap-4 text-xl tracking-tight"><i class="fa-solid fa-map-location-dot text-blue-600 text-2xl"></i> พื้นที่อำเภอ${dist} <span class="text-sm bg-blue-600 text-white px-4 py-1 rounded-full shadow-md ml-2">${pjs.length} โครงการ</span></span>
-                        <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-slate-400 text-xl"></i>
+                html += `
+                <details class="group bg-white border-2 border-slate-100 rounded-2xl shadow-sm overflow-hidden transition-all duration-300">
+                    <summary class="p-5 bg-white font-black text-blue-900 cursor-pointer flex justify-between items-center hover:bg-blue-50 transition-colors select-none outline-none">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg shadow-inner">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                            </div>
+                            <div>
+                                <div class="text-base tracking-tight uppercase">อำเภอ${dist}</div>
+                                <div class="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5">${pjs.length} โครงการ</div>
+                            </div>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-open:rotate-180 transition-transform">
+                            <i class="fa-solid fa-chevron-down text-slate-400"></i>
+                        </div>
                     </summary>
-                    <div class="p-6 md:p-8 bg-slate-100 space-y-5">`;
+                    <div class="p-5 bg-slate-50 border-t-2 border-slate-100 space-y-3">
+                `;
                 
                 pjs.forEach(p => {
-                    // ปุ่มเปิดดูในแผนที่ (ถ้ามีพิกัด)
-                    let mB=''; 
-                    if(p.segments && p.segments.length > 0){ 
-                        const cd = p.geomType==='line' ? p.segments[0].coordinates[0] : p.segments[0].coordinates; 
-                        mB = `<button onclick="if(map){map.setView([${cd[0]}, ${cd[1]}],15);closeSearchModal();}" class="w-14 h-14 bg-white text-blue-600 border border-slate-200 rounded-full hover:bg-blue-600 hover:text-white shadow-md transition-colors shrink-0 flex items-center justify-center text-2xl" title="ดูบนแผนที่"><i class="fa-solid fa-location-dot"></i></button>`; 
-                    }
+                    let statusColor = p.status && p.status.includes('แล้วเสร็จ') ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 'text-orange-600 bg-orange-50 border-orange-100';
 
-                    // ชุดปุ่มคำสั่ง (ตามสิทธิ์ผู้ใช้งาน)
                     let actionBtns = '';
                     if(userRole === 'admin') {
                         actionBtns = `
-                            <button onclick="openProgressModal('${p.id}')" class="flex-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-100 py-3 px-4 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-bars-progress"></i> อัปเดตงาน</button>
-                            <button onclick="editProject('${p.id}')" class="flex-1 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-100 py-3 px-4 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button>
-                            <button onclick="openReport('${p.id}')" class="flex-1 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white border border-teal-100 py-3 px-4 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-file-pdf"></i> PDF</button>
-                            <button onclick="openReportV124('${p.id}')" class="flex-1 bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white border border-purple-100 py-3 px-4 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-file-invoice"></i> ว124</button>
-                            <button onclick="confirmDeleteProject('${p.id}')" class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-100 py-3 px-5 rounded-xl text-sm font-black transition-all flex items-center justify-center shadow-sm"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="openProgressModal('${p.id}')" class="flex-1 md:flex-none bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-100 py-2 px-3 rounded-lg text-[10px] font-black transition-all flex items-center justify-center gap-1.5 shadow-sm" title="อัปเดต"><i class="fa-solid fa-bars-progress"></i> <span class="hidden lg:inline">อัปเดต</span></button>
+                            <button onclick="editProject('${p.id}');closeSearchModal();" class="flex-1 md:flex-none bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-100 py-2 px-3 rounded-lg text-[10px] font-black transition-all flex items-center justify-center gap-1.5 shadow-sm" title="แก้ไข"><i class="fa-solid fa-pen-to-square"></i> <span class="hidden lg:inline">แก้ไข</span></button>
+                            <button onclick="openReport('${p.id}')" class="flex-1 md:flex-none bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white border border-teal-100 py-2 px-3 rounded-lg text-[10px] font-black transition-all flex items-center justify-center gap-1.5 shadow-sm" title="PDF"><i class="fa-solid fa-file-pdf"></i> <span class="hidden lg:inline">PDF</span></button>
+                            <button onclick="openReportV124('${p.id}')" class="flex-1 md:flex-none bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white border border-purple-100 py-2 px-3 rounded-lg text-[10px] font-black transition-all flex items-center justify-center gap-1.5 shadow-sm" title="ว124"><i class="fa-solid fa-file-invoice"></i> <span class="hidden lg:inline">ว124</span></button>
+                            <button onclick="confirmDeleteProject('${p.id}')" class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-100 py-2 px-3 rounded-lg text-[10px] font-black transition-all flex items-center justify-center shadow-sm" title="ลบ"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="if(map){map.setView([${p.segments && p.segments[0] && p.segments[0].coordinates ? (p.geomType==='line'?p.segments[0].coordinates[0][0]:p.segments[0].coordinates[0]) : 16.8211}, ${p.segments && p.segments[0] && p.segments[0].coordinates ? (p.geomType==='line'?p.segments[0].coordinates[0][1]:p.segments[0].coordinates[1]) : 100.2659}],15);closeSearchModal();}" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-[10px] font-black uppercase hover:bg-black transition-colors shadow-sm ml-auto" title="ดูบนแผนที่"><i class="fa-solid fa-location-dot"></i></button>
                         `;
                     } else {
                         actionBtns = `
-                            <button onclick="openReport('${p.id}')" class="flex-1 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white py-3 rounded-xl text-sm font-black transition-colors flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-file-pdf"></i> สรุปโครงการ (PDF)</button>
-                            <button onclick="openReportV124('${p.id}')" class="flex-1 bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white py-3 rounded-xl text-sm font-black transition-colors flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-file-invoice"></i> แผนทำงาน (ว124)</button>
+                            <button onclick="openReport('${p.id}')" class="flex-1 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white py-2 rounded-lg text-[10px] font-black transition-colors flex items-center justify-center gap-1.5 shadow-sm"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                            <button onclick="openReportV124('${p.id}')" class="flex-1 bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white py-2 rounded-lg text-[10px] font-black transition-colors flex items-center justify-center gap-1.5 shadow-sm"><i class="fa-solid fa-file-invoice"></i> ว124</button>
+                            <button onclick="if(map){map.setView([${p.segments && p.segments[0] && p.segments[0].coordinates ? (p.geomType==='line'?p.segments[0].coordinates[0][0]:p.segments[0].coordinates[0]) : 16.8211}, ${p.segments && p.segments[0] && p.segments[0].coordinates ? (p.geomType==='line'?p.segments[0].coordinates[0][1]:p.segments[0].coordinates[1]) : 100.2659}],15);closeSearchModal();}" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase hover:bg-black transition-colors shadow-sm ml-auto"><i class="fa-solid fa-location-dot"></i> แผนที่</button>
                         `;
                     }
 
-                    // ดีไซน์การ์ดโครงการแต่ละใบ
-                    let statusColor = p.status.includes('แล้วเสร็จ') ? 'text-green-700 bg-green-50 border-green-200' : 'text-orange-700 bg-orange-50 border-orange-200';
-                    
                     html += `
-                    <div class="bg-white p-6 md:p-8 border border-slate-200 rounded-[2rem] shadow-sm hover:shadow-lg hover:border-blue-300 transition-all group">
-                        <div class="flex justify-between items-start gap-4">
-                            <div class="flex-1">
-                                <h3 class="text-xl md:text-2xl font-black text-blue-900 leading-tight group-hover:text-blue-700 transition-colors mb-3">${p.name}</h3>
-                                <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
-                                    <span class="text-base font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-4 py-1.5 rounded-xl shadow-inner"><i class="fa-solid fa-sack-dollar mr-2"></i> ฿${(p.budget||0).toLocaleString()}</span>
-                                    <span class="text-sm font-black px-4 py-1.5 rounded-xl border shadow-inner uppercase tracking-wider ${statusColor}"><i class="fa-solid fa-spinner mr-2"></i> ${p.status}</span>
+                        <div class="bg-white p-4 border border-slate-200 rounded-xl shadow-sm hover:border-blue-300 transition-all flex flex-col gap-3">
+                            <div class="min-w-0">
+                                <h3 class="text-sm font-black text-slate-800 leading-tight mb-2 truncate" title="${p.name}">${p.name}</h3>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-[10px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg uppercase tracking-wider">฿${(p.budget||0).toLocaleString()}</span>
+                                    <span class="text-[10px] font-black px-2.5 py-1 rounded-lg border uppercase tracking-wider ${statusColor}">${p.status}</span>
                                 </div>
                             </div>
-                            ${mB}
+                            <div class="flex flex-wrap gap-2 w-full pt-2 border-t border-slate-100">
+                                ${actionBtns}
+                            </div>
                         </div>
-                        <div class="flex flex-wrap gap-3 mt-6 pt-6 border-t-2 border-dashed border-slate-100">
-                            ${actionBtns}
-                        </div>
-                    </div>`;
+                    `;
                 });
 
-                html += `</div></details>`;
-                con.innerHTML += html;
+                html += `
+                    </div>
+                </details>
+                `;
             }
+            
+            html += '</div>';
+            con.innerHTML = html;
         }
 
         // Progress Modal
@@ -915,7 +924,7 @@
             
             const wBody = document.getElementById('dbWatchlistBody');
             if(wBody) {
-                wBody.innerHTML=wl.sort((a,b)=>a.diff-b.diff).slice(0,10).map(p=>`<tr class="border-b"><td class="p-2 font-bold truncate max-w-[200px]">${p.name}</td><td class="p-2">${p.district||'-'}</td><td class="p-2 text-center text-blue-600 font-bold">${p.cp.toFixed(1)}%</td><td class="p-2 text-center text-emerald-600 font-bold">${p.ca.toFixed(1)}%</td><td class="p-2 text-center"><span class="bg-red-100 text-red-700 px-2 py-1 rounded font-bold border border-red-200">ช้า ${Math.abs(p.diff).toFixed(1)}%</span></td><td class="p-2 text-center"><button onclick="closeDashboardModal();openAnalysisModal('${p.id}')" class="bg-indigo-600 text-white px-3 py-1 rounded text-[10px] font-bold shadow-sm">เจาะลึก</button></td></tr>`).join('');
+                wBody.innerHTML=wl.sort((a,b)=>a.diff-b.diff).slice(0,10).map(p=>`<tr class="border-b hover:bg-red-50 transition-all"><td class="p-4 font-bold text-slate-800">${p.name}</td><td class="p-4 text-center text-blue-600 font-bold">${p.cp.toFixed(1)}%</td><td class="p-4 text-center text-emerald-600 font-bold">${p.ca.toFixed(1)}%</td><td class="p-4 text-center"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-xl font-bold border border-red-200 shadow-sm">-${Math.abs(p.diff).toFixed(1)}%</span></td><td class="p-4 text-center"><button onclick="closeDashboardModal();openAnalysisModal('${p.id}')" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-bold shadow-sm hover:bg-indigo-700 transition-all">เจาะลึก</button></td></tr>`).join('');
             }
             
             Chart.defaults.font.family="'Sarabun', sans-serif";
