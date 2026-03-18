@@ -25,7 +25,6 @@
     <style>
         body { font-family: 'Sarabun', sans-serif; }
         .leaflet-control-container { z-index: 400; }
-        /* ปรับขนาด Popup ให้กว้างและใหญ่ขึ้นตามความเหมาะสม (450px) */
         .custom-popup .leaflet-popup-content-wrapper { border-radius: 1rem; box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15); padding: 4px; }
         .custom-popup .leaflet-popup-content { margin: 10px; width: 450px !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -37,15 +36,16 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
         @media print {
-            body:not(.printing-v124) @page { size: A4 portrait; margin: 10mm; }
+            body:not(.printing-v124):not(.printing-table) @page { size: A4 portrait; margin: 10mm; }
             body.printing-v124 @page { size: A4 landscape; margin: 10mm; } 
-            /* บังคับใช้ฟอนต์ TH Sarabun ให้คลุมทุกส่วนเมื่อสั่งพิมพ์ */
-            body, #printArea, #printAreaV124, table, th, td, div, span, p { font-family: 'Sarabun', sans-serif !important; }
+            body.printing-table @page { size: A4 landscape; margin: 10mm; }
+            body, #printArea, #printAreaV124, #printAreaTable, table, th, td, div, span, p { font-family: 'Sarabun', sans-serif !important; }
             body { background: white; margin: 0; padding: 0; overflow: visible; height: auto; width: auto; }
-            body:not(.printing-v124) > *:not(#reportModal) { display: none !important; }
+            body:not(.printing-v124):not(.printing-table) > *:not(#reportModal) { display: none !important; }
             body.printing-v124 > *:not(#reportV124Modal) { display: none !important; }
-            #reportModal, #reportV124Modal { position: relative !important; display: block !important; background: white !important; padding: 0 !important; z-index: auto !important; height: auto !important; overflow: visible !important; }
-            #printArea, #printAreaV124 { box-shadow: none !important; width: 100% !important; max-width: none !important; margin: 0 !important; border: none !important; padding: 0 !important;}
+            body.printing-table > *:not(#tableReportModal) { display: none !important; }
+            #reportModal, #reportV124Modal, #tableReportModal { position: relative !important; display: block !important; background: white !important; padding: 0 !important; z-index: auto !important; height: auto !important; overflow: visible !important; }
+            #printArea, #printAreaV124, #printAreaTable { box-shadow: none !important; width: 100% !important; max-width: none !important; margin: 0 !important; border: none !important; padding: 0 !important;}
             .no-print { display: none !important; }
             .page-break-inside-avoid { break-inside: avoid; page-break-inside: avoid; }
         }
@@ -296,7 +296,7 @@
         </div>
     </div>
 
-    <!-- 2. Search Modal (การค้นหาแบบ 3 ระดับ) -->
+    <!-- 2. Search Modal -->
     <div id="searchModal" class="fixed inset-0 bg-black/60 z-[2000] hidden justify-center items-center p-4 backdrop-blur-sm no-print">
         <div id="searchModalContent" class="bg-white rounded-[2rem] shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden relative">
             <div id="searchModalHeader" class="bg-blue-600 text-white px-6 py-4 flex justify-between items-center font-bold cursor-move">
@@ -310,7 +310,7 @@
         </div>
     </div>
 
-    <!-- 3. Progress Modal (อัปเดตผลงานจริง) -->
+    <!-- 3. Progress Modal -->
     <div id="progressModal" class="fixed inset-0 bg-black bg-opacity-50 z-[2000] hidden flex justify-center items-center text-gray-700 no-print">
         <div id="progressModalContent" class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden relative">
             <div id="progressModalHeader" class="bg-emerald-600 text-white px-6 py-4 flex justify-between items-center font-bold shadow-sm cursor-move">
@@ -455,13 +455,69 @@
     <div id="dataManagementModal" class="fixed inset-0 bg-black bg-opacity-50 z-[2000] hidden flex justify-center items-center text-gray-700 no-print">
         <div id="dataManagementModalContent" class="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden relative">
             <div id="dataManagementModalHeader" class="bg-teal-600 text-white px-6 py-4 flex justify-between items-center font-bold shadow-sm cursor-move">
-                <h2 class="text-lg"><i class="fa-solid fa-database mr-2"></i> จัดการข้อมูล (Database)</h2>
+                <h2 class="text-lg"><i class="fa-solid fa-database mr-2"></i> จัดการข้อมูล (Export)</h2>
                 <button type="button" onclick="closeDataManagementModal()" class="hover:text-gray-200"><i class="fa-solid fa-times text-xl"></i></button>
             </div>
             <div class="p-6 flex flex-col gap-4 bg-gray-50">
-                <div class="p-5 bg-white border rounded-lg shadow-sm">
-                    <button onclick="exportToExcel()" class="w-full bg-green-600 text-white text-sm py-2.5 px-4 rounded-lg font-bold"><i class="fa-solid fa-file-excel"></i> ดาวน์โหลดข้อมูลทั้งหมด</button>
+                <div class="p-5 bg-white border rounded-lg shadow-sm space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">เลือกอำเภอที่ต้องการพิมพ์/Export:</label>
+                        <select id="exportDistrictFilter" class="w-full text-sm border border-gray-300 rounded p-2 outline-none focus:border-teal-500 font-bold text-gray-700 bg-teal-50">
+                            <option value="all">พิมพ์ข้อมูลทั้งหมด (ทุกอำเภอ)</option>
+                            <option value="เมืองพิษณุโลก">เมืองพิษณุโลก</option>
+                            <option value="นครไทย">นครไทย</option>
+                            <option value="ชาติตระการ">ชาติตระการ</option>
+                            <option value="บางระกำ">บางระกำ</option>
+                            <option value="บางกระทุ่ม">บางกระทุ่ม</option>
+                            <option value="พรหมพิราม">พรหมพิราม</option>
+                            <option value="วัดโบสถ์">วัดโบสถ์</option>
+                            <option value="วังทอง">วังทอง</option>
+                            <option value="เนินมะปราง">เนินมะปราง</option>
+                        </select>
+                    </div>
+                    <button onclick="openTableReport()" class="w-full bg-blue-600 text-white text-sm py-3 px-4 rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-sm mt-2"><i class="fa-solid fa-table mr-2 border border-white rounded-sm p-0.5"></i> พิมพ์ตารางสรุปโครงการ (PDF)</button>
+                    <div class="relative py-2">
+                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div>
+                        <div class="relative flex justify-center text-xs"><span class="px-2 bg-white text-gray-400">หรือ</span></div>
+                    </div>
+                    <button onclick="exportToExcel()" class="w-full bg-green-600 text-white text-sm py-3 px-4 rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm"><i class="fa-solid fa-file-excel mr-2"></i> ดาวน์โหลดข้อมูล Excel (Raw Data)</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 10. Table Report Modal (แนวนอน) -->
+    <div id="tableReportModal" class="fixed inset-0 bg-gray-500 bg-opacity-80 z-[4000] hidden justify-center items-start overflow-y-auto py-8">
+        <div class="absolute top-4 right-6 p-2 flex gap-3 no-print z-50 bg-white rounded-lg shadow-lg border border-gray-200">
+            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-print"></i> พิมพ์ PDF (แนวนอน)</button>
+            <button onclick="closeTableReport()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-times"></i> ปิด</button>
+        </div>
+        <div id="printAreaTable" class="bg-white w-[297mm] min-h-[210mm] shadow-2xl relative p-10 font-sans text-gray-800 mx-auto mt-8 border border-gray-300">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-900 mb-1">ตารางสรุปรายละเอียดโครงการก่อสร้าง</h1>
+                <p class="text-md font-bold text-gray-600">กองช่าง องค์การบริหารส่วนจังหวัดพิษณุโลก</p>
+            </div>
+            <div class="w-full mb-4">
+                <table class="w-full text-[12px] border-collapse border border-gray-800">
+                    <thead class="bg-gray-100 font-bold">
+                        <tr>
+                            <th class="border border-gray-800 p-2 w-10 text-center">ลำดับ</th>
+                            <th class="border border-gray-800 p-2 text-left">ชื่อโครงการ</th>
+                            <th class="border border-gray-800 p-2 w-20 text-center">อำเภอ</th>
+                            <th class="border border-gray-800 p-2 w-28 text-center">ประเภทงบ</th>
+                            <th class="border border-gray-800 p-2 w-24 text-right">งบประมาณ (บาท)</th>
+                            <th class="border border-gray-800 p-2 w-24 text-right">ราคาสัญญา (บาท)</th>
+                            <th class="border border-gray-800 p-2 w-24 text-center">สถานะ</th>
+                            <th class="border border-gray-800 p-2 w-36 text-left">ผู้ควบคุมงาน</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableReportBody">
+                        <!-- ข้อมูลจะถูกดึงมาใส่ตรงนี้ -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-right text-[12px] text-gray-600 italic">
+                ข้อมูลอัปเดต ณ วันที่: <span id="tableReportDate"></span>
             </div>
         </div>
     </div>
@@ -557,14 +613,12 @@
                 satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
                 terrainLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', { maxZoom: 20 });
 
-                // --- ADD GEOCODER ---
                 L.Control.geocoder({
                     position: 'topright',
                     placeholder: 'ค้นหาสถานที่...',
                     errorMessage: 'ไม่พบสถานที่นี้'
                 }).addTo(map);
 
-                // --- ADD STREET VIEW BUTTON ---
                 L.Control.StreetView = L.Control.extend({
                     onAdd: function(map) {
                         var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control custom-streetview-control');
@@ -960,12 +1014,92 @@
         // Data Management & Analysis Modals
         function openDataManagementModal() { const c=document.getElementById('dataManagementModalContent'); if(c&&c.resetPosition)c.resetPosition(); document.getElementById('dataManagementModal').classList.remove('hidden'); }
         function closeDataManagementModal() { document.getElementById('dataManagementModal').classList.add('hidden'); }
+        
         function exportToExcel() { 
             if(projects.length===0) return alert("ไม่มีข้อมูลให้ Export"); 
-            const d=projects.map((p,i)=>({'ลำดับ':i+1,'ชื่อโครงการ':p.name,'อำเภอ':p.district,'งบประมาณ':p.budget,'สถานะ':p.status})); 
+            const distFilter = document.getElementById('exportDistrictFilter').value;
+            const filteredProjects = distFilter === 'all' ? projects : projects.filter(p => p.district === distFilter);
+            
+            if(filteredProjects.length === 0) return alert("ไม่มีข้อมูลในอำเภอที่เลือก");
+
+            const d=filteredProjects.map((p,i)=>({
+                'ลำดับ':i+1,
+                'ชื่อโครงการ':p.name || '-',
+                'ประเภทงาน':p.workType || '-',
+                'อำเภอ':p.district || '-',
+                'ประเภทงบประมาณ':p.budgetType || '-',
+                'ปีงบประมาณ':p.year || '-',
+                'งบประมาณ (บาท)':p.budget || 0,
+                'ราคากลาง (บาท)':p.medianPrice || 0,
+                'ราคาตามสัญญา (บาท)':p.contractPrice || 0,
+                'วันเริ่มต้นสัญญา': p.contractStartDate ? new Date(p.contractStartDate).toLocaleDateString('th-TH') : '-',
+                'วันสิ้นสุดสัญญา': p.contractEndDate ? new Date(p.contractEndDate).toLocaleDateString('th-TH') : '-',
+                'สถานะ':p.status || '-',
+                'ผู้ควบคุมงาน': (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => s.name).join(', ') : '-'
+            })); 
             const ws=XLSX.utils.json_to_sheet(d), wb=XLSX.utils.book_new(); 
+            // กำหนดความกว้างของคอลัมน์ใน Excel ให้สวยงามอัตโนมัติ
+            const wscols = [
+                {wch: 6}, {wch: 50}, {wch: 15}, {wch: 15}, {wch: 25}, {wch: 10}, 
+                {wch: 18}, {wch: 18}, {wch: 18}, {wch: 15}, {wch: 15}, {wch: 25}, {wch: 40}
+            ];
+            ws['!cols'] = wscols;
+
+            let fileName = distFilter === 'all' ? "PAO_Projects_Export_All.xlsx" : `PAO_Projects_Export_${distFilter}.xlsx`;
             XLSX.utils.book_append_sheet(wb,ws,"Projects Data"); 
-            XLSX.writeFile(wb,"PAO_Projects_Export.xlsx"); 
+            XLSX.writeFile(wb, fileName); 
+        }
+
+        // ฟังก์ชันใหม่ที่เพิ่มเข้ามาสำหรับเปิดตาราง PDF
+        function openTableReport() {
+            closeDataManagementModal();
+            document.body.classList.add('printing-table');
+            const tbody = document.getElementById('tableReportBody');
+            tbody.innerHTML = '';
+            
+            const distFilter = document.getElementById('exportDistrictFilter').value;
+            const filteredProjects = distFilter === 'all' ? projects : projects.filter(p => p.district === distFilter);
+
+            // ปรับเปลี่ยนหัวตารางตามอำเภอที่เลือก
+            const titleEl = document.querySelector('#printAreaTable h1');
+            if(titleEl) {
+                titleEl.innerText = distFilter === 'all' ? 'ตารางสรุปรายละเอียดโครงการก่อสร้าง (รวมทุกอำเภอ)' : `ตารางสรุปรายละเอียดโครงการก่อสร้าง (อำเภอ${distFilter})`;
+            }
+            
+            if(filteredProjects.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="border border-gray-800 p-6 text-center text-gray-500 font-bold text-sm">ไม่มีข้อมูลโครงการในอำเภอที่เลือก</td></tr>';
+            } else {
+                // จัดเรียงข้อมูลตามอำเภอ ให้เป็นหมวดหมู่
+                let sortedProjects = [...filteredProjects].sort((a,b) => (a.district || '').localeCompare(b.district || ''));
+                
+                sortedProjects.forEach((p, index) => {
+                    let sups = (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => s.name).join(', ') : '-';
+                    let bg = index % 2 === 0 ? 'bg-white' : 'bg-gray-50'; // ทำสลับสีแถวให้อ่านง่าย
+                    
+                    let tr = `<tr class="${bg} hover:bg-blue-50">
+                        <td class="border border-gray-800 p-2 text-center">${index + 1}</td>
+                        <td class="border border-gray-800 p-2 font-bold text-gray-800">${p.name || '-'}</td>
+                        <td class="border border-gray-800 p-2 text-center">${p.district || '-'}</td>
+                        <td class="border border-gray-800 p-2 text-center">${p.budgetType || '-'} <br><span class="text-[10px] text-gray-500">ปี ${p.year||'-'}</span></td>
+                        <td class="border border-gray-800 p-2 text-right font-bold text-blue-700">${(p.budget || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="border border-gray-800 p-2 text-right font-bold text-emerald-700">${(p.contractPrice || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="border border-gray-800 p-2 text-center text-orange-600 font-bold">${p.status || '-'}</td>
+                        <td class="border border-gray-800 p-2 text-left truncate max-w-[150px]" title="${sups}">${sups}</td>
+                    </tr>`;
+                    tbody.innerHTML += tr;
+                });
+            }
+            
+            document.getElementById('tableReportDate').innerText = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            document.getElementById('tableReportModal').classList.remove('hidden');
+            document.getElementById('tableReportModal').classList.add('flex');
+        }
+
+        // ฟังก์ชันใหม่ปิดหน้าต่างตาราง PDF
+        function closeTableReport() {
+            document.body.classList.remove('printing-table');
+            document.getElementById('tableReportModal').classList.add('hidden');
+            document.getElementById('tableReportModal').classList.remove('flex');
         }
         
         function openAnalysisModal(projId = null) { const c=document.getElementById('analysisModalContent'); if(c&&c.resetPosition)c.resetPosition(); const ds=document.getElementById('analysisDistrictFilter'); ds.innerHTML='<option value="all">ทุกอำเภอ</option>'; [...new Set(projects.map(p=>p.district).filter(d=>d&&d!=='-'))].sort().forEach(d=>ds.innerHTML+=`<option value="${d}">${d}</option>`); filterAnalysisProjectsByDistrict(); document.getElementById('analysisContent').classList.add('hidden'); document.getElementById('analysisEmpty').classList.remove('hidden'); document.getElementById('analysisModal').classList.remove('hidden'); if(projId){document.getElementById('analysisProjectSelect').value=projId; renderProjectAnalysis(projId);} }
