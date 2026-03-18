@@ -67,6 +67,14 @@
         </div>
     </div>
 
+    <!-- Image Lightbox Modal -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 z-[7000] hidden justify-center items-center p-4 no-print" onclick="closeImageModal()">
+        <button type="button" class="absolute top-4 right-6 text-white hover:text-gray-300 transition-colors" onclick="closeImageModal()">
+            <i class="fa-solid fa-times text-4xl"></i>
+        </button>
+        <img id="expandedImage" src="" class="max-w-full max-h-[90vh] object-contain rounded shadow-2xl border border-white/20">
+    </div>
+
     <!-- Login Modal -->
     <div id="loginModal" class="fixed inset-0 bg-blue-900 bg-opacity-95 z-[5000] flex justify-center items-center">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
@@ -767,7 +775,7 @@
                             <button onclick="openReportV124('${p.id}')" class="bg-purple-600 text-white py-1.5 rounded text-[11px] font-bold shadow-sm hover:bg-purple-700"><i class="fa-solid fa-file-invoice mr-1"></i>รายงาน ว124</button>
                         </div>`;
                     let supsHtml = (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => `<li>${s.name} (${s.position})</li>`).join('') : '-';
-                    let imgsHtml = (p.images && p.images.length > 0) ? `<div class="flex gap-2 overflow-x-auto mt-1 pb-1 custom-scrollbar">` + p.images.map(img => `<a href="${img}" target="_blank"><img src="${img}" class="h-16 w-16 object-cover rounded border border-gray-300 hover:opacity-80 transition-opacity"></a>`).join('') + `</div>` : '<span class="text-gray-400 font-normal text-xs">ไม่มีรูปภาพ</span>';
+                    let imgsHtml = (p.images && p.images.length > 0) ? `<div class="flex gap-2 overflow-x-auto mt-1 pb-1 custom-scrollbar">` + p.images.map(img => `<div onclick="openImageModal('${img}')" class="cursor-pointer shrink-0"><img src="${img}" class="h-16 w-16 object-cover rounded border border-gray-300 hover:opacity-80 transition-opacity"></div>`).join('') + `</div>` : '<span class="text-gray-400 font-normal text-xs">ไม่มีรูปภาพ</span>';
                     const sDate = p.contractStartDate ? new Date(p.contractStartDate).toLocaleDateString('th-TH', { year: '2-digit', month: 'short', day: 'numeric' }) : '-';
                     const eDate = p.contractEndDate ? new Date(p.contractEndDate).toLocaleDateString('th-TH', { year: '2-digit', month: 'short', day: 'numeric' }) : '-';
                     let statDateStr = p.statusDate ? ` (อัปเดต: ${new Date(p.statusDate).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'})})` : '';
@@ -811,7 +819,7 @@
                         </div>
                     `;
 
-                    const popupOptions = { minWidth: 400, maxWidth: 480, className: 'custom-popup' };
+                    const popupOptions = { minWidth: 500, maxWidth: 600, className: 'custom-popup' };
 
                     if (p.geomType==='line') {
                         p.segments.forEach(s=>{ if(s.coordinates&&s.coordinates.length>=2){ const dsh=p.lineStyle==='dashed'?'10, 10':null; const pl=L.polyline(s.coordinates,{color:color,weight:weight,dashArray:dsh}).addTo(map).bindPopup(popupContent, popupOptions); markers.push(pl); const m1=L.circleMarker(s.coordinates[0],{radius:4,color:color,fillColor:'white',fillOpacity:1,weight:2}).addTo(map); const m2=L.circleMarker(s.coordinates[s.coordinates.length-1],{radius:4,color:color,fillColor:'white',fillOpacity:1,weight:2}).addTo(map); markers.push(m1,m2); } });
@@ -827,8 +835,53 @@
             if(!input.files||input.files.length===0) return;
             Array.from(input.files).forEach(f=>{ if(!f.type.match('image.*')) return; const r=new FileReader(); r.onload=function(e){ const img=new Image(); img.onload=function(){ const cvs=document.createElement('canvas'); let w=img.width, h=img.height; if(w>h){if(w>800){h*=800/w;w=800;}}else{if(h>800){w*=800/h;h=800;}} cvs.width=w; cvs.height=h; cvs.getContext('2d').drawImage(img,0,0,w,h); activeImages.push(cvs.toDataURL('image/jpeg',0.7)); renderImagePreviews(); }; img.src=e.target.result; }; r.readAsDataURL(f); }); input.value='';
         }
-        function renderImagePreviews() { const c=document.getElementById('imagePreviewContainer'); c.innerHTML=''; if(activeImages.length===0){ c.innerHTML='<p class="text-xs text-gray-400 italic text-center w-full py-4">ยังไม่มีรูปภาพ</p>'; return; } activeImages.forEach((s,i)=>c.innerHTML+=`<div class="relative w-24 h-24 border rounded bg-gray-100 overflow-hidden group shadow-sm"><img src="${s}" class="w-full h-full object-cover"><button type="button" onclick="removeImage(${i})" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 shadow"><i class="fa-solid fa-times"></i></button></div>`); }
+        
+        function renderImagePreviews() { 
+            const c=document.getElementById('imagePreviewContainer'); 
+            c.innerHTML=''; 
+            if(activeImages.length===0){ 
+                c.innerHTML='<p class="text-xs text-gray-400 italic text-center w-full py-4">ยังไม่มีรูปภาพ</p>'; 
+                return; 
+            } 
+            activeImages.forEach((s,i) => {
+                // ซ่อนปุ่มไว้ด้วย opacity-0 และแสดงเมื่อโฮเวอร์ด้วย group-hover:opacity-100
+                c.innerHTML += `<div class="relative w-24 h-24 border rounded-lg bg-gray-100 overflow-hidden group shadow-sm mt-2 mr-2"><img src="${s}" class="w-full h-full object-cover"><button type="button" onclick="removeImage(${i})" class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 shadow-md transition-all duration-200 z-50" title="ลบรูปภาพนี้"><i class="fa-solid fa-trash"></i></button></div>`;
+            }); 
+        }
+        
         function removeImage(idx) { activeImages.splice(idx, 1); renderImagePreviews(); }
+
+        // ฟังก์ชันขยาย/ย่อ Popup แผนที่
+        window.togglePopupExpand = function(btn) {
+            const popupWrapper = btn.closest('.leaflet-popup');
+            const icon = btn.querySelector('.popup-expand-icon');
+            if (popupWrapper) {
+                popupWrapper.classList.toggle('expanded-popup');
+                if (popupWrapper.classList.contains('expanded-popup')) {
+                    icon.classList.remove('fa-expand');
+                    icon.classList.add('fa-compress');
+                    btn.title = "ย่อหน้าต่าง";
+                } else {
+                    icon.classList.remove('fa-compress');
+                    icon.classList.add('fa-expand');
+                    btn.title = "ขยายหน้าต่าง";
+                }
+            }
+        };
+
+        function openImageModal(src) {
+            document.getElementById('expandedImage').src = src;
+            const m = document.getElementById('imageModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        
+        function closeImageModal() {
+            const m = document.getElementById('imageModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+            setTimeout(() => { document.getElementById('expandedImage').src = ''; }, 300);
+        }
 
         // Modals Management
         function openModal() { const c=document.getElementById('projectModalContent'); if(c&&c.resetPosition)c.resetPosition(); editingProjectId=null; document.getElementById('modalTitleText').innerHTML='<i class="fa-solid fa-clipboard-list mr-2"></i> ป้อนรายละเอียดโครงการก่อสร้าง'; document.getElementById('projectModal').classList.remove('hidden'); document.getElementById('projectForm').reset(); document.getElementById('pStatus').value='จัดทำแบบรูปรายการก่อสร้าง'; document.getElementById('pStatusDate').value=''; toggleStatusDependentFields(); document.querySelector('input[name="pGeomType"][value="point"]').checked=true; document.getElementById('pLineStyle').value='solid'; document.getElementById('pColor').value='#2563eb'; document.getElementById('pWeight').value='5'; toggleGeomTypeSilent(); document.getElementById('supervisorsContainer').innerHTML=''; document.getElementById('segmentsContainer').innerHTML='<p class="text-xs text-gray-400 italic p-2">กดปุ่มด้านบนเพื่อเพิ่มพิกัด</p>'; document.getElementById('activitiesContainer').innerHTML='<p class="text-xs text-gray-400 italic p-2">กดปุ่มเพิ่มกิจกรรม</p>'; activeSegmentsData={}; segmentCounter=0; activeImages=[]; renderImagePreviews(); }
@@ -1370,7 +1423,7 @@
             document.getElementById('rptName').innerText=p.name||'-'; document.getElementById('rptWorkType').innerText=p.workType||'-'; document.getElementById('rptDistrict').innerText=p.district||'-'; document.getElementById('rptYear').innerText=p.year||'-'; document.getElementById('rptBudgetType').innerText=p.budgetType||'-'; document.getElementById('rptBudget').innerText=(p.budget||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); document.getElementById('rptMedianPrice').innerText=(p.medianPrice||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); document.getElementById('rptContractPrice').innerText=(p.contractPrice||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); document.getElementById('rptContractStartDate').innerText=p.contractStartDate?new Date(p.contractStartDate).toLocaleDateString('th-TH'):'-'; document.getElementById('rptContractEndDate').innerText=p.contractEndDate?new Date(p.contractEndDate).toLocaleDateString('th-TH'):'-'; document.getElementById('rptRef').innerText=`เล่ม ${p.volume||'-'} / หน้า ${p.page||'-'}`; 
             let rptStatDate = p.statusDate ? ` (${new Date(p.statusDate).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'numeric'})})` : ''; document.getElementById('rptStatus').innerText=(p.status||'-') + rptStatDate;
             document.getElementById('rptSupervisors').innerHTML=(p.supervisors&&p.supervisors.length>0)?p.supervisors.map((s,i)=>`<div>${i+1}. ${s.name} (${s.position})</div>`).join(''):'-';
-            document.getElementById('rptImages').innerHTML=(p.images&&p.images.length>0)?p.images.map(ig=>`<div class="border h-40 flex items-center justify-center bg-gray-50 overflow-hidden"><img src="${ig}" class="w-full h-full object-contain"></div>`).join(''):'<div class="col-span-3 text-center text-gray-400">ไม่มีรูปภาพ</div>';
+            document.getElementById('rptImages').innerHTML=(p.images&&p.images.length>0)?p.images.map(ig=>`<div class="border h-40 flex items-center justify-center bg-gray-50 overflow-hidden cursor-pointer" onclick="openImageModal('${ig}')" title="คลิกเพื่อขยาย"><img src="${ig}" class="w-full h-full object-contain hover:scale-105 transition-transform"></div>`).join(''):'<div class="col-span-3 text-center text-gray-400">ไม่มีรูปภาพ</div>';
             document.getElementById('reportModal').classList.remove('hidden');
             setTimeout(()=>{
                 if(rptMapInstance){rptMapInstance.remove(); rptMapInstance=null;} const mc=document.getElementById('reportMap'); mc.innerHTML=''; const nd=document.createElement('div'); nd.style.cssText='width:100%;height:100%'; mc.appendChild(nd);
