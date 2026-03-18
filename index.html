@@ -1388,8 +1388,8 @@
             const p=projects.find(pj=>pj.id.toString()===id.toString()); if(!p)return; closeSearchModal(); document.body.classList.add('printing-v124');
             document.getElementById('v124ProjectName').innerText=p.name||'-'; let dur='-';
             
-            // ดึงชื่อช่าง แยกบรรทัดแบบสวยงาม ตรงกลาง
-            document.getElementById('v124Supervisors').innerHTML = (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => `<div class="mb-1.5 leading-tight">( ${s.name} )<br><span class="text-[11px] font-normal text-gray-600">${s.position}</span></div>`).join('') : '(.................................................................)';
+            // ดึงชื่อช่าง แยกบรรทัดแบบสวยงาม พร้อมเว้นที่สำหรับเซ็นชื่อ
+            document.getElementById('v124Supervisors').innerHTML = (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => `<div class="mt-4 mb-2 flex flex-col items-center w-full"><span class="text-gray-400 mb-1">ลงชื่อ.................................................................</span><span class="font-bold text-sm text-gray-800 leading-tight">( ${s.name} )</span><span class="text-[11px] font-normal text-gray-600 leading-tight">${s.position}</span></div>`).join('') : `<div class="mt-4 mb-2 flex flex-col items-center w-full"><span class="text-gray-400 mb-1">ลงชื่อ.................................................................</span><span class="font-bold text-sm text-gray-800 leading-tight">(.................................................................)</span></div>`;
             
             if(p.contractStartDate&&p.contractEndDate){ const s=new Date(p.contractStartDate), e=new Date(p.contractEndDate), d=Math.round((e-s)/(8.64e7))+1; dur=`${s.toLocaleDateString('th-TH')} ถึง ${e.toLocaleDateString('th-TH')} (${d} วัน)`; }
             document.getElementById('v124Duration').innerText=dur;
