@@ -164,7 +164,7 @@
         </div>
     </main>
 
-    <!-- 1. Project Modal -->
+    <!-- 1. Project Modal (เพิ่มปุ่มอัปโหลด Excel ตรงนี้แล้ว) -->
     <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 z-[2000] hidden flex justify-center items-center text-gray-700 no-print">
         <div id="projectModalContent" class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto transform transition-all custom-scrollbar relative">
             <div id="projectModalHeader" class="bg-blue-600 text-white px-6 py-4 rounded-t-xl flex justify-between items-center sticky top-0 z-10 shadow-sm font-bold cursor-move">
@@ -175,7 +175,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="col-span-1 md:col-span-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <div class="mb-4">
-                            <label class="block text-sm font-bold text-blue-800 mb-1">1. ชื่อโครงการ</label>
+                            <!-- จุดที่มีการเพิ่มปุ่ม โหลด/อัปโหลด เทมเพลตแผนงาน -->
+                            <div class="flex justify-between items-end mb-1">
+                                <label class="block text-sm font-bold text-blue-800">1. ชื่อโครงการ</label>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="downloadActivityTemplate()" class="text-[10px] bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-200 border border-emerald-200 shadow-sm transition-colors"><i class="fa-solid fa-file-excel mr-1"></i> โหลดแบบฟอร์มแผนงาน</button>
+                                    <button type="button" onclick="document.getElementById('activityExcelUpload').click()" class="text-[10px] bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-200 border border-blue-200 shadow-sm transition-colors"><i class="fa-solid fa-upload mr-1"></i> อัปโหลดแผนงาน (Excel)</button>
+                                    <input type="file" id="activityExcelUpload" accept=".xlsx, .xls" class="hidden" onchange="handleActivityUpload(this)">
+                                </div>
+                            </div>
                             <input type="text" id="pName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="เช่น ก่อสร้างถนน คสล. สายบ้านคลอง">
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1038,7 +1046,6 @@
                 'ผู้ควบคุมงาน': (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => s.name).join(', ') : '-'
             })); 
             const ws=XLSX.utils.json_to_sheet(d), wb=XLSX.utils.book_new(); 
-            // กำหนดความกว้างของคอลัมน์ใน Excel ให้สวยงามอัตโนมัติ
             const wscols = [
                 {wch: 6}, {wch: 50}, {wch: 15}, {wch: 15}, {wch: 25}, {wch: 10}, 
                 {wch: 18}, {wch: 18}, {wch: 18}, {wch: 15}, {wch: 15}, {wch: 25}, {wch: 40}
@@ -1050,7 +1057,6 @@
             XLSX.writeFile(wb, fileName); 
         }
 
-        // ฟังก์ชันใหม่ที่เพิ่มเข้ามาสำหรับเปิดตาราง PDF
         function openTableReport() {
             closeDataManagementModal();
             document.body.classList.add('printing-table');
@@ -1060,7 +1066,6 @@
             const distFilter = document.getElementById('exportDistrictFilter').value;
             const filteredProjects = distFilter === 'all' ? projects : projects.filter(p => p.district === distFilter);
 
-            // ปรับเปลี่ยนหัวตารางตามอำเภอที่เลือก
             const titleEl = document.querySelector('#printAreaTable h1');
             if(titleEl) {
                 titleEl.innerText = distFilter === 'all' ? 'ตารางสรุปรายละเอียดโครงการก่อสร้าง (รวมทุกอำเภอ)' : `ตารางสรุปรายละเอียดโครงการก่อสร้าง (อำเภอ${distFilter})`;
@@ -1069,12 +1074,11 @@
             if(filteredProjects.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" class="border border-gray-800 p-6 text-center text-gray-500 font-bold text-sm">ไม่มีข้อมูลโครงการในอำเภอที่เลือก</td></tr>';
             } else {
-                // จัดเรียงข้อมูลตามอำเภอ ให้เป็นหมวดหมู่
                 let sortedProjects = [...filteredProjects].sort((a,b) => (a.district || '').localeCompare(b.district || ''));
                 
                 sortedProjects.forEach((p, index) => {
                     let sups = (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => s.name).join(', ') : '-';
-                    let bg = index % 2 === 0 ? 'bg-white' : 'bg-gray-50'; // ทำสลับสีแถวให้อ่านง่าย
+                    let bg = index % 2 === 0 ? 'bg-white' : 'bg-gray-50'; 
                     
                     let tr = `<tr class="${bg} hover:bg-blue-50">
                         <td class="border border-gray-800 p-2 text-center">${index + 1}</td>
@@ -1095,7 +1099,6 @@
             document.getElementById('tableReportModal').classList.add('flex');
         }
 
-        // ฟังก์ชันใหม่ปิดหน้าต่างตาราง PDF
         function closeTableReport() {
             document.body.classList.remove('printing-table');
             document.getElementById('tableReportModal').classList.add('hidden');
@@ -1156,7 +1159,6 @@
                 document.body.appendChild(dl);
             }
             dl.innerHTML = '';
-            // โชว์เฉพาะช่างประจำอำเภอที่เลือกเท่านั้น
             if (dist && supervisorDB[dist]) {
                 supervisorDB[dist].forEach(s => dl.innerHTML += `<option value="${s.name}">${s.position}</option>`);
             }
@@ -1217,6 +1219,91 @@
         function undoLastPoint() { if(!isDrawingMode||tempPoints.length===0||document.querySelector('input[name="pGeomType"]:checked').value!=='line')return; tempPoints.pop(); if(tempDrawLayer&&map)map.removeLayer(tempDrawLayer); tempDrawLayer=tempPoints.length>0&&map?L.polyline(tempPoints,{color:'#ef4444',weight:4}).addTo(map):null; if(dynamicDrawLayer&&map){map.removeLayer(dynamicDrawLayer);dynamicDrawLayer=null;} const r=document.querySelector(`[data-seg-id="${currentDrawingSegId}"]`); if(r){ if(tempPoints.length===0){r.querySelector('.lat1-input').value='';r.querySelector('.lng1-input').value='';r.querySelector('.lat2-input').value='';r.querySelector('.lng2-input').value='';} else if(tempPoints.length===1){r.querySelector('.lat1-input').value=tempPoints[0][0].toFixed(6);r.querySelector('.lng1-input').value=tempPoints[0][1].toFixed(6);r.querySelector('.lat2-input').value='';r.querySelector('.lng2-input').value='';} else{r.querySelector('.lat2-input').value=tempPoints[tempPoints.length-1][0].toFixed(6);r.querySelector('.lng2-input').value=tempPoints[tempPoints.length-1][1].toFixed(6);} } }
         function stopDrawing(sv) { isDrawingMode=false; document.getElementById('drawToolbar').classList.add('hidden'); document.getElementById('projectModal').classList.remove('hidden'); document.getElementById('btnUndoPoint').style.display='none'; if(sv&&currentDrawingSegId){ const isL=document.querySelector('input[name="pGeomType"]:checked').value==='line'; if(!isL){if(tempPoints.length===2&&!Array.isArray(tempPoints[0])){activeSegmentsData[currentDrawingSegId]={coordinates:tempPoints}; }} else{if(tempPoints.length>=2){activeSegmentsData[currentDrawingSegId]={coordinates:[...tempPoints]}; }} } if(tempDrawLayer&&map){map.removeLayer(tempDrawLayer);tempDrawLayer=null;} if(dynamicDrawLayer&&map){map.removeLayer(dynamicDrawLayer);dynamicDrawLayer=null;} currentDrawingSegId=null; }
         
+        // --- ระบบดาวน์โหลดและอัปโหลดเทมเพลตแผนงาน (Excel) ---
+        function downloadActivityTemplate() {
+            const wsData = [
+                ['ชื่อรายการงาน (บังคับ)', 'หน่วย', 'ปริมาณ', 'ราคาต่อหน่วย'],
+                ['ตัวอย่าง: งานดินตัด', 'ลบ.ม.', 100, 50],
+                ['ตัวอย่าง: งานผิวจราจร', 'ตร.ม.', 500, 300]
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            ws['!cols'] = [{wch: 35}, {wch: 10}, {wch: 10}, {wch: 15}];
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "แผนการทำงาน");
+            XLSX.writeFile(wb, "แบบฟอร์มแผนงาน_อบจ.xlsx");
+        }
+
+        function parseExcelDate(val) {
+            if (!val) return '';
+            if (typeof val === 'number') {
+                const date = new Date(Math.round((val - 25569) * 86400 * 1000));
+                return date.toISOString().split('T')[0];
+            }
+            let str = val.toString().trim();
+            if (str.includes('/')) {
+                let parts = str.split('/');
+                if (parts.length === 3) {
+                    let y = parseInt(parts[2]);
+                    if (y > 2500) y -= 543; 
+                    return `${y}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                }
+            }
+            return str;
+        }
+
+        function handleActivityUpload(input) {
+            if(!input.files || input.files.length === 0) return;
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const wb = XLSX.read(data, {type: 'array'});
+                    const ws = wb.Sheets[wb.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(ws, {header: 1});
+                    
+                    if (jsonData.length <= 1) return alert("ไม่พบข้อมูลในไฟล์ Excel");
+                    
+                    if (confirm("คุณต้องการ 'ล้างแผนงานเดิม' ก่อนนำเข้าข้อมูลใหม่หรือไม่?\n(OK = ล้างของเดิม, Cancel = นำเข้าต่อท้ายของเดิม)")) {
+                        const c = document.getElementById('activitiesContainer');
+                        c.innerHTML = '';
+                    }
+
+                    // ดึงวันที่จากข้อมูลสัญญาของโครงการมาเป็นค่าเริ่มต้นให้กับทุกกิจกรรม
+                    const defaultStartDate = document.getElementById('pContractStartDate').value || '';
+                    const defaultEndDate = document.getElementById('pContractEndDate').value || '';
+
+                    let addedCount = 0;
+                    for (let i = 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (!row || row.length === 0 || !row[0] || row[0].toString().includes("ตัวอย่าง:")) continue; 
+                        
+                        const n = row[0] || '';
+                        const u = row[1] || '';
+                        const q = row[2] ? parseFloat(row[2]).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '';
+                        const p = row[3] ? parseFloat(row[3]).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '';
+                        
+                        // ปล่อยช่องรวมเงิน และ % ว่างไว้ เพื่อให้ฟังก์ชันคำนวณทำงานให้อัตโนมัติ
+                        const a = ''; 
+                        const w = ''; 
+                        const sd = defaultStartDate;
+                        const ed = defaultEndDate;
+
+                        addActivity(n, u, q, p, a, w, 0, sd, ed);
+                        addedCount++;
+                    }
+                    // สั่งให้ระบบคำนวณตัวเลขทั้งหมดให้ใหม่ทันทีหลังนำเข้าเสร็จ
+                    calculateActivityRows();
+                    alert(`นำเข้าแผนงานสำเร็จจำนวน ${addedCount} รายการ! \n\n*ระบบได้คำนวณราคารวม, ค่างาน(%) และดึงวันสัญญามากำหนดให้อัตโนมัติแล้ว*`);
+                } catch (error) {
+                    console.error(error);
+                    alert("เกิดข้อผิดพลาดในการอ่านไฟล์ Excel กรุณาตรวจสอบรูปแบบไฟล์");
+                }
+                input.value = ''; 
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
         function calculateActivityRows() { 
             const bp = parseNumber(document.getElementById('pContractPrice').value) || 0; 
             document.querySelectorAll('.activity-entry').forEach(r => { 
