@@ -25,9 +25,9 @@
     <style>
         body { font-family: 'Sarabun', sans-serif; }
         .leaflet-control-container { z-index: 400; }
-        /* ปรับขนาด Popup ให้พอดี (กว้าง 360px) */
+        /* ปรับขนาด Popup ให้กว้างและใหญ่ขึ้นตามความเหมาะสม (450px) */
         .custom-popup .leaflet-popup-content-wrapper { border-radius: 1rem; box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15); padding: 4px; }
-        .custom-popup .leaflet-popup-content { margin: 10px; width: 360px !important; }
+        .custom-popup .leaflet-popup-content { margin: 10px; width: 450px !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -39,6 +39,8 @@
         @media print {
             body:not(.printing-v124) @page { size: A4 portrait; margin: 10mm; }
             body.printing-v124 @page { size: A4 landscape; margin: 10mm; } 
+            /* บังคับใช้ฟอนต์ TH Sarabun ให้คลุมทุกส่วนเมื่อสั่งพิมพ์ */
+            body, #printArea, #printAreaV124, table, th, td, div, span, p { font-family: 'Sarabun', sans-serif !important; }
             body { background: white; margin: 0; padding: 0; overflow: visible; height: auto; width: auto; }
             body:not(.printing-v124) > *:not(#reportModal) { display: none !important; }
             body.printing-v124 > *:not(#reportV124Modal) { display: none !important; }
@@ -292,9 +294,9 @@
         </div>
     </div>
 
-    <!-- 2. Search Modal -->
+    <!-- 2. Search Modal (Grid by District Layout) -->
     <div id="searchModal" class="fixed inset-0 bg-black/60 z-[2000] hidden justify-center items-center p-4 backdrop-blur-sm no-print">
-        <div id="searchModalContent" class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden relative">
+        <div id="searchModalContent" class="bg-white rounded-[2rem] shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden relative">
             <div id="searchModalHeader" class="bg-blue-600 text-white px-6 py-4 flex justify-between items-center font-bold cursor-move">
                 <h2 class="text-lg tracking-tight"><i class="fa-solid fa-magnifying-glass-chart mr-2"></i> ค้นหาและจัดการโครงการ</h2>
                 <button type="button" onclick="closeSearchModal()" class="hover:bg-blue-700 rounded-full w-8 h-8 flex items-center justify-center transition-all"><i class="fa-solid fa-times text-xl text-white"></i></button>
@@ -302,7 +304,7 @@
             <div class="p-4 bg-slate-100 border-b border-slate-200">
                 <input type="text" id="pSearchInput" onkeyup="renderSearchList()" class="w-full px-5 py-2.5 rounded-xl border border-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-sm shadow-sm transition-all text-blue-900" placeholder="🔍 พิมพ์ชื่อโครงการ หรือ อำเภอ เพื่อค้นหา...">
             </div>
-            <div id="searchContent" class="p-4 md:p-6 overflow-y-auto flex-1 bg-slate-200 custom-scrollbar"></div>
+            <div id="searchContent" class="p-4 md:p-6 overflow-y-auto flex-1 bg-slate-200 custom-scrollbar space-y-6"></div>
         </div>
     </div>
 
@@ -426,7 +428,9 @@
                     <div class="font-bold text-sm border-b pb-1 mb-2">สรุปผลการประเมินตาม ว124 (ข้อ 2.2)</div><div id="v124AlertBox" class="text-sm mt-2"></div>
                 </div>
                 <div class="border border-gray-300 p-4 rounded flex flex-col items-center justify-end min-h-[120px]">
-                    <div class="w-64 border-b border-dotted border-gray-400 mb-2"></div><div class="text-sm">(.................................................................)</div><div class="text-xs text-gray-500 mt-1">คณะกรรมการตรวจรับพัสดุ / ผู้ควบคุมงาน</div>
+                    <div class="w-64 border-b border-dotted border-gray-400 mb-2"></div>
+                    <div id="v124Supervisors" class="text-sm font-bold text-gray-800">(.................................................................)</div>
+                    <div class="text-xs text-gray-500 mt-1">คณะกรรมการตรวจรับพัสดุ / ผู้ควบคุมงาน</div>
                 </div>
             </div>
         </div>
@@ -716,9 +720,9 @@
                                 <div class="bg-gray-50 p-2 rounded border border-gray-200">
                                     <div class="grid grid-cols-2 gap-1.5 text-[11px]">
                                         <div class="col-span-2"><span class="text-gray-500">ประเภทงบ:</span> <b>${p.budgetType || '-'}</b> (ปี ${p.year || '-'} เล่ม ${p.volume||'-'}/${p.page||'-'})</div>
-                                        <div class="col-span-2"><span class="text-gray-500">งบประมาณ:</span> <b class="text-blue-600">฿${(p.budget||0).toLocaleString()}</b></div>
-                                        <div class="col-span-2"><span class="text-gray-500">ราคากลาง:</span> <b>฿${(p.medianPrice||0).toLocaleString()}</b></div>
-                                        <div class="col-span-2"><span class="text-gray-500">ราคาตามสัญญา:</span> <b class="text-green-600">฿${(p.contractPrice||0).toLocaleString()}</b></div>
+                                        <div class="col-span-2"><span class="text-gray-500">งบประมาณ:</span> <b class="text-blue-600">฿${(p.budget||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</b></div>
+                                        <div class="col-span-2"><span class="text-gray-500">ราคากลาง:</span> <b>฿${(p.medianPrice||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</b></div>
+                                        <div class="col-span-2"><span class="text-gray-500">ราคาตามสัญญา:</span> <b class="text-green-600">฿${(p.contractPrice||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</b></div>
                                     </div>
                                 </div>
                                 <div class="bg-gray-50 p-2 rounded border border-gray-200 text-[11px]">
@@ -742,7 +746,7 @@
                         </div>
                     `;
 
-                    const popupOptions = { minWidth: 320, maxWidth: 360, className: 'custom-popup' };
+                    const popupOptions = { minWidth: 400, maxWidth: 480, className: 'custom-popup' };
 
                     if (p.geomType==='line') {
                         p.segments.forEach(s=>{ if(s.coordinates&&s.coordinates.length>=2){ const dsh=p.lineStyle==='dashed'?'10, 10':null; const pl=L.polyline(s.coordinates,{color:color,weight:weight,dashArray:dsh}).addTo(map).bindPopup(popupContent, popupOptions); markers.push(pl); const m1=L.circleMarker(s.coordinates[0],{radius:4,color:color,fillColor:'white',fillOpacity:1,weight:2}).addTo(map); const m2=L.circleMarker(s.coordinates[s.coordinates.length-1],{radius:4,color:color,fillColor:'white',fillOpacity:1,weight:2}).addTo(map); markers.push(m1,m2); } });
@@ -821,7 +825,7 @@
                 `;
                 
                 // Loop 2: กล่องระดับ 2 (ปี พ.ศ.)
-                const yearKeys = Object.keys(distData.years).sort(); // เรียงจากปีน้อยไปมาก (เอา .reverse() ออก)
+                const yearKeys = Object.keys(distData.years).sort(); // เรียงจากปีน้อยไปมาก
                 for (const year of yearKeys) {
                     const yearData = distData.years[year];
                     html += `
@@ -898,7 +902,7 @@
                                             <h3 class="text-xs font-black text-slate-800 leading-tight mb-2 truncate" title="${p.name}">${p.name}</h3>
                                             <div class="text-[10px] font-bold text-slate-500 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-location-dot text-red-500"></i> อ.${p.district || '-'}</div>
                                             <div class="flex flex-wrap items-center gap-2">
-                                                <span class="text-[9px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded shadow-inner uppercase tracking-wider">฿${(p.budget||0).toLocaleString()}</span>
+                                                <span class="text-[9px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded shadow-inner uppercase tracking-wider">฿${(p.budget||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                                                 <span class="text-[9px] font-black px-2 py-1 rounded border shadow-inner uppercase tracking-wider ${statusColor}">${p.status}</span>
                                             </div>
                                         </div>
@@ -981,7 +985,7 @@
             document.querySelector(`input[name="pGeomType"][value="${p.geomType||'point'}"]`).checked=true; document.getElementById('pLineStyle').value=p.lineStyle||'solid'; document.getElementById('pColor').value=p.color||'#2563eb'; document.getElementById('pWeight').value=p.weight||5; toggleGeomTypeSilent();
             document.getElementById('segmentsContainer').innerHTML=''; activeSegmentsData={}; segmentCounter=0;
             if(p.segments&&p.segments.length>0){ p.segments.forEach(sg=>{ addSegmentRow(sg.name); const cId=`seg_${segmentCounter}`; activeSegmentsData[cId]={coordinates:sg.coordinates}; const r=document.querySelector(`[data-seg-id="${cId}"]`); if(p.geomType==='line'){ if(sg.coordinates&&sg.coordinates.length>=2){ r.querySelector('.lat1-input').value=sg.coordinates[0][0]; r.querySelector('.lng1-input').value=sg.coordinates[0][1]; r.querySelector('.lat2-input').value=sg.coordinates[sg.coordinates.length-1][0]; r.querySelector('.lng2-input').value=sg.coordinates[sg.coordinates.length-1][1]; } } else { r.querySelector('.lat-input').value=sg.coordinates[0]; r.querySelector('.lng-input').value=sg.coordinates[1]; } }); } else document.getElementById('segmentsContainer').innerHTML='<p class="text-xs text-gray-400 italic p-2">เพิ่มพิกัด</p>';
-            document.getElementById('activitiesContainer').innerHTML=''; if(p.activities&&p.activities.length>0){ p.activities.forEach(a=>addActivity(a.name, a.unit, a.qty ? a.qty.toLocaleString('en-US') : '', a.unitPrice ? a.unitPrice.toLocaleString('en-US') : '', a.amount ? a.amount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '', a.weight ? a.weight.toLocaleString('en-US') : '', a.actual||0, a.startDate||'', a.endDate||'')); } else document.getElementById('activitiesContainer').innerHTML='<p class="text-xs text-gray-400 italic p-2">เพิ่มกิจกรรม</p>';
+            document.getElementById('activitiesContainer').innerHTML=''; if(p.activities&&p.activities.length>0){ p.activities.forEach(a=>addActivity(a.name, a.unit, a.qty ? a.qty.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '', a.unitPrice ? a.unitPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '', a.amount ? a.amount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '', a.weight ? a.weight.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '', a.actual||0, a.startDate||'', a.endDate||'')); } else document.getElementById('activitiesContainer').innerHTML='<p class="text-xs text-gray-400 italic p-2">เพิ่มกิจกรรม</p>';
             activeImages=p.images?[...p.images]:[]; renderImagePreviews(); document.getElementById('modalTitleText').innerHTML='<i class="fa-solid fa-pen-to-square mr-2"></i> แก้ไขข้อมูลโครงการ'; closeSearchModal(); document.getElementById('projectModal').classList.remove('hidden');
         }
         function saveProject(e) {
@@ -1033,7 +1037,7 @@
                 } 
             }); 
         }
-        function addActivity(n='', u='', q='', p='', a='', w='', ac=0, s='', e='') { const c=document.getElementById('activitiesContainer'); if(c.querySelector('p.italic'))c.innerHTML=''; const d=document.createElement('div'); d.className='activity-entry flex flex-col gap-2 mb-3 bg-white p-3 rounded border'; d.innerHTML=`<div class="grid grid-cols-12 gap-2"><div class="col-span-12 font-black text-xs text-blue-900 border-b pb-2 mb-2 uppercase flex justify-between">Activity Detail <button type="button" onclick="this.closest('.activity-entry').remove(); calculateActivityRows();" class="text-red-500 font-black">×</button></div><div class="col-span-8"><label class="text-[8px] font-black uppercase text-gray-400">Name</label><input type="text" list="activityList" class="act-name w-full border rounded-lg text-xs p-2.5 font-bold outline-none focus:border-blue-400" value="${n}"></div><div class="col-span-4"><label class="text-[8px] font-black uppercase text-gray-400">Unit</label><input type="text" list="unitList" class="act-unit w-full border rounded-lg text-xs p-2.5 font-bold outline-none focus:border-blue-400" value="${u}"></div><div class="col-span-4"><label class="text-[8px] font-black uppercase text-gray-400 tracking-tighter">Quantity</label><input type="text" oninput="formatNumberInput(this); calculateActivityRows()" class="act-qty w-full border rounded-lg text-xs p-2.5 outline-none focus:border-blue-400" value="${q}"></div><div class="col-span-4"><label class="text-[8px] font-black uppercase text-gray-400 tracking-tighter">Price</label><input type="text" oninput="formatNumberInput(this); calculateActivityRows()" class="act-price w-full border rounded-lg text-xs p-2.5 outline-none focus:border-blue-400" value="${p}"></div><div class="col-span-4 font-bold text-blue-700 uppercase"><label class="text-[8px] font-black text-slate-400">Total</label><input type="text" oninput="formatNumberInput(this); calculateActivityRows()" class="act-amount w-full bg-blue-50 border-0 rounded-lg text-xs p-2.5 font-black text-blue-700 outline-none focus:ring-1 focus:ring-blue-400" value="${a}"></div></div><div class="grid grid-cols-12 gap-3 mt-2"><div class="col-span-4">Start: <input type="date" class="act-start w-full border rounded-lg p-2 text-[10px] font-bold outline-none focus:border-blue-400" value="${s}"></div><div class="col-span-4">End: <input type="date" class="act-end w-full border rounded-lg p-2 text-[10px] font-bold outline-none focus:border-blue-400" value="${e}"></div><div class="col-span-4">Weight(%): <input type="text" oninput="formatNumberInput(this)" class="act-weight w-full border rounded-lg p-2 text-xs font-black bg-indigo-50 text-indigo-700 text-center outline-none focus:border-indigo-400" value="${w}"></div><input type="hidden" class="act-actual" value="${ac}"></div>`; c.appendChild(d); }
+        function addActivity(n='', u='', q='', p='', a='', w='', ac=0, s='', e='') { const c=document.getElementById('activitiesContainer'); if(c.querySelector('p.italic'))c.innerHTML=''; const d=document.createElement('div'); d.className='activity-entry flex flex-col gap-3 mb-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm'; d.innerHTML=`<div class="grid grid-cols-12 gap-3"><div class="col-span-12 font-black text-sm text-blue-900 border-b pb-2 mb-2 uppercase flex justify-between">ข้อมูลแผนงาน <button type="button" onclick="this.closest('.activity-entry').remove(); calculateActivityRows();" class="text-red-500 font-black text-lg">×</button></div><div class="col-span-8"><label class="text-[10px] font-black uppercase text-gray-500">ชื่อรายการ</label><input type="text" list="activityList" class="act-name w-full border rounded-lg text-sm p-2.5 font-bold outline-none focus:border-blue-400" value="${n}"></div><div class="col-span-4"><label class="text-[10px] font-black uppercase text-gray-500">หน่วย</label><input type="text" list="unitList" class="act-unit w-full border rounded-lg text-sm p-2.5 font-bold outline-none focus:border-blue-400" value="${u}"></div><div class="col-span-4"><label class="text-[10px] font-black uppercase text-gray-500 tracking-tighter">ปริมาณ</label><input type="text" oninput="formatNumberInput(this); calculateActivityRows()" class="act-qty w-full border rounded-lg text-sm p-2.5 outline-none focus:border-blue-400 font-bold" value="${q}"></div><div class="col-span-4"><label class="text-[10px] font-black uppercase text-gray-500 tracking-tighter">ราคา/หน่วย</label><input type="text" oninput="formatNumberInput(this); calculateActivityRows()" class="act-price w-full border rounded-lg text-sm p-2.5 outline-none focus:border-blue-400 font-bold" value="${p}"></div><div class="col-span-4 font-bold text-blue-700 uppercase"><label class="text-[10px] font-black text-slate-500">รวมเป็นเงิน</label><input type="text" oninput="formatNumberInput(this); calculateActivityRows()" class="act-amount w-full bg-blue-50 border-0 rounded-lg text-sm p-2.5 font-black text-blue-700 outline-none focus:ring-1 focus:ring-blue-400" value="${a}"></div></div><div class="grid grid-cols-12 gap-3 mt-2"><div class="col-span-4"><label class="text-[10px] font-black text-gray-500">เริ่มสัญญา:</label> <input type="date" class="act-start w-full border rounded-lg p-2 text-xs font-bold outline-none focus:border-blue-400" value="${s}"></div><div class="col-span-4"><label class="text-[10px] font-black text-gray-500">สิ้นสุดสัญญา:</label> <input type="date" class="act-end w-full border rounded-lg p-2 text-xs font-bold outline-none focus:border-blue-400" value="${e}"></div><div class="col-span-4"><label class="text-[10px] font-black text-gray-500">ค่างาน(%):</label> <input type="text" oninput="formatNumberInput(this)" class="act-weight w-full border rounded-lg p-2 text-sm font-black bg-indigo-50 text-indigo-700 text-center outline-none focus:border-indigo-400" value="${w}"></div><input type="hidden" class="act-actual" value="${ac}"></div>`; c.appendChild(d); }
 
         function generateSCurveData(p) {
             let acts=(p.activities||[]).filter(a=>a.startDate&&a.endDate&&new Date(a.startDate)<=new Date(a.endDate));
@@ -1066,7 +1070,7 @@
         // PDF Reports
         function openReport(id) {
             const p=projects.find(pj=>pj.id.toString()===id.toString()); if(!p)return; closeSearchModal(); document.body.classList.remove('printing-v124');
-            document.getElementById('rptName').innerText=p.name||'-'; document.getElementById('rptWorkType').innerText=p.workType||'-'; document.getElementById('rptDistrict').innerText=p.district||'-'; document.getElementById('rptYear').innerText=p.year||'-'; document.getElementById('rptBudgetType').innerText=p.budgetType||'-'; document.getElementById('rptBudget').innerText=(p.budget||0).toLocaleString(); document.getElementById('rptMedianPrice').innerText=(p.medianPrice||0).toLocaleString(); document.getElementById('rptContractPrice').innerText=(p.contractPrice||0).toLocaleString(); document.getElementById('rptContractStartDate').innerText=p.contractStartDate?new Date(p.contractStartDate).toLocaleDateString('th-TH'):'-'; document.getElementById('rptContractEndDate').innerText=p.contractEndDate?new Date(p.contractEndDate).toLocaleDateString('th-TH'):'-'; document.getElementById('rptRef').innerText=`เล่ม ${p.volume||'-'} / หน้า ${p.page||'-'}`; 
+            document.getElementById('rptName').innerText=p.name||'-'; document.getElementById('rptWorkType').innerText=p.workType||'-'; document.getElementById('rptDistrict').innerText=p.district||'-'; document.getElementById('rptYear').innerText=p.year||'-'; document.getElementById('rptBudgetType').innerText=p.budgetType||'-'; document.getElementById('rptBudget').innerText=(p.budget||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); document.getElementById('rptMedianPrice').innerText=(p.medianPrice||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); document.getElementById('rptContractPrice').innerText=(p.contractPrice||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); document.getElementById('rptContractStartDate').innerText=p.contractStartDate?new Date(p.contractStartDate).toLocaleDateString('th-TH'):'-'; document.getElementById('rptContractEndDate').innerText=p.contractEndDate?new Date(p.contractEndDate).toLocaleDateString('th-TH'):'-'; document.getElementById('rptRef').innerText=`เล่ม ${p.volume||'-'} / หน้า ${p.page||'-'}`; 
             let rptStatDate = p.statusDate ? ` (${new Date(p.statusDate).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'numeric'})})` : ''; document.getElementById('rptStatus').innerText=(p.status||'-') + rptStatDate;
             document.getElementById('rptSupervisors').innerHTML=(p.supervisors&&p.supervisors.length>0)?p.supervisors.map((s,i)=>`<div>${i+1}. ${s.name} (${s.position})</div>`).join(''):'-';
             document.getElementById('rptImages').innerHTML=(p.images&&p.images.length>0)?p.images.map(ig=>`<div class="border h-40 flex items-center justify-center bg-gray-50 overflow-hidden"><img src="${ig}" class="w-full h-full object-contain"></div>`).join(''):'<div class="col-span-3 text-center text-gray-400">ไม่มีรูปภาพ</div>';
@@ -1075,8 +1079,8 @@
                 if(rptMapInstance){rptMapInstance.remove(); rptMapInstance=null;} const mc=document.getElementById('reportMap'); mc.innerHTML=''; const nd=document.createElement('div'); nd.style.cssText='width:100%;height:100%'; mc.appendChild(nd);
                 rptMapInstance=L.map(nd,{zoomControl:false,dragging:false,scrollWheelZoom:false}).setView([16.8211, 100.2659],12); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(rptMapInstance);
                 let b=L.latLngBounds(); if(p.segments&&p.segments.length>0){ if(p.geomType==='line'){ p.segments.forEach(s=>{if(s.coordinates&&s.coordinates.length>=2){L.polyline(s.coordinates,{color:p.color||'#2563eb',weight:p.weight||5}).addTo(rptMapInstance); s.coordinates.forEach(c=>b.extend(c));}}); }else{ p.segments.forEach((s,i)=>{const ic=L.divIcon({className:'',html:`<div style="background:${p.color||'#2563eb'};color:white;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;">${i+1}</div>`}); L.marker(s.coordinates,{icon:ic}).addTo(rptMapInstance); b.extend(s.coordinates);}); } if(b.isValid()) rptMapInstance.fitBounds(b,{padding:[20,20],maxZoom:16}); }
-                const d=generateSCurveData(p); if(rptSCurveChartInstance)rptSCurveChartInstance.destroy(); rptSCurveChartInstance=new Chart(document.getElementById('rptSCurveChart').getContext('2d'),{type:'line',data:{labels:d.labels,datasets:[{label:'แผน%',data:d.planned,borderColor:'#3b82f6',tension:0.4},{label:'จริง%',data:d.actual,borderColor:'#10b981',tension:0.4}]},options:{responsive:true,maintainAspectRatio:false}});
-                if(rptWorkChartInstance)rptWorkChartInstance.destroy(); rptWorkChartInstance=new Chart(document.getElementById('rptWorkVolumeChart').getContext('2d'),{type:'bar',data:{labels:d.labels,datasets:[{label:'แผน/เดือน%',data:d.plannedMonthly,backgroundColor:'#60a5fa'},{label:'จริง/เดือน%',data:d.actualMonthly,backgroundColor:'#34d399'}]},options:{responsive:true,maintainAspectRatio:false}});
+                const d=generateSCurveData(p); if(rptSCurveChartInstance)rptSCurveChartInstance.destroy(); rptSCurveChartInstance=new Chart(document.getElementById('rptSCurveChart').getContext('2d'),{type:'line',data:{labels:d.labels,datasets:[{label:'แผน(%)',data:d.planned,borderColor:'#2563eb',borderWidth:3,tension:0.4},{label:'จริง(%)',data:d.actual,borderColor:'#ef4444',borderWidth:3,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false}});
+                if(rptWorkChartInstance)rptWorkChartInstance.destroy(); rptWorkChartInstance=new Chart(document.getElementById('rptWorkVolumeChart').getContext('2d'),{type:'bar',data:{labels:d.labels,datasets:[{label:'แผน/เดือน(%)',data:d.plannedMonthly,backgroundColor:'#60a5fa'},{label:'จริง/เดือน(%)',data:d.actualMonthly,backgroundColor:'#f87171'}]},options:{responsive:true,maintainAspectRatio:false}});
             }, 300);
         }
         function closeReport() { document.getElementById('reportModal').classList.add('hidden'); }
@@ -1084,14 +1088,15 @@
         function openReportV124(id) {
             const p=projects.find(pj=>pj.id.toString()===id.toString()); if(!p)return; closeSearchModal(); document.body.classList.add('printing-v124');
             document.getElementById('v124ProjectName').innerText=p.name||'-'; let dur='-';
+            document.getElementById('v124Supervisors').innerHTML = (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => `<div class="mb-1.5 leading-tight">( ${s.name} )<br><span class="text-[11px] font-normal text-gray-600">${s.position}</span></div>`).join('') : '(.................................................................)';
             if(p.contractStartDate&&p.contractEndDate){ const s=new Date(p.contractStartDate), e=new Date(p.contractEndDate), d=Math.round((e-s)/(8.64e7))+1; dur=`${s.toLocaleDateString('th-TH')} ถึง ${e.toLocaleDateString('th-TH')} (${d} วัน)`; }
             document.getElementById('v124Duration').innerText=dur;
             const sd=generateSCurveData(p), tc=document.getElementById('v124TableContainer');
             if(sd.labelsV124&&sd.labelsV124.length>0&&p.activities&&p.activities.length>0){
                 let h=`<table class="w-full text-[10px] border-collapse border border-gray-800"><thead><tr><th rowspan="2" class="border border-gray-800 bg-gray-100">ที่</th><th rowspan="2" class="border border-gray-800 bg-gray-100">กิจกรรม</th><th rowspan="2" class="border border-gray-800 bg-gray-100">ปริมาณ</th><th rowspan="2" class="border border-gray-800 bg-gray-100">เป็นเงิน</th><th rowspan="2" class="border border-gray-800 bg-gray-100">ค่างาน(%)</th><th colspan="${sd.labelsV124.length}" class="border border-gray-800 bg-gray-100">เดือนที่ดำเนินการ</th></tr><tr>`;
                 sd.labelsV124.forEach(l=>h+=`<th class="border border-gray-800 bg-gray-100">${l.replace('เดือนที่ ','')}</th>`); h+=`</tr></thead><tbody>`;
-                let ta=0, tw=0; p.activities.filter(a=>a.startDate&&a.endDate).forEach((act,i)=>{ let am=parseFloat(act.amount)||0, aw=parseFloat(act.weight)||0; ta+=am; tw+=aw; h+=`<tr><td class="border border-gray-800 text-center">${i+1}</td><td class="border border-gray-800 p-1">${act.name}</td><td class="border border-gray-800 text-right">${act.qty}</td><td class="border border-gray-800 text-right">${am.toLocaleString()}</td><td class="border border-gray-800 text-center">${aw.toFixed(2)}</td>`; sd.activityMatrix[i].forEach(v=>h+=`<td class="border border-gray-800 text-center">${v>0?v.toFixed(2):'0'}</td>`); h+=`</tr>`; });
-                h+=`<tr class="font-bold bg-gray-50"><td colspan="3" class="border border-gray-800 text-right">รวม</td><td class="border border-gray-800 text-right">${ta.toLocaleString()}</td><td class="border border-gray-800 text-center">${tw.toFixed(2)}</td><td colspan="${sd.labelsV124.length}" class="border border-gray-800"></td></tr>`;
+                let ta=0, tw=0; p.activities.filter(a=>a.startDate&&a.endDate).forEach((act,i)=>{ let am=parseFloat(act.amount)||0, aw=parseFloat(act.weight)||0; ta+=am; tw+=aw; h+=`<tr><td class="border border-gray-800 text-center">${i+1}</td><td class="border border-gray-800 p-1">${act.name}</td><td class="border border-gray-800 text-right">${(parseFloat(act.qty)||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="border border-gray-800 text-right">${am.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="border border-gray-800 text-center">${aw.toFixed(2)}</td>`; sd.activityMatrix[i].forEach(v=>h+=`<td class="border border-gray-800 text-center">${v>0?v.toFixed(2):'0'}</td>`); h+=`</tr>`; });
+                h+=`<tr class="font-bold bg-gray-50"><td colspan="3" class="border border-gray-800 text-right">รวม</td><td class="border border-gray-800 text-right">${ta.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="border border-gray-800 text-center">${tw.toFixed(2)}</td><td colspan="${sd.labelsV124.length}" class="border border-gray-800"></td></tr>`;
                 h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">แผนงานรายเดือน (%)</td>`; sd.plannedMonthly.forEach(v=>h+=`<td class="border border-gray-800 text-center">${v}</td>`); h+=`</tr>`;
                 h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">แผนงานสะสม (%)</td>`; sd.planned.forEach(v=>h+=`<td class="border border-gray-800 text-center">${v}</td>`); h+=`</tr>`;
                 h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">ผลงานจริงรายเดือน (%)</td>`; sd.actualMonthly.forEach((v,i)=>{ if(sd.monthBounds[i].start>new Date()&&parseFloat(v)===0) h+=`<td class="border border-gray-800 text-center text-gray-300">0</td>`; else h+=`<td class="border border-gray-800 text-center">${v}</td>`; }); h+=`</tr>`;
@@ -1101,7 +1106,7 @@
             const ab=document.getElementById('v124AlertBox'); ab.innerHTML='กรุณาระบุวันที่และผลงาน...';
             let ca=0; if(p.activities) p.activities.forEach(a=>ca+=(parseFloat(a.actual)||0));
             if(p.contractStartDate&&p.contractEndDate){ const cs=new Date(p.contractStartDate), ce=new Date(p.contractEndDate), td=new Date(); if(ce>cs&&td>=cs){ const tc=(ce-cs)/(8.64e7)+1, pc=(td-cs)/(8.64e7)+1, tr=pc/tc; let wh='สถานะปกติ'; if(tr>=1.0){if(ca<85)wh=`<span class="text-red-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.4</span>`;} else if(tr>=0.75){if(ca<65)wh=`<span class="text-red-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.3</span>`;} else if(tr>=0.50){if(ca<25)wh=`<span class="text-red-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.1</span>`; else if(ca<50)wh=`<span class="text-yellow-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.1</span>`;} ab.innerHTML=wh; } }
-            setTimeout(()=>{ if(v124SCurveChartInstance)v124SCurveChartInstance.destroy(); v124SCurveChartInstance=new Chart(document.getElementById('v124SCurveChart').getContext('2d'),{type:'line',data:{labels:sd.labelsV124||[''],datasets:[{label:'แผนสะสม',data:sd.planned,borderColor:'#3b82f6'},{label:'จริงสะสม',data:sd.actual,borderColor:'#10b981'}]},options:{responsive:true,maintainAspectRatio:false}}); }, 300);
+            setTimeout(()=>{ if(v124SCurveChartInstance)v124SCurveChartInstance.destroy(); v124SCurveChartInstance=new Chart(document.getElementById('v124SCurveChart').getContext('2d'),{type:'line',data:{labels:sd.labelsV124||[''],datasets:[{label:'แผนสะสม',data:sd.planned,borderColor:'#2563eb',borderWidth:3},{label:'จริงสะสม',data:sd.actual,borderColor:'#ef4444',borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false}}); }, 300);
             document.getElementById('reportV124Modal').classList.remove('hidden');
         }
         function closeReportV124() { document.body.classList.remove('printing-v124'); document.getElementById('reportV124Modal').classList.add('hidden'); }
@@ -1136,7 +1141,7 @@
             
             const wBody = document.getElementById('dbWatchlistBody');
             if(wBody) {
-                wBody.innerHTML=wl.sort((a,b)=>a.diff-b.diff).slice(0,10).map(p=>`<tr class="border-b hover:bg-red-50 transition-all"><td class="p-4 font-bold text-slate-800">${p.name}</td><td class="p-4 text-center text-blue-600 font-bold">${p.cp.toFixed(1)}%</td><td class="p-4 text-center text-emerald-600 font-bold">${p.ca.toFixed(1)}%</td><td class="p-4 text-center"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-xl font-bold border border-red-200 shadow-sm">-${Math.abs(p.diff).toFixed(1)}%</span></td><td class="p-4 text-center"><button onclick="closeDashboardModal();openAnalysisModal('${p.id}')" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-bold shadow-sm hover:bg-indigo-700 transition-all">เจาะลึก</button></td></tr>`).join('');
+                wBody.innerHTML=wl.sort((a,b)=>a.diff-b.diff).slice(0,10).map(p=>`<tr class="border-b hover:bg-red-50 transition-all"><td class="p-4 font-bold text-slate-800">${p.name}</td><td class="p-4 text-center text-blue-600 font-bold">${p.cp.toFixed(2)}%</td><td class="p-4 text-center text-emerald-600 font-bold">${p.ca.toFixed(2)}%</td><td class="p-4 text-center"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-xl font-bold border border-red-200 shadow-sm">-${Math.abs(p.diff).toFixed(2)}%</span></td><td class="p-4 text-center"><button onclick="closeDashboardModal();openAnalysisModal('${p.id}')" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-bold shadow-sm hover:bg-indigo-700 transition-all">เจาะลึก</button></td></tr>`).join('');
             }
             
             Chart.defaults.font.family="'Sarabun', sans-serif";
