@@ -26,7 +26,10 @@
         body { font-family: 'Sarabun', sans-serif; }
         .leaflet-control-container { z-index: 400; }
         .custom-popup .leaflet-popup-content-wrapper { border-radius: 1rem; box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15); padding: 4px; }
-        .custom-popup .leaflet-popup-content { margin: 10px; width: 450px !important; }
+        .custom-popup .leaflet-popup-content { margin: 10px; width: 500px !important; transition: width 0.3s ease-in-out; }
+        .custom-popup.expanded-popup .leaflet-popup-content { width: 850px !important; max-width: 95vw !important; }
+        .custom-popup.expanded-popup .popup-inner-container { max-height: 80vh !important; }
+        .popup-inner-container { transition: max-height 0.3s ease-in-out; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -172,7 +175,7 @@
         </div>
     </main>
 
-    <!-- 1. Project Modal (เพิ่มปุ่มอัปโหลด Excel ตรงนี้แล้ว) -->
+    <!-- 1. Project Modal -->
     <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 z-[2000] hidden flex justify-center items-center text-gray-700 no-print">
         <div id="projectModalContent" class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto transform transition-all custom-scrollbar relative">
             <div id="projectModalHeader" class="bg-blue-600 text-white px-6 py-4 rounded-t-xl flex justify-between items-center sticky top-0 z-10 shadow-sm font-bold cursor-move">
@@ -183,7 +186,6 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="col-span-1 md:col-span-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <div class="mb-4">
-                            <!-- จุดที่มีการเพิ่มปุ่ม โหลด/อัปโหลด เทมเพลตแผนงาน -->
                             <div class="flex justify-between items-end mb-1">
                                 <label class="block text-sm font-bold text-blue-800">1. ชื่อโครงการ</label>
                                 <div class="flex gap-2">
@@ -368,9 +370,10 @@
             </div>
             <div id="analysisContent" class="p-6 overflow-y-auto flex-1 bg-white hidden flex-col gap-6 custom-scrollbar">
                 <div id="analysisAlert" class="hidden rounded-lg p-4 font-bold text-sm shadow-sm border"></div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="h-72 w-full"><canvas id="sCurveChart"></canvas></div>
-                    <div class="h-72 w-full"><canvas id="workVolumeChart"></canvas></div>
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="h-80 w-full bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <canvas id="sCurveChart"></canvas>
+                    </div>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
                     <h3 class="text-md font-bold text-gray-800 mb-3 border-b border-gray-200 pb-2">ตารางรายละเอียด (อ้างอิง ว124)</h3>
@@ -383,11 +386,37 @@
         </div>
     </div>
 
+    <!-- ไดอะล็อกตั้งค่าการพิมพ์ -->
+    <div id="printOptionsModal" class="fixed inset-0 bg-black bg-opacity-60 z-[5000] hidden justify-center items-center no-print">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-gray-800 transform scale-100 transition-all">
+            <h3 class="text-lg font-bold mb-4 border-b border-gray-200 pb-3 text-blue-800"><i class="fa-solid fa-print mr-2"></i> ตั้งค่าการพิมพ์รายงาน</h3>
+            <div class="space-y-4 mb-6">
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <label class="font-bold text-sm text-gray-700 block mb-2"><i class="fa-solid fa-map mr-1"></i> 1. รูปแบบแผนที่:</label>
+                    <select id="printOptMap" class="w-full border border-gray-300 rounded-md p-2 text-sm font-bold text-blue-700 outline-none focus:ring-2 focus:ring-blue-500" onchange="toggleRptMap(this.value)">
+                        <option value="street">🗺️ แผนที่ปกติ (ถนน)</option>
+                        <option value="satellite">🛰️ แผนที่ดาวเทียม</option>
+                        <option value="none">❌ ซ่อนแผนที่</option>
+                    </select>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <label class="font-bold text-sm text-gray-700 block mb-2"><i class="fa-solid fa-layer-group mr-1"></i> 2. การแสดงผลเนื้อหา:</label>
+                    <label class="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-blue-700 cursor-pointer transition-colors"><input type="checkbox" id="printOptChart" checked onchange="toggleRptSection('rptChartSection', this.checked)" class="w-4 h-4 text-blue-600 rounded"> พิมพ์กราฟความก้าวหน้า</label>
+                    <label class="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-blue-700 cursor-pointer transition-colors mt-2"><input type="checkbox" id="printOptImg" checked onchange="toggleRptSection('rptImgSection', this.checked)" class="w-4 h-4 text-blue-600 rounded"> พิมพ์รูปภาพประกอบ</label>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="document.getElementById('printOptionsModal').classList.add('hidden')" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition-colors">ยกเลิก</button>
+                <button type="button" onclick="document.getElementById('printOptionsModal').classList.add('hidden'); window.print();" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition-colors"><i class="fa-solid fa-print mr-1"></i> สั่งพิมพ์</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 5. Report (Portrait) -->
     <div id="reportModal" class="fixed inset-0 bg-gray-500 bg-opacity-80 z-[4000] hidden justify-center items-start overflow-y-auto py-8">
         <div class="absolute top-4 right-6 p-2 flex gap-3 no-print z-50 bg-white rounded-lg shadow-lg border border-gray-200">
-            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-print"></i> พิมพ์ PDF</button>
-            <button onclick="closeReport()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-times"></i> ปิด</button>
+            <button onclick="showPrintOptions()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow font-bold transition-colors"><i class="fa-solid fa-print"></i> พิมพ์ PDF</button>
+            <button onclick="closeReport()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded shadow font-bold transition-colors"><i class="fa-solid fa-times"></i> ปิด</button>
         </div>
         <div id="printArea" class="bg-white w-[210mm] min-h-[297mm] shadow-2xl relative p-10 font-sans text-gray-800 mx-auto mt-8 border border-gray-300">
             <div class="text-center mb-6 border-b-2 border-blue-800 pb-4">
@@ -408,14 +437,14 @@
                 <div><span class="font-bold text-gray-600">สถานะ:</span> <span id="rptStatus" class="font-bold text-orange-600"></span></div>
                 <div class="col-span-2 mt-1"><span class="font-bold text-gray-600 block mb-1">ผู้ควบคุมงาน:</span><div id="rptSupervisors" class="pl-4"></div></div>
             </div>
-            <div class="mb-6 page-break-inside-avoid">
+            <div id="rptMapSection" class="mb-6 page-break-inside-avoid transition-all duration-300">
                 <h3 class="font-bold text-blue-800 mb-2 border-b border-gray-200 pb-1">แผนที่สังเขป</h3><div id="reportMap" class="w-full h-64 border-2 border-gray-300 rounded bg-gray-100 z-0"></div>
             </div>
-            <div class="grid grid-cols-2 gap-6 mb-6 page-break-inside-avoid">
-                <div><h3 class="font-bold text-blue-800 mb-2 border-b pb-1 text-sm">ความก้าวหน้าสะสม (S-Curve)</h3><div class="w-full h-48 border rounded p-2"><canvas id="rptSCurveChart"></canvas></div></div>
-                <div><h3 class="font-bold text-blue-800 mb-2 border-b pb-1 text-sm">แผนงานและผลงานจริง (รายกิจกรรม)</h3><div class="w-full h-48 border rounded p-2"><canvas id="rptWorkVolumeChart"></canvas></div></div>
+            <div id="rptChartSection" class="mb-6 page-break-inside-avoid transition-all duration-300">
+                <h3 class="font-bold text-blue-800 mb-2 border-b pb-1 text-sm">กราฟเปรียบเทียบความก้าวหน้าโครงการ (Mixed S-Curve)</h3>
+                <div class="w-full h-64 border rounded p-3"><canvas id="rptSCurveChart"></canvas></div>
             </div>
-            <div class="page-break-inside-avoid">
+            <div id="rptImgSection" class="page-break-inside-avoid transition-all duration-300">
                 <h3 class="font-bold text-blue-800 mb-2 border-b pb-1">รูปภาพประกอบ</h3><div id="rptImages" class="grid grid-cols-3 gap-4"></div>
             </div>
         </div>
@@ -428,8 +457,8 @@
             <button onclick="closeReportV124()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-times"></i> ปิด</button>
         </div>
         <div id="printAreaV124" class="bg-white w-[297mm] min-h-[210mm] shadow-2xl relative p-10 font-sans text-gray-800 mx-auto mt-8 border border-gray-300">
-            <div class="text-right mb-2 text-sm font-bold text-gray-600">แบบการจัดทำแผนการทำงาน (S-Curve) ตาม ว124</div>
-            <div class="text-center mb-6"><h1 class="text-xl font-bold text-gray-800 mb-4 underline">แบบการจัดทำแผนการทำงาน</h1></div>
+            <div class="text-right mb-2 text-sm font-bold text-gray-600">แผนงานโครงการ (S-Curve) ตาม ว124</div>
+            <div class="text-center mb-6"><h1 class="text-xl font-bold text-gray-800 mb-4 underline">แผนงานโครงการ</h1></div>
             <div class="grid grid-cols-2 gap-y-2 mb-4 text-sm font-bold">
                 <div><span class="w-24 inline-block text-gray-600">โครงการ :</span> <span id="v124ProjectName" class="text-blue-800"></span></div>
                 <div><span class="w-24 inline-block text-gray-600">สัญญาเลขที่ :</span> <span id="v124ContractNo" class="border-b border-dotted w-48 inline-block"></span></div>
@@ -445,10 +474,9 @@
                 <div class="border border-gray-300 p-4 rounded min-h-[120px]">
                     <div class="font-bold text-sm border-b pb-1 mb-2">สรุปผลการประเมินตาม ว124 (ข้อ 2.2)</div><div id="v124AlertBox" class="text-sm mt-2"></div>
                 </div>
-                <div class="border border-gray-300 p-4 rounded flex flex-col items-center justify-end min-h-[120px]">
-                    <div class="w-64 border-b border-dotted border-gray-400 mb-2"></div>
-                    <div id="v124Supervisors" class="text-sm font-bold text-gray-800 text-center w-full">(.................................................................)</div>
-                    <div class="text-xs text-gray-500 mt-1">คณะกรรมการตรวจรับพัสดุ / ผู้ควบคุมงาน</div>
+                <div class="border border-gray-300 p-4 rounded flex flex-col items-center justify-center min-h-[120px]">
+                    <div id="v124Supervisors" class="w-full flex flex-col items-center justify-center gap-2"></div>
+                    <div class="text-xs text-gray-500 mt-4 border-t border-gray-200 pt-2 w-full text-center">คณะกรรมการตรวจรับพัสดุ / ผู้ควบคุมงาน</div>
                 </div>
             </div>
         </div>
@@ -564,7 +592,8 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
-                    <div class="lg:col-span-2 bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbChart1Title" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-chart-column text-blue-600 mr-2"></i> งบประมาณแยกตามอำเภอ</h3><div class="relative h-60 w-full flex-1"><canvas id="dbBudgetChart"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbChart1Title" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-chart-column text-blue-600 mr-2"></i> งบประมาณแยกอำเภอ</h3><div class="relative h-60 w-full flex-1"><canvas id="dbBudgetChart"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-city text-pink-500 mr-2"></i> สถานะโครงการทุกอำเภอ</h3><div class="relative h-60 w-full flex-1"><canvas id="dbDistrictStatusChart"></canvas></div></div>
                     <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbChart2Title" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-heart-pulse text-indigo-600 mr-2"></i> สุขภาพโครงการ</h3><div class="relative h-60 w-full flex-1 flex justify-center items-center"><canvas id="dbHealthChart"></canvas></div></div>
                     <div class="lg:col-span-3 bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbChart4Title" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-layer-group text-emerald-600 mr-2"></i> ภาพรวมการทำงานแยกตามประเภทงบประมาณ</h3><div class="relative h-64 w-full flex-1"><canvas id="dbBudgetTypeChart"></canvas></div></div>
                 </div>
@@ -616,12 +645,14 @@
         let userRole = 'viewer', editingProjectId = null, projectToDeleteId = null, progressProjectId = null;
         let segmentCounter = 0, activeSegmentsData = {}, currentDrawingSegId = null, isDrawingMode = false;
         let tempPoints = [], tempDrawLayer = null, dynamicDrawLayer = null, isStreetViewMode = false, activeImages = [];
-        let sCurveChartInstance=null, workVolumeChartInstance=null, dbBudgetChartInstance=null, dbHealthChartInstance=null, dbBudgetTypeChartInstance=null;
-        let rptMapInstance=null, rptSCurveChartInstance=null, rptWorkChartInstance=null, v124SCurveChartInstance=null; 
+        let sCurveChartInstance=null, dbBudgetChartInstance=null, dbHealthChartInstance=null, dbBudgetTypeChartInstance=null, dbDistrictStatusChartInstance=null;
+        let rptMapInstance=null, rptSCurveChartInstance=null, v124SCurveChartInstance=null; 
+        let rptOsmLayer=null, rptSatLayer=null, isRptSat=false; 
 
         function initMap() {
             try {
-                // เซ็ตศูนย์กลางแผนที่ที่พิษณุโลก
+                Chart.defaults.font.family = "'Sarabun', sans-serif";
+
                 map = L.map('map', { zoomControl: false }).setView([16.8211, 100.2659], 10);
                 L.control.zoom({ position: 'topright' }).addTo(map);
                 
@@ -781,8 +812,11 @@
                     let statDateStr = p.statusDate ? ` (อัปเดต: ${new Date(p.statusDate).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'})})` : '';
 
                     let popupContent = `
-                        <div class="font-sans w-full max-h-[450px] flex flex-col">
-                            <div class="mb-2 shrink-0">
+                        <div class="font-sans w-full max-h-[450px] flex flex-col popup-inner-container">
+                            <div class="mb-2 shrink-0 relative pr-8">
+                                <button type="button" onclick="togglePopupExpand(this)" class="absolute -top-1 -right-1 text-gray-500 hover:text-blue-600 bg-white hover:bg-gray-100 w-7 h-7 rounded border border-gray-200 shadow-sm flex items-center justify-center transition-all z-10" title="ขยาย/ย่อ หน้าต่าง">
+                                    <i class="fa-solid fa-expand popup-expand-icon"></i>
+                                </button>
                                 <h3 class="font-bold text-blue-800 text-base leading-tight border-b-2 border-blue-500 pb-1">${p.name}</h3>
                                 <div class="flex justify-between mt-1 text-[10px] text-gray-600 font-bold">
                                     <span>${p.workType || 'ไม่ระบุงาน'}</span>
@@ -838,13 +872,13 @@
         
         function renderImagePreviews() { 
             const c=document.getElementById('imagePreviewContainer'); 
+            if(!c) return;
             c.innerHTML=''; 
             if(activeImages.length===0){ 
                 c.innerHTML='<p class="text-xs text-gray-400 italic text-center w-full py-4">ยังไม่มีรูปภาพ</p>'; 
                 return; 
             } 
             activeImages.forEach((s,i) => {
-                // ซ่อนปุ่มไว้ด้วย opacity-0 และแสดงเมื่อโฮเวอร์ด้วย group-hover:opacity-100
                 c.innerHTML += `<div class="relative w-24 h-24 border rounded-lg bg-gray-100 overflow-hidden group shadow-sm mt-2 mr-2"><img src="${s}" class="w-full h-full object-cover"><button type="button" onclick="removeImage(${i})" class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 shadow-md transition-all duration-200 z-50" title="ลบรูปภาพนี้"><i class="fa-solid fa-trash"></i></button></div>`;
             }); 
         }
@@ -870,31 +904,41 @@
         };
 
         function openImageModal(src) {
-            document.getElementById('expandedImage').src = src;
+            const el = document.getElementById('expandedImage');
+            if(el) el.src = src;
             const m = document.getElementById('imageModal');
-            m.classList.remove('hidden');
-            m.classList.add('flex');
+            if(m) {
+                m.classList.remove('hidden');
+                m.classList.add('flex');
+            }
         }
         
         function closeImageModal() {
             const m = document.getElementById('imageModal');
-            m.classList.add('hidden');
-            m.classList.remove('flex');
-            setTimeout(() => { document.getElementById('expandedImage').src = ''; }, 300);
+            if(m) {
+                m.classList.add('hidden');
+                m.classList.remove('flex');
+            }
+            setTimeout(() => { 
+                const el = document.getElementById('expandedImage');
+                if(el) el.src = ''; 
+            }, 300);
         }
 
         // Modals Management
-        function openModal() { const c=document.getElementById('projectModalContent'); if(c&&c.resetPosition)c.resetPosition(); editingProjectId=null; document.getElementById('modalTitleText').innerHTML='<i class="fa-solid fa-clipboard-list mr-2"></i> ป้อนรายละเอียดโครงการก่อสร้าง'; document.getElementById('projectModal').classList.remove('hidden'); document.getElementById('projectForm').reset(); document.getElementById('pStatus').value='จัดทำแบบรูปรายการก่อสร้าง'; document.getElementById('pStatusDate').value=''; toggleStatusDependentFields(); document.querySelector('input[name="pGeomType"][value="point"]').checked=true; document.getElementById('pLineStyle').value='solid'; document.getElementById('pColor').value='#2563eb'; document.getElementById('pWeight').value='5'; toggleGeomTypeSilent(); document.getElementById('supervisorsContainer').innerHTML=''; document.getElementById('segmentsContainer').innerHTML='<p class="text-xs text-gray-400 italic p-2">กดปุ่มด้านบนเพื่อเพิ่มพิกัด</p>'; document.getElementById('activitiesContainer').innerHTML='<p class="text-xs text-gray-400 italic p-2">กดปุ่มเพิ่มกิจกรรม</p>'; activeSegmentsData={}; segmentCounter=0; activeImages=[]; renderImagePreviews(); }
-        function closeModal() { document.getElementById('projectModal').classList.add('hidden'); }
+        function openModal() { const c=document.getElementById('projectModalContent'); if(c&&c.resetPosition)c.resetPosition(); editingProjectId=null; const mTitle=document.getElementById('modalTitleText'); if(mTitle) mTitle.innerHTML='<i class="fa-solid fa-clipboard-list mr-2"></i> ป้อนรายละเอียดโครงการก่อสร้าง'; const pm=document.getElementById('projectModal'); if(pm) pm.classList.remove('hidden'); const pf=document.getElementById('projectForm'); if(pf) pf.reset(); const pStat=document.getElementById('pStatus'); if(pStat) pStat.value='จัดทำแบบรูปรายการก่อสร้าง'; const pStatD=document.getElementById('pStatusDate'); if(pStatD) pStatD.value=''; toggleStatusDependentFields(); const gt=document.querySelector('input[name="pGeomType"][value="point"]'); if(gt) gt.checked=true; const pl=document.getElementById('pLineStyle'); if(pl) pl.value='solid'; const pCol=document.getElementById('pColor'); if(pCol) pCol.value='#2563eb'; const pw=document.getElementById('pWeight'); if(pw) pw.value='5'; toggleGeomTypeSilent(); const sc=document.getElementById('supervisorsContainer'); if(sc) sc.innerHTML=''; const segC=document.getElementById('segmentsContainer'); if(segC) segC.innerHTML='<p class="text-xs text-gray-400 italic p-2">กดปุ่มด้านบนเพื่อเพิ่มพิกัด</p>'; const acC=document.getElementById('activitiesContainer'); if(acC) acC.innerHTML='<p class="text-xs text-gray-400 italic p-2">กดปุ่มเพิ่มกิจกรรม</p>'; activeSegmentsData={}; segmentCounter=0; activeImages=[]; renderImagePreviews(); }
+        function closeModal() { const pm=document.getElementById('projectModal'); if(pm) pm.classList.add('hidden'); }
         
-        function openSearchModal() { const c=document.getElementById('searchModalContent'); if(c&&c.resetPosition)c.resetPosition(); renderSearchList(); document.getElementById('searchModal').classList.remove('hidden'); }
-        function closeSearchModal() { document.getElementById('searchModal').classList.add('hidden'); }
+        function openSearchModal() { const c=document.getElementById('searchModalContent'); if(c&&c.resetPosition)c.resetPosition(); renderSearchList(); const sm=document.getElementById('searchModal'); if(sm) sm.classList.remove('hidden'); }
+        function closeSearchModal() { const sm=document.getElementById('searchModal'); if(sm) sm.classList.add('hidden'); }
         
         // 3-Level Search Grouping
         function renderSearchList() {
-            const con=document.getElementById('searchContent'); con.innerHTML='';
-            const q=document.getElementById('pSearchInput').value.toLowerCase();
-            const fp=projects.filter(p=>p.name.toLowerCase().includes(q)||p.district.toLowerCase().includes(q)||(p.year&&p.year.toLowerCase().includes(q))||(p.budgetType&&p.budgetType.toLowerCase().includes(q)));
+            const con=document.getElementById('searchContent'); if(!con)return; con.innerHTML='';
+            const searchInput = document.getElementById('pSearchInput');
+            if (!searchInput) return;
+            const q = searchInput.value.toLowerCase();
+            const fp=projects.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.district||'').toLowerCase().includes(q)||(p.year&&(p.year||'').toLowerCase().includes(q))||(p.budgetType&&(p.budgetType||'').toLowerCase().includes(q)));
             
             if(fp.length===0){ 
                 con.innerHTML='<div class="text-center py-16 text-slate-400"><i class="fa-solid fa-folder-open text-6xl mb-4 text-slate-300"></i><br><span class="text-sm font-bold">ไม่พบข้อมูลโครงการ</span></div>'; 
@@ -1055,30 +1099,35 @@
         function openProgressModal(id) {
             const p=projects.find(pj=>pj.id.toString()===id.toString()); if(!p)return;
             const c=document.getElementById('progressModalContent'); if(c&&c.resetPosition)c.resetPosition(); progressProjectId=id; closeSearchModal();
-            document.getElementById('progProjectName').innerText=p.name;
-            document.getElementById('progProjectDetails').innerHTML=`<span class="font-bold">สถานะ:</span> ${p.status}`;
-            const con=document.getElementById('progressActivitiesContainer'); con.innerHTML='';
-            if(!p.activities||p.activities.length===0) con.innerHTML='<div class="text-center py-8 text-gray-400 italic">ไม่มีแผนงานให้รวบรวม</div>';
-            else {
-                con.innerHTML=`<div class="grid grid-cols-12 gap-2 px-2 pb-2 border-b text-[11px] font-bold text-gray-500"><div class="col-span-5">กิจกรรม</div><div class="col-span-3 text-center">ระยะเวลา</div><div class="col-span-2 text-center text-blue-600">แผน(%)</div><div class="col-span-2 text-center text-emerald-600">จริง(%)</div></div>`;
-                p.activities.forEach((act,idx)=>{ const r=document.createElement('div'); r.className='prog-act-row grid grid-cols-12 gap-2 items-center p-2 bg-gray-50 rounded border mt-2'; r.dataset.idx=idx; r.innerHTML=`<div class="col-span-5 text-sm font-bold text-gray-700 truncate">${act.name}</div><div class="col-span-3 text-[10px] text-center text-gray-500 bg-white border rounded py-1">${act.startDate||'-'} ถึง ${act.endDate||'-'}</div><div class="col-span-2 text-center text-sm font-bold text-blue-600">${parseFloat(act.weight||0).toFixed(2)}</div><div class="col-span-2"><input type="text" oninput="formatNumberInput(this)" class="prog-actual-input w-full p-1 text-sm text-center border rounded font-bold text-emerald-700 outline-none focus:border-emerald-400" value="${act.actual ? act.actual.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}"></div>`; con.appendChild(r); });
-            } document.getElementById('progressModal').classList.remove('hidden'); 
+            const elProjName = document.getElementById('progProjectName'); if(elProjName) elProjName.innerText=p.name||'-';
+            const elProjDetails = document.getElementById('progProjectDetails'); if(elProjDetails) elProjDetails.innerHTML=`<span class="font-bold">สถานะ:</span> ${p.status||'-'}`;
+            const con=document.getElementById('progressActivitiesContainer'); 
+            if(con){
+                con.innerHTML='';
+                if(!p.activities||p.activities.length===0) con.innerHTML='<div class="text-center py-8 text-gray-400 italic">ไม่มีแผนงานให้รวบรวม</div>';
+                else {
+                    con.innerHTML=`<div class="grid grid-cols-12 gap-2 px-2 pb-2 border-b text-[11px] font-bold text-gray-500"><div class="col-span-5">กิจกรรม</div><div class="col-span-3 text-center">ระยะเวลา</div><div class="col-span-2 text-center text-blue-600">แผน(%)</div><div class="col-span-2 text-center text-emerald-600">จริง(%)</div></div>`;
+                    p.activities.forEach((act,idx)=>{ const r=document.createElement('div'); r.className='prog-act-row grid grid-cols-12 gap-2 items-center p-2 bg-gray-50 rounded border mt-2'; r.dataset.idx=idx; r.innerHTML=`<div class="col-span-5 text-sm font-bold text-gray-700 truncate">${act.name}</div><div class="col-span-3 text-[10px] text-center text-gray-500 bg-white border rounded py-1">${act.startDate||'-'} ถึง ${act.endDate||'-'}</div><div class="col-span-2 text-center text-sm font-bold text-blue-600">${parseFloat(act.weight||0).toFixed(2)}</div><div class="col-span-2"><input type="text" oninput="formatNumberInput(this)" class="prog-actual-input w-full p-1 text-sm text-center border rounded font-bold text-emerald-700 outline-none focus:border-emerald-400" value="${act.actual ? act.actual.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}"></div>`; con.appendChild(r); });
+                }
+            } 
+            const md = document.getElementById('progressModal'); if(md) md.classList.remove('hidden'); 
         }
-        function closeProgressModal() { document.getElementById('progressModal').classList.add('hidden'); progressProjectId=null; }
+        function closeProgressModal() { const md=document.getElementById('progressModal'); if(md)md.classList.add('hidden'); progressProjectId=null; }
         function saveProgress(e) { e.preventDefault(); if(!progressProjectId)return; const pIdx=projects.findIndex(pj=>pj.id.toString()===progressProjectId.toString()); if(pIdx===-1)return; document.querySelectorAll('.prog-act-row').forEach(r=>{ const idx=parseInt(r.dataset.idx); if(projects[pIdx].activities[idx]) projects[pIdx].activities[idx].actual=parseNumber(r.querySelector('.prog-actual-input').value)||0; }); if(window.saveProjectToCloud)window.saveProjectToCloud(projects[pIdx]).then(()=>closeProgressModal()); }
 
         // Delete Modal
-        function confirmDeleteProject(id) { projectToDeleteId=id; document.getElementById('deleteModal').classList.remove('hidden'); }
-        function closeDeleteModal() { projectToDeleteId=null; document.getElementById('deleteModal').classList.add('hidden'); }
+        function confirmDeleteProject(id) { projectToDeleteId=id; const m = document.getElementById('deleteModal'); if(m) m.classList.remove('hidden'); }
+        function closeDeleteModal() { projectToDeleteId=null; const m = document.getElementById('deleteModal'); if(m) m.classList.add('hidden'); }
         function executeDeleteProject() { if(!projectToDeleteId)return; if(window.deleteProjectFromCloud){window.deleteProjectFromCloud(projectToDeleteId).then(()=>closeDeleteModal());} else {projects=projects.filter(p=>p.id.toString()!==projectToDeleteId.toString()); renderMarkers(); openSearchModal(); closeDeleteModal(); } }
 
         // Data Management & Analysis Modals
-        function openDataManagementModal() { const c=document.getElementById('dataManagementModalContent'); if(c&&c.resetPosition)c.resetPosition(); document.getElementById('dataManagementModal').classList.remove('hidden'); }
-        function closeDataManagementModal() { document.getElementById('dataManagementModal').classList.add('hidden'); }
+        function openDataManagementModal() { const c=document.getElementById('dataManagementModalContent'); if(c&&c.resetPosition)c.resetPosition(); const m=document.getElementById('dataManagementModal'); if(m) m.classList.remove('hidden'); }
+        function closeDataManagementModal() { const m=document.getElementById('dataManagementModal'); if(m) m.classList.add('hidden'); }
         
         function exportToExcel() { 
             if(projects.length===0) return alert("ไม่มีข้อมูลให้ Export"); 
-            const distFilter = document.getElementById('exportDistrictFilter').value;
+            const distFilterEl = document.getElementById('exportDistrictFilter');
+            const distFilter = distFilterEl ? distFilterEl.value : 'all';
             const filteredProjects = distFilter === 'all' ? projects : projects.filter(p => p.district === distFilter);
             
             if(filteredProjects.length === 0) return alert("ไม่มีข้อมูลในอำเภอที่เลือก");
@@ -1114,9 +1163,10 @@
             closeDataManagementModal();
             document.body.classList.add('printing-table');
             const tbody = document.getElementById('tableReportBody');
-            tbody.innerHTML = '';
+            if(tbody) tbody.innerHTML = '';
             
-            const distFilter = document.getElementById('exportDistrictFilter').value;
+            const distFilterEl = document.getElementById('exportDistrictFilter');
+            const distFilter = distFilterEl ? distFilterEl.value : 'all';
             const filteredProjects = distFilter === 'all' ? projects : projects.filter(p => p.district === distFilter);
 
             const titleEl = document.querySelector('#printAreaTable h1');
@@ -1125,7 +1175,7 @@
             }
             
             if(filteredProjects.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="border border-gray-800 p-6 text-center text-gray-500 font-bold text-sm">ไม่มีข้อมูลโครงการในอำเภอที่เลือก</td></tr>';
+                if(tbody) tbody.innerHTML = '<tr><td colspan="8" class="border border-gray-800 p-6 text-center text-gray-500 font-bold text-sm">ไม่มีข้อมูลโครงการในอำเภอที่เลือก</td></tr>';
             } else {
                 let sortedProjects = [...filteredProjects].sort((a,b) => (a.district || '').localeCompare(b.district || ''));
                 
@@ -1143,23 +1193,24 @@
                         <td class="border border-gray-800 p-2 text-center text-orange-600 font-bold">${p.status || '-'}</td>
                         <td class="border border-gray-800 p-2 text-left truncate max-w-[150px]" title="${sups}">${sups}</td>
                     </tr>`;
-                    tbody.innerHTML += tr;
+                    if(tbody) tbody.innerHTML += tr;
                 });
             }
             
-            document.getElementById('tableReportDate').innerText = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            document.getElementById('tableReportModal').classList.remove('hidden');
-            document.getElementById('tableReportModal').classList.add('flex');
+            const dateEl = document.getElementById('tableReportDate');
+            if(dateEl) dateEl.innerText = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const tm = document.getElementById('tableReportModal');
+            if(tm) { tm.classList.remove('hidden'); tm.classList.add('flex'); }
         }
 
         function closeTableReport() {
             document.body.classList.remove('printing-table');
-            document.getElementById('tableReportModal').classList.add('hidden');
-            document.getElementById('tableReportModal').classList.remove('flex');
+            const tm = document.getElementById('tableReportModal');
+            if(tm) { tm.classList.add('hidden'); tm.classList.remove('flex'); }
         }
         
-        function openAnalysisModal(projId = null) { const c=document.getElementById('analysisModalContent'); if(c&&c.resetPosition)c.resetPosition(); const ds=document.getElementById('analysisDistrictFilter'); ds.innerHTML='<option value="all">ทุกอำเภอ</option>'; [...new Set(projects.map(p=>p.district).filter(d=>d&&d!=='-'))].sort().forEach(d=>ds.innerHTML+=`<option value="${d}">${d}</option>`); filterAnalysisProjectsByDistrict(); document.getElementById('analysisContent').classList.add('hidden'); document.getElementById('analysisEmpty').classList.remove('hidden'); document.getElementById('analysisModal').classList.remove('hidden'); if(projId){document.getElementById('analysisProjectSelect').value=projId; renderProjectAnalysis(projId);} }
-        function closeAnalysisModal() { document.getElementById('analysisModal').classList.add('hidden'); }
+        function openAnalysisModal(projId = null) { const c=document.getElementById('analysisModalContent'); if(c&&c.resetPosition)c.resetPosition(); const ds=document.getElementById('analysisDistrictFilter'); if(ds){ ds.innerHTML='<option value="all">ทุกอำเภอ</option>'; [...new Set(projects.map(p=>p.district).filter(d=>d&&d!=='-'))].sort().forEach(d=>ds.innerHTML+=`<option value="${d}">${d}</option>`); filterAnalysisProjectsByDistrict(); } const ac=document.getElementById('analysisContent'); if(ac)ac.classList.add('hidden'); const ae=document.getElementById('analysisEmpty'); if(ae)ae.classList.remove('hidden'); const am=document.getElementById('analysisModal'); if(am)am.classList.remove('hidden'); if(projId){ const ps = document.getElementById('analysisProjectSelect'); if(ps)ps.value=projId; renderProjectAnalysis(projId);} }
+        function closeAnalysisModal() { const am = document.getElementById('analysisModal'); if(am) am.classList.add('hidden'); }
 
         // --- Supervisor DB (ฐานข้อมูลผู้ควบคุมงานแยกอำเภอ) ---
         const supervisorDB = {
@@ -1204,7 +1255,9 @@
         };
 
         function updateSupervisorDatalist() {
-            const dist = document.getElementById('pDistrict').value;
+            const distEl = document.getElementById('pDistrict');
+            if(!distEl) return;
+            const dist = distEl.value;
             let dl = document.getElementById('supervisorNameList');
             if (!dl) {
                 dl = document.createElement('datalist');
@@ -1222,37 +1275,89 @@
             const posInput = inputEl.closest('.supervisor-entry').querySelector('.sup-pos');
             for (const dist in supervisorDB) {
                 const found = supervisorDB[dist].find(s => s.name === name);
-                if (found) { posInput.value = found.position; return; }
+                if (found && posInput) { posInput.value = found.position; return; }
             }
         }
 
         // Form Control Logic
         function editProject(id) {
             editingProjectId=id; const p=projects.find(pj=>pj.id.toString()===id.toString()); if(!p)return;
-            document.getElementById('pName').value=p.name||''; document.getElementById('pWorkType').value=p.workType||''; document.getElementById('pDistrict').value=p.district||''; document.getElementById('pContractStartDate').value=p.contractStartDate||''; document.getElementById('pContractEndDate').value=p.contractEndDate||''; document.getElementById('pBudgetType').value=p.budgetType||'ข้อบัญญัติ'; document.getElementById('pYear').value=p.year||''; document.getElementById('pVolume').value=p.volume||''; document.getElementById('pPage').value=p.page||''; 
-            document.getElementById('pBudget').value = p.budget ? p.budget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''; 
-            document.getElementById('pMedianPrice').value = p.medianPrice ? p.medianPrice.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''; 
-            document.getElementById('pContractPrice').value = p.contractPrice ? p.contractPrice.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '';
-            let bs=p.status||'จัดทำแบบรูปรายการก่อสร้าง', ins=''; if(bs.startsWith('ส่งมอบงานงวดที่')&&bs!=='ส่งมอบงานงวดสุดท้าย'){ins=bs.replace('ส่งมอบงานงวดที่','').trim(); bs='ส่งมอบงานงวดที่';} document.getElementById('pStatus').value=bs; document.getElementById('pInstallment').value=ins; document.getElementById('pStatusDate').value=p.statusDate||'';
-            document.getElementById('supervisorsContainer').innerHTML=''; if(p.supervisors&&p.supervisors.length>0) p.supervisors.forEach(sp=>addSupervisorRow(sp.name,sp.position)); toggleStatusDependentFields();
-            document.querySelector(`input[name="pGeomType"][value="${p.geomType||'point'}"]`).checked=true; document.getElementById('pLineStyle').value=p.lineStyle||'solid'; document.getElementById('pColor').value=p.color||'#2563eb'; document.getElementById('pWeight').value=p.weight||5; toggleGeomTypeSilent();
-            document.getElementById('segmentsContainer').innerHTML=''; activeSegmentsData={}; segmentCounter=0;
-            if(p.segments&&p.segments.length>0){ p.segments.forEach(sg=>{ addSegmentRow(sg.name); const cId=`seg_${segmentCounter}`; activeSegmentsData[cId]={coordinates:sg.coordinates}; const r=document.querySelector(`[data-seg-id="${cId}"]`); if(p.geomType==='line'){ if(sg.coordinates&&sg.coordinates.length>=2){ r.querySelector('.lat1-input').value=sg.coordinates[0][0]; r.querySelector('.lng1-input').value=sg.coordinates[0][1]; r.querySelector('.lat2-input').value=sg.coordinates[sg.coordinates.length-1][0]; r.querySelector('.lng2-input').value=sg.coordinates[sg.coordinates.length-1][1]; } } else { r.querySelector('.lat-input').value=sg.coordinates[0]; r.querySelector('.lng-input').value=sg.coordinates[1]; } }); } else document.getElementById('segmentsContainer').innerHTML='<p class="text-xs text-gray-400 italic p-2">เพิ่มพิกัด</p>';
-            document.getElementById('activitiesContainer').innerHTML=''; if(p.activities&&p.activities.length>0){ p.activities.forEach(a=>addActivity(a.name, a.unit, a.qty ? a.qty.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '', a.unitPrice ? a.unitPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '', a.amount ? a.amount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '', a.weight ? a.weight.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '', a.actual||0, a.startDate||'', a.endDate||'')); } else document.getElementById('activitiesContainer').innerHTML='<p class="text-xs text-gray-400 italic p-2">เพิ่มกิจกรรม</p>';
-            activeImages=p.images?[...p.images]:[]; renderImagePreviews(); document.getElementById('modalTitleText').innerHTML='<i class="fa-solid fa-pen-to-square mr-2"></i> แก้ไขข้อมูลโครงการ'; closeSearchModal(); document.getElementById('projectModal').classList.remove('hidden');
+            const setVal = (eId, val) => { const el = document.getElementById(eId); if(el) el.value = val; };
+            setVal('pName', p.name||''); setVal('pWorkType', p.workType||''); setVal('pDistrict', p.district||''); setVal('pContractStartDate', p.contractStartDate||''); setVal('pContractEndDate', p.contractEndDate||''); setVal('pBudgetType', p.budgetType||'ข้อบัญญัติ'); setVal('pYear', p.year||''); setVal('pVolume', p.volume||''); setVal('pPage', p.page||''); 
+            setVal('pBudget', p.budget ? p.budget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''); 
+            setVal('pMedianPrice', p.medianPrice ? p.medianPrice.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''); 
+            setVal('pContractPrice', p.contractPrice ? p.contractPrice.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '');
+            
+            let bs=p.status||'จัดทำแบบรูปรายการก่อสร้าง', ins=''; if(bs.startsWith('ส่งมอบงานงวดที่')&&bs!=='ส่งมอบงานงวดสุดท้าย'){ins=bs.replace('ส่งมอบงานงวดที่','').trim(); bs='ส่งมอบงานงวดที่';} 
+            setVal('pStatus', bs); setVal('pInstallment', ins); setVal('pStatusDate', p.statusDate||'');
+            
+            const supsCon = document.getElementById('supervisorsContainer');
+            if(supsCon) supsCon.innerHTML=''; 
+            if(p.supervisors&&p.supervisors.length>0) p.supervisors.forEach(sp=>addSupervisorRow(sp.name,sp.position)); 
+            toggleStatusDependentFields();
+            
+            const gtRadio = document.querySelector(`input[name="pGeomType"][value="${p.geomType||'point'}"]`);
+            if(gtRadio) gtRadio.checked=true; 
+            setVal('pLineStyle', p.lineStyle||'solid'); setVal('pColor', p.color||'#2563eb'); setVal('pWeight', p.weight||5); 
+            toggleGeomTypeSilent();
+            
+            const segCon = document.getElementById('segmentsContainer');
+            if(segCon) segCon.innerHTML=''; 
+            activeSegmentsData={}; segmentCounter=0;
+            if(p.segments&&p.segments.length>0){ 
+                p.segments.forEach(sg=>{ 
+                    addSegmentRow(sg.name); const cId=`seg_${segmentCounter}`; activeSegmentsData[cId]={coordinates:sg.coordinates}; 
+                    const r=document.querySelector(`[data-seg-id="${cId}"]`); 
+                    if(r){
+                        if(p.geomType==='line'){ 
+                            if(sg.coordinates&&sg.coordinates.length>=2){ 
+                                const i1=r.querySelector('.lat1-input'); if(i1) i1.value=sg.coordinates[0][0]; 
+                                const i2=r.querySelector('.lng1-input'); if(i2) i2.value=sg.coordinates[0][1]; 
+                                const i3=r.querySelector('.lat2-input'); if(i3) i3.value=sg.coordinates[sg.coordinates.length-1][0]; 
+                                const i4=r.querySelector('.lng2-input'); if(i4) i4.value=sg.coordinates[sg.coordinates.length-1][1]; 
+                            } 
+                        } else { 
+                            const i1=r.querySelector('.lat-input'); if(i1) i1.value=sg.coordinates[0]; 
+                            const i2=r.querySelector('.lng-input'); if(i2) i2.value=sg.coordinates[1]; 
+                        }
+                    }
+                }); 
+            } else { if(segCon) segCon.innerHTML='<p class="text-xs text-gray-400 italic p-2">เพิ่มพิกัด</p>'; }
+            
+            const actCon = document.getElementById('activitiesContainer');
+            if(actCon) actCon.innerHTML=''; 
+            if(p.activities&&p.activities.length>0){ 
+                p.activities.forEach(a=>addActivity(a.name, a.unit, a.qty ? a.qty.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '', a.unitPrice ? a.unitPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '', a.amount ? a.amount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '', a.weight ? a.weight.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '', a.actual||0, a.startDate||'', a.endDate||'')); 
+            } else { if(actCon) actCon.innerHTML='<p class="text-xs text-gray-400 italic p-2">เพิ่มกิจกรรม</p>'; }
+            
+            activeImages=p.images?[...p.images]:[]; renderImagePreviews(); 
+            const mdTitle = document.getElementById('modalTitleText');
+            if(mdTitle) mdTitle.innerHTML='<i class="fa-solid fa-pen-to-square mr-2"></i> แก้ไขข้อมูลโครงการ'; 
+            closeSearchModal(); 
+            const pjModal = document.getElementById('projectModal');
+            if(pjModal) pjModal.classList.remove('hidden');
         }
+        
         function saveProject(e) {
             e.preventDefault(); const acts=[]; document.querySelectorAll('.activity-entry').forEach(r=>{ acts.push({ name:r.querySelector('.act-name').value, unit:r.querySelector('.act-unit').value, qty:parseNumber(r.querySelector('.act-qty').value)||0, unitPrice:parseNumber(r.querySelector('.act-price').value)||0, amount:parseNumber(r.querySelector('.act-amount').value)||0, startDate:r.querySelector('.act-start').value, endDate:r.querySelector('.act-end').value, weight:parseNumber(r.querySelector('.act-weight').value)||0, actual:parseNumber(r.querySelector('.act-actual').value)||0 }); });
             const segs=[]; Object.entries(activeSegmentsData).forEach(([id,dt])=>{ if(dt&&dt.coordinates) segs.push({ name:document.querySelector(`[data-seg-id="${id}"] .seg-name`).value, coordinates:dt.coordinates }); });
-            const sups=[]; const sv=document.getElementById('pStatus').value; if(['ดำเนินการก่อสร้าง','ส่งมอบงานงวดที่','ส่งมอบงานงวดสุดท้าย'].includes(sv)){ document.querySelectorAll('.supervisor-entry').forEach(r=>sups.push({ name:r.querySelector('.sup-name').value, position:r.querySelector('.sup-pos').value })); }
-            const uData = { name:document.getElementById('pName').value, workType:document.getElementById('pWorkType').value, district:document.getElementById('pDistrict').value, contractStartDate:document.getElementById('pContractStartDate').value, contractEndDate:document.getElementById('pContractEndDate').value, budgetType:document.getElementById('pBudgetType').value, year:document.getElementById('pYear').value, volume:document.getElementById('pVolume').value, page:document.getElementById('pPage').value, budget:parseNumber(document.getElementById('pBudget').value)||0, medianPrice:parseNumber(document.getElementById('pMedianPrice').value)||0, contractPrice:parseNumber(document.getElementById('pContractPrice').value)||0, status:sv==='ส่งมอบงานงวดที่'?`ส่งมอบงานงวดที่ ${document.getElementById('pInstallment').value}`:sv, statusDate:document.getElementById('pStatusDate').value, geomType:document.querySelector('input[name="pGeomType"]:checked').value, lineStyle:document.getElementById('pLineStyle').value, color:document.getElementById('pColor').value, weight:parseInt(document.getElementById('pWeight').value)||5, supervisors:sups, segments:segs, activities:acts, images:[...activeImages], id:editingProjectId||Date.now().toString() };
+            const sups=[]; const svEl=document.getElementById('pStatus'); const sv = svEl ? svEl.value : ''; 
+            if(['ดำเนินการก่อสร้าง','ส่งมอบงานงวดที่','ส่งมอบงานงวดสุดท้าย'].includes(sv)){ document.querySelectorAll('.supervisor-entry').forEach(r=>sups.push({ name:r.querySelector('.sup-name').value, position:r.querySelector('.sup-pos').value })); }
+            
+            const getVal = id => { const el=document.getElementById(id); return el ? el.value : ''; };
+            const getNum = id => parseNumber(getVal(id)) || 0;
+            
+            const gtEl = document.querySelector('input[name="pGeomType"]:checked');
+            
+            const uData = { name:getVal('pName'), workType:getVal('pWorkType'), district:getVal('pDistrict'), contractStartDate:getVal('pContractStartDate'), contractEndDate:getVal('pContractEndDate'), budgetType:getVal('pBudgetType'), year:getVal('pYear'), volume:getVal('pVolume'), page:getVal('pPage'), budget:getNum('pBudget'), medianPrice:getNum('pMedianPrice'), contractPrice:getNum('pContractPrice'), status:sv==='ส่งมอบงานงวดที่'?`ส่งมอบงานงวดที่ ${getVal('pInstallment')}`:sv, statusDate:getVal('pStatusDate'), geomType: gtEl ? gtEl.value : 'point', lineStyle:getVal('pLineStyle'), color:getVal('pColor'), weight:parseInt(getVal('pWeight'))||5, supervisors:sups, segments:segs, activities:acts, images:[...activeImages], id:editingProjectId||Date.now().toString() };
             if(window.saveProjectToCloud){ window.saveProjectToCloud(uData).then(()=>closeModal()); }
         }
 
-        function toggleStatusDependentFields() { const s=document.getElementById('pStatus').value, i=document.getElementById('pInstallment'); if(s==='ส่งมอบงานงวดที่'){i.classList.remove('hidden');i.required=true;}else{i.classList.add('hidden');i.required=false;i.value='';} const s1=document.getElementById('supervisorsSection'), s2=document.getElementById('contractDatesSection'); if(['ดำเนินการก่อสร้าง','ส่งมอบงานงวดที่','ส่งมอบงานงวดสุดท้าย'].includes(s)){s1.classList.remove('hidden');s2.classList.remove('hidden'); if(document.getElementById('supervisorsContainer').children.length===0)addSupervisorRow();}else{s1.classList.add('hidden');s2.classList.add('hidden');} }
+        function toggleStatusDependentFields() { const sEl=document.getElementById('pStatus'), iEl=document.getElementById('pInstallment'); if(!sEl||!iEl)return; const s=sEl.value; if(s==='ส่งมอบงานงวดที่'){iEl.classList.remove('hidden');iEl.required=true;}else{iEl.classList.add('hidden');iEl.required=false;iEl.value='';} const s1=document.getElementById('supervisorsSection'), s2=document.getElementById('contractDatesSection'); if(!s1||!s2)return; if(['ดำเนินการก่อสร้าง','ส่งมอบงานงวดที่','ส่งมอบงานงวดสุดท้าย'].includes(s)){s1.classList.remove('hidden');s2.classList.remove('hidden'); const sc = document.getElementById('supervisorsContainer'); if(sc && sc.children.length===0)addSupervisorRow();}else{s1.classList.add('hidden');s2.classList.add('hidden');} }
         
         function addSupervisorRow(n='', p='') { 
             const c=document.getElementById('supervisorsContainer'); 
+            if(!c)return;
             if(c.querySelector('p.italic'))c.innerHTML=''; 
             updateSupervisorDatalist(); 
             const d=document.createElement('div'); 
@@ -1261,16 +1366,16 @@
             c.appendChild(d); 
         }
 
-        function toggleGeomType() { const isL=document.querySelector('input[name="pGeomType"]:checked').value==='line'; if(Object.keys(activeSegmentsData).length>0){ if(confirm("ล้างพิกัดเดิม?"))applyGeomTypeUI(isL); else document.querySelector(`input[name="pGeomType"][value="${isL?'point':'line'}"]`).checked=true; } else applyGeomTypeUI(isL); }
-        function toggleGeomTypeSilent() { const isL=document.querySelector('input[name="pGeomType"]:checked').value==='line'; document.getElementById('lineStyleContainer').style.display=isL?'flex':'none'; document.getElementById('btnTemplate3').style.display=isL?'none':'block'; document.getElementById('btnAddSegment').innerHTML=isL?'<i class="fa-solid fa-plus"></i> เพิ่มช่วง':'<i class="fa-solid fa-plus"></i> เพิ่มจุด'; }
-        function applyGeomTypeUI(isL) { toggleGeomTypeSilent(); document.getElementById('segmentsContainer').innerHTML=''; activeSegmentsData={}; segmentCounter=0; addSegmentRow(); }
-        function applyThreePointsTemplate() { document.getElementById('segmentsContainer').innerHTML=''; activeSegmentsData={}; segmentCounter=0; ["จุดเริ่มต้น","จุดกึ่งกลาง","จุดสิ้นสุด"].forEach(n=>addSegmentRow(n)); }
+        function toggleGeomType() { const gtEl=document.querySelector('input[name="pGeomType"]:checked'); if(!gtEl)return; const isL=gtEl.value==='line'; if(Object.keys(activeSegmentsData).length>0){ if(confirm("ล้างพิกัดเดิม?"))applyGeomTypeUI(isL); else { const rev = document.querySelector(`input[name="pGeomType"][value="${isL?'point':'line'}"]`); if(rev) rev.checked=true; } } else applyGeomTypeUI(isL); }
+        function toggleGeomTypeSilent() { const gtEl=document.querySelector('input[name="pGeomType"]:checked'); if(!gtEl)return; const isL=gtEl.value==='line'; const lc=document.getElementById('lineStyleContainer'); if(lc) lc.style.display=isL?'flex':'none'; const bt=document.getElementById('btnTemplate3'); if(bt) bt.style.display=isL?'none':'block'; const ba=document.getElementById('btnAddSegment'); if(ba) ba.innerHTML=isL?'<i class="fa-solid fa-plus"></i> เพิ่มช่วง':'<i class="fa-solid fa-plus"></i> เพิ่มจุด'; }
+        function applyGeomTypeUI(isL) { toggleGeomTypeSilent(); const sc=document.getElementById('segmentsContainer'); if(sc)sc.innerHTML=''; activeSegmentsData={}; segmentCounter=0; addSegmentRow(); }
+        function applyThreePointsTemplate() { const sc=document.getElementById('segmentsContainer'); if(sc)sc.innerHTML=''; activeSegmentsData={}; segmentCounter=0; ["จุดเริ่มต้น","จุดกึ่งกลาง","จุดสิ้นสุด"].forEach(n=>addSegmentRow(n)); }
         
-        function addSegmentRow(n="") { const gt=document.querySelector('input[name="pGeomType"]:checked').value, id=`seg_${++segmentCounter}`; activeSegmentsData[id]=null; const c=document.getElementById('segmentsContainer'); if(c.querySelector('p.italic'))c.innerHTML=''; const r=document.createElement('div'); r.className='segment-entry p-3 bg-white border rounded shadow-sm mb-2'; r.dataset.segId=id; if(gt==='point'){ r.innerHTML=`<div class="flex flex-col gap-2"><div class="flex gap-2 items-center"><input type="text" class="seg-name flex-1 border-b px-2 font-bold text-sm" value="${n||'พิกัดที่ '+segmentCounter}"><button type="button" onclick="this.closest('.segment-entry').remove(); delete activeSegmentsData['${id}'];" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div><div class="grid grid-cols-2 gap-2"><div class="flex items-center border rounded px-2"><span class="text-[10px] font-bold mr-1">LAT:</span><input type="number" step="any" class="lat-input w-full border-none text-xs p-1.5" onchange="manualCoordUpdate('${id}','point')"></div><div class="flex items-center border rounded px-2"><span class="text-[10px] font-bold mr-1">LNG:</span><input type="number" step="any" class="lng-input w-full border-none text-xs p-1.5" onchange="manualCoordUpdate('${id}','point')"></div></div><div class="flex justify-between items-center mt-1"><button type="button" onclick="startDrawing('${id}')" class="text-[10px] bg-blue-50 text-blue-600 px-3 py-1 rounded font-bold">จิ้มแผนที่</button></div></div>`; } else { r.innerHTML=`<div class="flex flex-col gap-2"><div class="flex gap-2 items-center"><input type="text" class="seg-name flex-1 border-b px-2 font-bold text-sm" value="${n||'ช่วง '+segmentCounter}"><button type="button" onclick="this.closest('.segment-entry').remove(); delete activeSegmentsData['${id}'];" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div><div class="flex flex-col gap-1.5 bg-gray-50 p-2 rounded"><div class="flex items-center gap-2"><span class="text-[10px] w-10">เริ่ม:</span><input type="number" step="any" class="lat1-input w-full border rounded text-[11px] p-1.5" onchange="manualCoordUpdate('${id}','line')"><input type="number" step="any" class="lng1-input w-full border rounded text-[11px] p-1.5" onchange="manualCoordUpdate('${id}','line')"></div><div class="flex items-center gap-2"><span class="text-[10px] w-10">สิ้นสุด:</span><input type="number" step="any" class="lat2-input w-full border rounded text-[11px] p-1.5" onchange="manualCoordUpdate('${id}','line')"><input type="number" step="any" class="lng2-input w-full border rounded text-[11px] p-1.5" onchange="manualCoordUpdate('${id}','line')"></div></div><div class="flex justify-between items-center"><button type="button" onclick="startDrawing('${id}')" class="text-[10px] bg-blue-50 text-blue-600 px-3 py-1 rounded font-bold">วาดเส้น</button></div></div>`; } c.appendChild(r); }
-        function manualCoordUpdate(id, t) { const r=document.querySelector(`[data-seg-id="${id}"]`); if(t==='point'){ const lt=parseFloat(r.querySelector('.lat-input').value), ln=parseFloat(r.querySelector('.lng-input').value); if(!isNaN(lt)&&!isNaN(ln)){activeSegmentsData[id]={coordinates:[lt,ln]}; } } else { const l1=parseFloat(r.querySelector('.lat1-input').value), n1=parseFloat(r.querySelector('.lng1-input').value), l2=parseFloat(r.querySelector('.lat2-input').value), n2=parseFloat(r.querySelector('.lng2-input').value); if(!isNaN(l1)&&!isNaN(n1)&&!isNaN(l2)&&!isNaN(n2)){activeSegmentsData[id]={coordinates:[[l1,n1],[l2,n2]]}; } } }
-        function startDrawing(id) { currentDrawingSegId=id; isDrawingMode=true; tempPoints=[]; const isL=document.querySelector('input[name="pGeomType"]:checked').value==='line'; document.getElementById('drawInstruction').innerText=isL?'คลิกวาดเส้น':'คลิกจุด'; document.getElementById('btnUndoPoint').style.display=isL?'block':'none'; document.getElementById('projectModal').classList.add('hidden'); document.getElementById('drawToolbar').classList.remove('hidden'); document.getElementById('drawToolbar').classList.add('flex'); }
-        function undoLastPoint() { if(!isDrawingMode||tempPoints.length===0||document.querySelector('input[name="pGeomType"]:checked').value!=='line')return; tempPoints.pop(); if(tempDrawLayer&&map)map.removeLayer(tempDrawLayer); tempDrawLayer=tempPoints.length>0&&map?L.polyline(tempPoints,{color:'#ef4444',weight:4}).addTo(map):null; if(dynamicDrawLayer&&map){map.removeLayer(dynamicDrawLayer);dynamicDrawLayer=null;} const r=document.querySelector(`[data-seg-id="${currentDrawingSegId}"]`); if(r){ if(tempPoints.length===0){r.querySelector('.lat1-input').value='';r.querySelector('.lng1-input').value='';r.querySelector('.lat2-input').value='';r.querySelector('.lng2-input').value='';} else if(tempPoints.length===1){r.querySelector('.lat1-input').value=tempPoints[0][0].toFixed(6);r.querySelector('.lng1-input').value=tempPoints[0][1].toFixed(6);r.querySelector('.lat2-input').value='';r.querySelector('.lng2-input').value='';} else{r.querySelector('.lat2-input').value=tempPoints[tempPoints.length-1][0].toFixed(6);r.querySelector('.lng2-input').value=tempPoints[tempPoints.length-1][1].toFixed(6);} } }
-        function stopDrawing(sv) { isDrawingMode=false; document.getElementById('drawToolbar').classList.add('hidden'); document.getElementById('projectModal').classList.remove('hidden'); document.getElementById('btnUndoPoint').style.display='none'; if(sv&&currentDrawingSegId){ const isL=document.querySelector('input[name="pGeomType"]:checked').value==='line'; if(!isL){if(tempPoints.length===2&&!Array.isArray(tempPoints[0])){activeSegmentsData[currentDrawingSegId]={coordinates:tempPoints}; }} else{if(tempPoints.length>=2){activeSegmentsData[currentDrawingSegId]={coordinates:[...tempPoints]}; }} } if(tempDrawLayer&&map){map.removeLayer(tempDrawLayer);tempDrawLayer=null;} if(dynamicDrawLayer&&map){map.removeLayer(dynamicDrawLayer);dynamicDrawLayer=null;} currentDrawingSegId=null; }
+        function addSegmentRow(n="") { const gtEl=document.querySelector('input[name="pGeomType"]:checked'); if(!gtEl)return; const gt=gtEl.value, id=`seg_${++segmentCounter}`; activeSegmentsData[id]=null; const c=document.getElementById('segmentsContainer'); if(!c)return; if(c.querySelector('p.italic'))c.innerHTML=''; const r=document.createElement('div'); r.className='segment-entry p-3 bg-white border rounded shadow-sm mb-2'; r.dataset.segId=id; if(gt==='point'){ r.innerHTML=`<div class="flex flex-col gap-2"><div class="flex gap-2 items-center"><input type="text" class="seg-name flex-1 border-b px-2 font-bold text-sm" value="${n||'พิกัดที่ '+segmentCounter}"><button type="button" onclick="this.closest('.segment-entry').remove(); delete activeSegmentsData['${id}'];" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div><div class="grid grid-cols-2 gap-2"><div class="flex items-center border rounded px-2"><span class="text-[10px] font-bold mr-1">LAT:</span><input type="number" step="any" class="lat-input w-full border-none text-xs p-1.5" onchange="manualCoordUpdate('${id}','point')"></div><div class="flex items-center border rounded px-2"><span class="text-[10px] font-bold mr-1">LNG:</span><input type="number" step="any" class="lng-input w-full border-none text-xs p-1.5" onchange="manualCoordUpdate('${id}','point')"></div></div><div class="flex justify-between items-center mt-1"><button type="button" onclick="startDrawing('${id}')" class="text-[10px] bg-blue-50 text-blue-600 px-3 py-1 rounded font-bold">จิ้มแผนที่</button></div></div>`; } else { r.innerHTML=`<div class="flex flex-col gap-2"><div class="flex gap-2 items-center"><input type="text" class="seg-name flex-1 border-b px-2 font-bold text-sm" value="${n||'ช่วง '+segmentCounter}"><button type="button" onclick="this.closest('.segment-entry').remove(); delete activeSegmentsData['${id}'];" class="text-red-400"><i class="fa-solid fa-trash"></i></button></div><div class="flex flex-col gap-1.5 bg-gray-50 p-2 rounded"><div class="flex items-center gap-2"><span class="text-[10px] w-10">เริ่ม:</span><input type="number" step="any" class="lat1-input w-full border rounded text-[11px] p-1.5" onchange="manualCoordUpdate('${id}','line')"><input type="number" step="any" class="lng1-input w-full border rounded text-[11px] p-1.5" onchange="manualCoordUpdate('${id}','line')"></div><div class="flex items-center gap-2"><span class="text-[10px] w-10">สิ้นสุด:</span><input type="number" step="any" class="lat2-input w-full border rounded text-[11px] p-1.5" onchange="manualCoordUpdate('${id}','line')"><input type="number" step="any" class="lng2-input w-full border rounded text-[11px] p-1.5" onchange="manualCoordUpdate('${id}','line')"></div></div><div class="flex justify-between items-center"><button type="button" onclick="startDrawing('${id}')" class="text-[10px] bg-blue-50 text-blue-600 px-3 py-1 rounded font-bold">วาดเส้น</button></div></div>`; } c.appendChild(r); }
+        function manualCoordUpdate(id, t) { const r=document.querySelector(`[data-seg-id="${id}"]`); if(!r)return; if(t==='point'){ const i1=r.querySelector('.lat-input'), i2=r.querySelector('.lng-input'); if(!i1||!i2)return; const lt=parseFloat(i1.value), ln=parseFloat(i2.value); if(!isNaN(lt)&&!isNaN(ln)){activeSegmentsData[id]={coordinates:[lt,ln]}; } } else { const i1=r.querySelector('.lat1-input'), i2=r.querySelector('.lng1-input'), i3=r.querySelector('.lat2-input'), i4=r.querySelector('.lng2-input'); if(!i1||!i2||!i3||!i4)return; const l1=parseFloat(i1.value), n1=parseFloat(i2.value), l2=parseFloat(i3.value), n2=parseFloat(i4.value); if(!isNaN(l1)&&!isNaN(n1)&&!isNaN(l2)&&!isNaN(n2)){activeSegmentsData[id]={coordinates:[[l1,n1],[l2,n2]]}; } } }
+        function startDrawing(id) { currentDrawingSegId=id; isDrawingMode=true; tempPoints=[]; const gtEl=document.querySelector('input[name="pGeomType"]:checked'); const isL=gtEl&&gtEl.value==='line'; const di=document.getElementById('drawInstruction'); if(di) di.innerText=isL?'คลิกวาดเส้น':'คลิกจุด'; const bu=document.getElementById('btnUndoPoint'); if(bu) bu.style.display=isL?'block':'none'; const pm=document.getElementById('projectModal'); if(pm) pm.classList.add('hidden'); const dt=document.getElementById('drawToolbar'); if(dt) { dt.classList.remove('hidden'); dt.classList.add('flex'); } }
+        function undoLastPoint() { const gtEl=document.querySelector('input[name="pGeomType"]:checked'); if(!isDrawingMode||tempPoints.length===0||!gtEl||gtEl.value!=='line')return; tempPoints.pop(); if(tempDrawLayer&&map)map.removeLayer(tempDrawLayer); tempDrawLayer=tempPoints.length>0&&map?L.polyline(tempPoints,{color:'#ef4444',weight:4}).addTo(map):null; if(dynamicDrawLayer&&map){map.removeLayer(dynamicDrawLayer);dynamicDrawLayer=null;} const r=document.querySelector(`[data-seg-id="${currentDrawingSegId}"]`); if(r){ const i1=r.querySelector('.lat1-input'), i2=r.querySelector('.lng1-input'), i3=r.querySelector('.lat2-input'), i4=r.querySelector('.lng2-input'); if(tempPoints.length===0){if(i1)i1.value='';if(i2)i2.value='';if(i3)i3.value='';if(i4)i4.value='';} else if(tempPoints.length===1){if(i1)i1.value=tempPoints[0][0].toFixed(6);if(i2)i2.value=tempPoints[0][1].toFixed(6);if(i3)i3.value='';if(i4)i4.value='';} else{if(i3)i3.value=tempPoints[tempPoints.length-1][0].toFixed(6);if(i4)i4.value=tempPoints[tempPoints.length-1][1].toFixed(6);} } }
+        function stopDrawing(sv) { isDrawingMode=false; const dt=document.getElementById('drawToolbar'); if(dt) dt.classList.add('hidden'); const pm=document.getElementById('projectModal'); if(pm) pm.classList.remove('hidden'); const bu=document.getElementById('btnUndoPoint'); if(bu) bu.style.display='none'; if(sv&&currentDrawingSegId){ const gtEl=document.querySelector('input[name="pGeomType"]:checked'); const isL=gtEl&&gtEl.value==='line'; if(!isL){if(tempPoints.length===2&&!Array.isArray(tempPoints[0])){activeSegmentsData[currentDrawingSegId]={coordinates:tempPoints}; }} else{if(tempPoints.length>=2){activeSegmentsData[currentDrawingSegId]={coordinates:[...tempPoints]}; }} } if(tempDrawLayer&&map){map.removeLayer(tempDrawLayer);tempDrawLayer=null;} if(dynamicDrawLayer&&map){map.removeLayer(dynamicDrawLayer);dynamicDrawLayer=null;} currentDrawingSegId=null; }
         
         // --- ระบบดาวน์โหลดและอัปโหลดเทมเพลตแผนงาน (Excel) ---
         function downloadActivityTemplate() {
@@ -1319,12 +1424,13 @@
                     
                     if (confirm("คุณต้องการ 'ล้างแผนงานเดิม' ก่อนนำเข้าข้อมูลใหม่หรือไม่?\n(OK = ล้างของเดิม, Cancel = นำเข้าต่อท้ายของเดิม)")) {
                         const c = document.getElementById('activitiesContainer');
-                        c.innerHTML = '';
+                        if(c) c.innerHTML = '';
                     }
 
-                    // ดึงวันที่จากข้อมูลสัญญาของโครงการมาเป็นค่าเริ่มต้นให้กับทุกกิจกรรม
-                    const defaultStartDate = document.getElementById('pContractStartDate').value || '';
-                    const defaultEndDate = document.getElementById('pContractEndDate').value || '';
+                    const dsEl = document.getElementById('pContractStartDate');
+                    const deEl = document.getElementById('pContractEndDate');
+                    const defaultStartDate = dsEl ? dsEl.value : '';
+                    const defaultEndDate = deEl ? deEl.value : '';
 
                     let addedCount = 0;
                     for (let i = 1; i < jsonData.length; i++) {
@@ -1336,7 +1442,6 @@
                         const q = row[2] ? parseFloat(row[2]).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '';
                         const p = row[3] ? parseFloat(row[3]).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '';
                         
-                        // ปล่อยช่องรวมเงิน และ % ว่างไว้ เพื่อให้ฟังก์ชันคำนวณทำงานให้อัตโนมัติ
                         const a = ''; 
                         const w = ''; 
                         const sd = defaultStartDate;
@@ -1345,7 +1450,6 @@
                         addActivity(n, u, q, p, a, w, 0, sd, ed);
                         addedCount++;
                     }
-                    // สั่งให้ระบบคำนวณตัวเลขทั้งหมดให้ใหม่ทันทีหลังนำเข้าเสร็จ
                     calculateActivityRows();
                     alert(`นำเข้าแผนงานสำเร็จจำนวน ${addedCount} รายการ! \n\n*ระบบได้คำนวณราคารวม, ค่างาน(%) และดึงวันสัญญามากำหนดให้อัตโนมัติแล้ว*`);
                 } catch (error) {
@@ -1358,13 +1462,16 @@
         }
 
         function calculateActivityRows() { 
-            const bp = parseNumber(document.getElementById('pContractPrice').value) || 0; 
+            const cpEl = document.getElementById('pContractPrice');
+            const bp = parseNumber(cpEl ? cpEl.value : 0) || 0; 
             document.querySelectorAll('.activity-entry').forEach(r => { 
                 const qInp = r.querySelector('.act-qty');
                 const pInp = r.querySelector('.act-price');
                 const aInp = r.querySelector('.act-amount');
                 const wInp = r.querySelector('.act-weight');
                 
+                if(!qInp || !pInp || !aInp) return;
+
                 const q = parseNumber(qInp.value) || 0; 
                 const p = parseNumber(pInp.value) || 0; 
                 let a = 0;
@@ -1386,8 +1493,7 @@
             }); 
         }
 
-        // เพิ่มคลาสขยายตัวอักษรในฟอร์ม
-        function addActivity(n='', u='', q='', p='', a='', w='', ac=0, s='', e='') { const c=document.getElementById('activitiesContainer'); if(c.querySelector('p.italic'))c.innerHTML=''; const d=document.createElement('div'); d.className='activity-entry flex flex-col gap-3 mb-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm'; d.innerHTML=`<div class="grid grid-cols-12 gap-3"><div class="col-span-12 font-black text-sm text-blue-900 border-b pb-2 mb-2 uppercase flex justify-between">ข้อมูลแผนงาน <button type="button" onclick="this.closest('.activity-entry').remove(); calculateActivityRows();" class="text-red-500 font-black text-lg">×</button></div><div class="col-span-8"><label class="text-[10px] font-black uppercase text-gray-500">ชื่อรายการ</label><input type="text" list="activityList" class="act-name w-full border rounded-lg text-sm p-2.5 font-bold outline-none focus:border-blue-400" value="${n}"></div><div class="col-span-4"><label class="text-[10px] font-black uppercase text-gray-500">หน่วย</label><input type="text" list="unitList" class="act-unit w-full border rounded-lg text-sm p-2.5 font-bold outline-none focus:border-blue-400" value="${u}"></div><div class="col-span-4"><label class="text-[10px] font-black uppercase text-gray-500 tracking-tighter">ปริมาณ</label><input type="text" oninput="formatNumberInput(this); calculateActivityRows()" class="act-qty w-full border rounded-lg text-sm p-2.5 outline-none focus:border-blue-400 font-bold" value="${q}"></div><div class="col-span-4"><label class="text-[10px] font-black uppercase text-gray-500 tracking-tighter">ราคา/หน่วย</label><input type="text" oninput="formatNumberInput(this); calculateActivityRows()" class="act-price w-full border rounded-lg text-sm p-2.5 outline-none focus:border-blue-400 font-bold" value="${p}"></div><div class="col-span-4 font-bold text-blue-700 uppercase"><label class="text-[10px] font-black text-slate-500">รวมเป็นเงิน</label><input type="text" oninput="formatNumberInput(this); calculateActivityRows()" class="act-amount w-full bg-blue-50 border-0 rounded-lg text-sm p-2.5 font-black text-blue-700 outline-none focus:ring-1 focus:ring-blue-400" value="${a}"></div></div><div class="grid grid-cols-12 gap-3 mt-2"><div class="col-span-4"><label class="text-[10px] font-black text-gray-500">เริ่มสัญญา:</label> <input type="date" class="act-start w-full border rounded-lg p-2 text-xs font-bold outline-none focus:border-blue-400" value="${s}"></div><div class="col-span-4"><label class="text-[10px] font-black text-gray-500">สิ้นสุดสัญญา:</label> <input type="date" class="act-end w-full border rounded-lg p-2 text-xs font-bold outline-none focus:border-blue-400" value="${e}"></div><div class="col-span-4"><label class="text-[10px] font-black text-gray-500">ค่างาน(%):</label> <input type="text" oninput="formatNumberInput(this)" class="act-weight w-full border rounded-lg p-2 text-sm font-black bg-indigo-50 text-indigo-700 text-center outline-none focus:border-indigo-400" value="${w}"></div><input type="hidden" class="act-actual" value="${ac}"></div>`; c.appendChild(d); }
+        function addActivity(n='', u='', q='', p='', a='', w='', ac=0, s='', e='') { const c=document.getElementById('activitiesContainer'); if(!c)return; if(c.querySelector('p.italic'))c.innerHTML=''; const d=document.createElement('div'); d.className='activity-entry flex flex-col gap-3 mb-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm'; d.innerHTML=`<div class="grid grid-cols-12 gap-3"><div class="col-span-12 font-black text-sm text-blue-900 border-b pb-2 mb-2 uppercase flex justify-between">ข้อมูลแผนงาน <button type="button" onclick="this.closest('.activity-entry').remove(); calculateActivityRows();" class="text-red-500 font-black text-lg">×</button></div><div class="col-span-8"><label class="text-[10px] font-black uppercase text-gray-500">ชื่อรายการ</label><input type="text" list="activityList" class="act-name w-full border rounded-lg text-sm p-2.5 font-bold outline-none focus:border-blue-400" value="${n}"></div><div class="col-span-4"><label class="text-[10px] font-black uppercase text-gray-500">หน่วย</label><input type="text" list="unitList" class="act-unit w-full border rounded-lg text-sm p-2.5 font-bold outline-none focus:border-blue-400" value="${u}"></div><div class="col-span-4"><label class="text-[10px] font-black uppercase text-gray-500 tracking-tighter">ปริมาณ</label><input type="text" oninput="formatNumberInput(this); calculateActivityRows()" class="act-qty w-full border rounded-lg text-sm p-2.5 outline-none focus:border-blue-400 font-bold" value="${q}"></div><div class="col-span-4"><label class="text-[10px] font-black uppercase text-gray-500 tracking-tighter">ราคา/หน่วย</label><input type="text" oninput="formatNumberInput(this); calculateActivityRows()" class="act-price w-full border rounded-lg text-sm p-2.5 outline-none focus:border-blue-400 font-bold" value="${p}"></div><div class="col-span-4 font-bold text-blue-700 uppercase"><label class="text-[10px] font-black text-slate-500">รวมเป็นเงิน</label><input type="text" oninput="formatNumberInput(this); calculateActivityRows()" class="act-amount w-full bg-blue-50 border-0 rounded-lg text-sm p-2.5 font-black text-blue-700 outline-none focus:ring-1 focus:ring-blue-400" value="${a}"></div></div><div class="grid grid-cols-12 gap-3 mt-2"><div class="col-span-4"><label class="text-[10px] font-black text-gray-500">เริ่มสัญญา:</label> <input type="date" class="act-start w-full border rounded-lg p-2 text-xs font-bold outline-none focus:border-blue-400" value="${s}"></div><div class="col-span-4"><label class="text-[10px] font-black text-gray-500">สิ้นสุดสัญญา:</label> <input type="date" class="act-end w-full border rounded-lg p-2 text-xs font-bold outline-none focus:border-blue-400" value="${e}"></div><div class="col-span-4"><label class="text-[10px] font-black text-gray-500">ค่างาน(%):</label> <input type="text" oninput="formatNumberInput(this)" class="act-weight w-full border rounded-lg p-2 text-sm font-black bg-indigo-50 text-indigo-700 text-center outline-none focus:border-indigo-400" value="${w}"></div><input type="hidden" class="act-actual" value="${ac}"></div>`; c.appendChild(d); }
 
         function generateSCurveData(p) {
             let acts=(p.activities||[]).filter(a=>a.startDate&&a.endDate&&new Date(a.startDate)<=new Date(a.endDate));
@@ -1407,71 +1513,259 @@
         }
 
         // Analysis Modal
-        function filterAnalysisProjectsByDistrict() { const sd=document.getElementById('analysisDistrictFilter').value, sel=document.getElementById('analysisProjectSelect'); sel.innerHTML='<option disabled selected>เลือกโครงการ...</option>'; (sd==='all'?projects:projects.filter(p=>p.district===sd)).forEach(p=>sel.innerHTML+=`<option value="${p.id}">${p.name}</option>`); document.getElementById('analysisContent').classList.add('hidden'); document.getElementById('analysisEmpty').classList.remove('hidden'); }
+        function filterAnalysisProjectsByDistrict() { const sdEl=document.getElementById('analysisDistrictFilter'); const sel=document.getElementById('analysisProjectSelect'); if(!sdEl||!sel)return; const sd=sdEl.value; sel.innerHTML='<option disabled selected>เลือกโครงการ...</option>'; (sd==='all'?projects:projects.filter(p=>p.district===sd)).forEach(p=>sel.innerHTML+=`<option value="${p.id}">${p.name}</option>`); const ac=document.getElementById('analysisContent'); if(ac)ac.classList.add('hidden'); const ae=document.getElementById('analysisEmpty'); if(ae)ae.classList.remove('hidden'); }
+        
         function renderProjectAnalysis(id) {
-            const p=projects.find(pj=>pj.id.toString()===id.toString()); if(!p)return; document.getElementById('analysisEmpty').classList.add('hidden'); document.getElementById('analysisContent').classList.remove('hidden');
+            const p=projects.find(pj=>pj.id.toString()===id.toString()); if(!p)return; 
+            const ae=document.getElementById('analysisEmpty'); if(ae)ae.classList.add('hidden'); 
+            const ac=document.getElementById('analysisContent'); if(ac)ac.classList.remove('hidden');
+            
             const sd=generateSCurveData(p); 
-            if(sCurveChartInstance)sCurveChartInstance.destroy(); sCurveChartInstance=new Chart(document.getElementById('sCurveChart').getContext('2d'),{type:'line',data:{labels:sd.labels,datasets:[{label:'แผน(%)',data:sd.planned,borderColor:'#3b82f6'},{label:'จริง(%)',data:sd.actual,borderColor:'#10b981'}]},options:{responsive:true,maintainAspectRatio:false}}); 
-            if(workVolumeChartInstance)workVolumeChartInstance.destroy(); workVolumeChartInstance=new Chart(document.getElementById('workVolumeChart').getContext('2d'),{type:'bar',data:{labels:sd.labels,datasets:[{label:'แผน/เดือน(%)',data:sd.plannedMonthly,backgroundColor:'#60a5fa'},{label:'จริง/เดือน(%)',data:sd.actualMonthly,backgroundColor:'#34d399'}]},options:{responsive:true,maintainAspectRatio:false}});
-            const ab=document.getElementById('analysisAlert'); ab.className='rounded-lg p-4 font-bold text-sm shadow-sm border';
-            if(p.activities&&p.activities.length>0){ let cp=0, ca=0, td=new Date(); p.activities.forEach(a=>{ca+=parseFloat(a.actual)||0; if(td>=new Date(a.endDate))cp+=parseFloat(a.weight)||0; else if(td>=new Date(a.startDate))cp+=(parseFloat(a.weight)||0)*((td-new Date(a.startDate))/(new Date(a.endDate)-new Date(a.startDate)));}); let df=cp-ca; if(df>0.5){ab.classList.add('bg-red-50','text-red-800','border-red-200'); ab.innerHTML=`ล่าช้ากว่าแผน! (ควรได้ ${cp.toFixed(2)}% ทำได้ ${ca.toFixed(2)}%)`;}else if(df<-0.5){ab.classList.add('bg-green-50','text-green-800','border-green-200'); ab.innerHTML=`เร็วกว่าแผน! (ทำได้ ${ca.toFixed(2)}% แผน ${cp.toFixed(2)}%)`;}else{ab.classList.add('bg-blue-50','text-blue-800','border-blue-200'); ab.innerHTML=`เป็นไปตามแผน (${cp.toFixed(2)}%)`;} }else ab.classList.add('hidden');
+            if(sCurveChartInstance)sCurveChartInstance.destroy(); 
+            const cv1=document.getElementById('sCurveChart'); 
+            if(cv1) {
+                sCurveChartInstance=new Chart(cv1.getContext('2d'),{
+                    type:'line',
+                    data:{
+                        labels:sd.labels,
+                        datasets:[
+                            {type: 'line', label:'แผนสะสม (%)', data:sd.planned, borderColor:'#2563eb', backgroundColor: '#2563eb', borderWidth:3, tension:0.4, yAxisID: 'y'},
+                            {type: 'line', label:'จริงสะสม (%)', data:sd.actual, borderColor:'#10b981', backgroundColor: '#10b981', borderWidth:3, tension:0.4, yAxisID: 'y'},
+                            {type: 'bar', label:'แผนรายเดือน (%)', data:sd.plannedMonthly, backgroundColor:'rgba(59, 130, 246, 0.4)', yAxisID: 'y1'},
+                            {type: 'bar', label:'จริงรายเดือน (%)', data:sd.actualMonthly, backgroundColor:'rgba(16, 185, 129, 0.4)', yAxisID: 'y1'}
+                        ]
+                    },
+                    options:{
+                        responsive:true, maintainAspectRatio:false,
+                        plugins: { 
+                            legend: { position: 'top', labels: { font: { family: "'Sarabun', sans-serif", size: 12 } } },
+                            title: { display: true, text: 'กราฟ S-Curve แบบผสม (แท่ง + เส้น)', font: { family: "'Sarabun', sans-serif", size: 16 } }
+                        },
+                        scales: {
+                            x: { ticks: { font: { family: "'Sarabun', sans-serif" } } },
+                            y: { type: 'linear', display: true, position: 'left', max: 100, title: { display: true, text: 'ผลงานสะสม (%)', font: { family: "'Sarabun', sans-serif" } }, ticks: { font: { family: "'Sarabun', sans-serif" } } },
+                            y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'ผลงานรายเดือน (%)', font: { family: "'Sarabun', sans-serif" } }, ticks: { font: { family: "'Sarabun', sans-serif" } } }
+                        }
+                    }
+                });
+            }
+            
+            const ab=document.getElementById('analysisAlert'); if(ab){ ab.className='rounded-lg p-4 font-bold text-sm shadow-sm border';
+            if(p.activities&&p.activities.length>0){ let cp=0, ca=0, td=new Date(); p.activities.forEach(a=>{ca+=parseFloat(a.actual)||0; if(td>=new Date(a.endDate))cp+=parseFloat(a.weight)||0; else if(td>=new Date(a.startDate))cp+=(parseFloat(a.weight)||0)*((td-new Date(a.startDate))/(new Date(a.endDate)-new Date(a.startDate)));}); let df=cp-ca; if(df>0.5){ab.classList.add('bg-red-50','text-red-800','border-red-200'); ab.innerHTML=`ล่าช้ากว่าแผน! (ควรได้ ${cp.toFixed(2)}% ทำได้ ${ca.toFixed(2)}%)`;}else if(df<-0.5){ab.classList.add('bg-green-50','text-green-800','border-green-200'); ab.innerHTML=`เร็วกว่าแผน! (ทำได้ ${ca.toFixed(2)}% แผน ${cp.toFixed(2)}%)`;}else{ab.classList.add('bg-blue-50','text-blue-800','border-blue-200'); ab.innerHTML=`เป็นไปตามแผน (${cp.toFixed(2)}%)`;} }else ab.classList.add('hidden'); }
+        }
+
+        // --- ฟังก์ชันควบคุมไดอะล็อกการพิมพ์ ---
+        function showPrintOptions() {
+            const modal = document.getElementById('printOptionsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                window.print(); // Fallback
+            }
+        }
+
+        function toggleRptMap(val) {
+            const sec = document.getElementById('rptMapSection');
+            if (!sec) return;
+            if (val === 'none') {
+                sec.classList.add('hidden');
+            } else {
+                sec.classList.remove('hidden');
+                if (rptMapInstance && rptOsmLayer && rptSatLayer) {
+                    if (val === 'satellite' && !isRptSat) {
+                        rptMapInstance.removeLayer(rptOsmLayer);
+                        rptSatLayer.addTo(rptMapInstance);
+                        isRptSat = true;
+                    } else if (val === 'street' && isRptSat) {
+                        rptMapInstance.removeLayer(rptSatLayer);
+                        rptOsmLayer.addTo(rptMapInstance);
+                        isRptSat = false;
+                    }
+                }
+            }
+        }
+
+        function toggleRptSection(id, isShow) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (isShow) el.classList.remove('hidden');
+            else el.classList.add('hidden');
         }
 
         // PDF Reports
         function openReport(id) {
             const p=projects.find(pj=>pj.id.toString()===id.toString()); if(!p)return; closeSearchModal(); document.body.classList.remove('printing-v124');
-            document.getElementById('rptName').innerText=p.name||'-'; document.getElementById('rptWorkType').innerText=p.workType||'-'; document.getElementById('rptDistrict').innerText=p.district||'-'; document.getElementById('rptYear').innerText=p.year||'-'; document.getElementById('rptBudgetType').innerText=p.budgetType||'-'; document.getElementById('rptBudget').innerText=(p.budget||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); document.getElementById('rptMedianPrice').innerText=(p.medianPrice||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); document.getElementById('rptContractPrice').innerText=(p.contractPrice||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); document.getElementById('rptContractStartDate').innerText=p.contractStartDate?new Date(p.contractStartDate).toLocaleDateString('th-TH'):'-'; document.getElementById('rptContractEndDate').innerText=p.contractEndDate?new Date(p.contractEndDate).toLocaleDateString('th-TH'):'-'; document.getElementById('rptRef').innerText=`เล่ม ${p.volume||'-'} / หน้า ${p.page||'-'}`; 
-            let rptStatDate = p.statusDate ? ` (${new Date(p.statusDate).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'numeric'})})` : ''; document.getElementById('rptStatus').innerText=(p.status||'-') + rptStatDate;
-            document.getElementById('rptSupervisors').innerHTML=(p.supervisors&&p.supervisors.length>0)?p.supervisors.map((s,i)=>`<div>${i+1}. ${s.name} (${s.position})</div>`).join(''):'-';
-            document.getElementById('rptImages').innerHTML=(p.images&&p.images.length>0)?p.images.map(ig=>`<div class="border h-40 flex items-center justify-center bg-gray-50 overflow-hidden cursor-pointer" onclick="openImageModal('${ig}')" title="คลิกเพื่อขยาย"><img src="${ig}" class="w-full h-full object-contain hover:scale-105 transition-transform"></div>`).join(''):'<div class="col-span-3 text-center text-gray-400">ไม่มีรูปภาพ</div>';
-            document.getElementById('reportModal').classList.remove('hidden');
+            
+            // รีเซ็ตค่าตัวเลือกการพิมพ์อย่างปลอดภัย
+            const optMap = document.getElementById('printOptMap');
+            if (optMap) optMap.value = 'street';
+            const optChart = document.getElementById('printOptChart');
+            if (optChart) optChart.checked = true;
+            const optImg = document.getElementById('printOptImg');
+            if (optImg) optImg.checked = true;
+            
+            toggleRptSection('rptMapSection', true);
+            toggleRptSection('rptChartSection', true);
+            toggleRptSection('rptImgSection', true);
+
+            // เซ็ตข้อความแบบปลอดภัย (Null Checks)
+            const setText = (elId, val) => { const el = document.getElementById(elId); if (el) el.innerText = val; };
+            const setHTML = (elId, val) => { const el = document.getElementById(elId); if (el) el.innerHTML = val; };
+
+            setText('rptName', p.name||'-'); 
+            setText('rptWorkType', p.workType||'-'); 
+            setText('rptDistrict', p.district||'-'); 
+            setText('rptYear', p.year||'-'); 
+            setText('rptBudgetType', p.budgetType||'-'); 
+            setText('rptBudget', (p.budget||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})); 
+            setText('rptMedianPrice', (p.medianPrice||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})); 
+            setText('rptContractPrice', (p.contractPrice||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})); 
+            setText('rptContractStartDate', p.contractStartDate ? new Date(p.contractStartDate).toLocaleDateString('th-TH') : '-'); 
+            setText('rptContractEndDate', p.contractEndDate ? new Date(p.contractEndDate).toLocaleDateString('th-TH') : '-'); 
+            setText('rptRef', `เล่ม ${p.volume||'-'} / หน้า ${p.page||'-'}`); 
+            
+            let rptStatDate = p.statusDate ? ` (${new Date(p.statusDate).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'numeric'})})` : ''; 
+            setText('rptStatus', (p.status||'-') + rptStatDate);
+            
+            setHTML('rptSupervisors', (p.supervisors&&p.supervisors.length>0) ? p.supervisors.map((s,i)=>`<div>${i+1}. ${s.name} (${s.position})</div>`).join('') : '-');
+            setHTML('rptImages', (p.images&&p.images.length>0) ? p.images.map(ig=>`<div class="border h-40 flex items-center justify-center bg-gray-50 overflow-hidden cursor-pointer" onclick="openImageModal('${ig}')" title="คลิกเพื่อขยาย"><img src="${ig}" class="w-full h-full object-contain hover:scale-105 transition-transform"></div>`).join('') : '<div class="col-span-3 text-center text-gray-400">ไม่มีรูปภาพ</div>');
+            
+            const rm = document.getElementById('reportModal');
+            if (rm) rm.classList.remove('hidden');
+            
             setTimeout(()=>{
-                if(rptMapInstance){rptMapInstance.remove(); rptMapInstance=null;} const mc=document.getElementById('reportMap'); mc.innerHTML=''; const nd=document.createElement('div'); nd.style.cssText='width:100%;height:100%'; mc.appendChild(nd);
-                rptMapInstance=L.map(nd,{zoomControl:false,dragging:false,scrollWheelZoom:false}).setView([16.8211, 100.2659],12); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(rptMapInstance);
-                let b=L.latLngBounds(); if(p.segments&&p.segments.length>0){ if(p.geomType==='line'){ p.segments.forEach(s=>{if(s.coordinates&&s.coordinates.length>=2){L.polyline(s.coordinates,{color:p.color||'#2563eb',weight:p.weight||5}).addTo(rptMapInstance); s.coordinates.forEach(c=>b.extend(c));}}); }else{ p.segments.forEach((s,i)=>{const ic=L.divIcon({className:'',html:`<div style="background:${p.color||'#2563eb'};color:white;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;">${i+1}</div>`}); L.marker(s.coordinates,{icon:ic}).addTo(rptMapInstance); b.extend(s.coordinates);}); } if(b.isValid()) rptMapInstance.fitBounds(b,{padding:[20,20],maxZoom:16}); }
-                const d=generateSCurveData(p); if(rptSCurveChartInstance)rptSCurveChartInstance.destroy(); 
-                // กราฟสีน้ำเงินและแดง ตัดกันชัดเจน
-                rptSCurveChartInstance=new Chart(document.getElementById('rptSCurveChart').getContext('2d'),{type:'line',data:{labels:d.labels,datasets:[{label:'แผน(%)',data:d.planned,borderColor:'#2563eb',borderWidth:3,tension:0.4},{label:'จริง(%)',data:d.actual,borderColor:'#ef4444',borderWidth:3,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false}});
-                if(rptWorkChartInstance)rptWorkChartInstance.destroy(); rptWorkChartInstance=new Chart(document.getElementById('rptWorkVolumeChart').getContext('2d'),{type:'bar',data:{labels:d.labels,datasets:[{label:'แผน/เดือน(%)',data:d.plannedMonthly,backgroundColor:'#60a5fa'},{label:'จริง/เดือน(%)',data:d.actualMonthly,backgroundColor:'#f87171'}]},options:{responsive:true,maintainAspectRatio:false}});
+                if(rptMapInstance){rptMapInstance.remove(); rptMapInstance=null;} 
+                const mc=document.getElementById('reportMap'); 
+                if (mc) {
+                    mc.innerHTML=''; 
+                    const nd=document.createElement('div'); nd.style.cssText='width:100%;height:100%'; mc.appendChild(nd);
+                    
+                    rptMapInstance=L.map(nd,{zoomControl:false,dragging:false,scrollWheelZoom:false}).setView([16.8211, 100.2659],12); 
+                    rptOsmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+                    rptSatLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+                    rptOsmLayer.addTo(rptMapInstance);
+                    isRptSat = false;
+
+                    let b=L.latLngBounds(); 
+                    if(p.segments&&p.segments.length>0){ 
+                        if(p.geomType==='line'){ 
+                            p.segments.forEach(s=>{
+                                if(s.coordinates&&s.coordinates.length>=2){
+                                    L.polyline(s.coordinates,{color:p.color||'#2563eb',weight:p.weight||5}).addTo(rptMapInstance); 
+                                    s.coordinates.forEach(c=>b.extend(c));
+                                }
+                            }); 
+                        } else { 
+                            p.segments.forEach((s,i)=>{
+                                const ic=L.divIcon({className:'',html:`<div style="background:${p.color||'#2563eb'};color:white;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;">${i+1}</div>`}); 
+                                L.marker(s.coordinates,{icon:ic}).addTo(rptMapInstance); b.extend(s.coordinates);
+                            }); 
+                        } 
+                        if(b.isValid()) rptMapInstance.fitBounds(b,{padding:[20,20],maxZoom:16}); 
+                    }
+                }
+                const d=generateSCurveData(p); 
+                if(rptSCurveChartInstance)rptSCurveChartInstance.destroy(); 
+                const cv1 = document.getElementById('rptSCurveChart');
+                if (cv1) {
+                    rptSCurveChartInstance=new Chart(cv1.getContext('2d'),{
+                        type:'line',
+                        data:{
+                            labels:d.labels,
+                            datasets:[
+                                {type: 'line', label:'แผนสะสม(%)', data:d.planned, borderColor:'#2563eb', backgroundColor: '#2563eb', borderWidth:3, tension:0.4, yAxisID: 'y'},
+                                {type: 'line', label:'จริงสะสม(%)', data:d.actual, borderColor:'#ef4444', backgroundColor: '#ef4444', borderWidth:3, tension:0.4, yAxisID: 'y'},
+                                {type: 'bar', label:'แผนรายเดือน(%)', data:d.plannedMonthly, backgroundColor:'rgba(59, 130, 246, 0.4)', yAxisID: 'y1'},
+                                {type: 'bar', label:'จริงรายเดือน(%)', data:d.actualMonthly, backgroundColor:'rgba(239, 68, 68, 0.4)', yAxisID: 'y1'}
+                            ]
+                        },
+                        options:{
+                            responsive:true, maintainAspectRatio:false,
+                            plugins: { legend: { labels: { font: { family: "'Sarabun', sans-serif", size: 10 } } } },
+                            scales: {
+                                x: { ticks: { font: { family: "'Sarabun', sans-serif", size: 9 } } },
+                                y: { type: 'linear', display: true, position: 'left', max: 100, ticks: { font: { family: "'Sarabun', sans-serif", size: 9 } } },
+                                y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { family: "'Sarabun', sans-serif", size: 9 } } }
+                            }
+                        }
+                    });
+                }
             }, 300);
         }
-        function closeReport() { document.getElementById('reportModal').classList.add('hidden'); }
+
+        function closeReport() { const rm = document.getElementById('reportModal'); if (rm) rm.classList.add('hidden'); }
 
         function openReportV124(id) {
             const p=projects.find(pj=>pj.id.toString()===id.toString()); if(!p)return; closeSearchModal(); document.body.classList.add('printing-v124');
-            document.getElementById('v124ProjectName').innerText=p.name||'-'; let dur='-';
+            const elProj = document.getElementById('v124ProjectName'); if(elProj) elProj.innerText=p.name||'-'; 
+            let dur='-';
             
-            // ดึงชื่อช่าง แยกบรรทัดแบบสวยงาม พร้อมเว้นที่สำหรับเซ็นชื่อ
-            document.getElementById('v124Supervisors').innerHTML = (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => `<div class="mt-4 mb-2 flex flex-col items-center w-full"><span class="text-gray-400 mb-1">ลงชื่อ.................................................................</span><span class="font-bold text-sm text-gray-800 leading-tight">( ${s.name} )</span><span class="text-[11px] font-normal text-gray-600 leading-tight">${s.position}</span></div>`).join('') : `<div class="mt-4 mb-2 flex flex-col items-center w-full"><span class="text-gray-400 mb-1">ลงชื่อ.................................................................</span><span class="font-bold text-sm text-gray-800 leading-tight">(.................................................................)</span></div>`;
+            const elSup = document.getElementById('v124Supervisors');
+            if (elSup) elSup.innerHTML = (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => `<div class="mt-4 mb-2 flex flex-col items-center w-full"><span class="text-gray-400 mb-1">ลงชื่อ.................................................................</span><span class="font-bold text-sm text-gray-800 leading-tight">( ${s.name} )</span><span class="text-[11px] font-normal text-gray-600 leading-tight">${s.position}</span></div>`).join('') : `<div class="mt-4 mb-2 flex flex-col items-center w-full"><span class="text-gray-400 mb-1">ลงชื่อ.................................................................</span><span class="font-bold text-sm text-gray-800 leading-tight">(.................................................................)</span></div>`;
             
             if(p.contractStartDate&&p.contractEndDate){ const s=new Date(p.contractStartDate), e=new Date(p.contractEndDate), d=Math.round((e-s)/(8.64e7))+1; dur=`${s.toLocaleDateString('th-TH')} ถึง ${e.toLocaleDateString('th-TH')} (${d} วัน)`; }
-            document.getElementById('v124Duration').innerText=dur;
+            const elDur = document.getElementById('v124Duration'); if (elDur) elDur.innerText=dur;
+            
             const sd=generateSCurveData(p), tc=document.getElementById('v124TableContainer');
-            if(sd.labelsV124&&sd.labelsV124.length>0&&p.activities&&p.activities.length>0){
-                let h=`<table class="w-full text-[10px] border-collapse border border-gray-800"><thead><tr><th rowspan="2" class="border border-gray-800 bg-gray-100">ที่</th><th rowspan="2" class="border border-gray-800 bg-gray-100">กิจกรรม</th><th rowspan="2" class="border border-gray-800 bg-gray-100">ปริมาณ</th><th rowspan="2" class="border border-gray-800 bg-gray-100">เป็นเงิน</th><th rowspan="2" class="border border-gray-800 bg-gray-100">ค่างาน(%)</th><th colspan="${sd.labelsV124.length}" class="border border-gray-800 bg-gray-100">เดือนที่ดำเนินการ</th></tr><tr>`;
-                sd.labelsV124.forEach(l=>h+=`<th class="border border-gray-800 bg-gray-100">${l.replace('เดือนที่ ','')}</th>`); h+=`</tr></thead><tbody>`;
-                let ta=0, tw=0; p.activities.filter(a=>a.startDate&&a.endDate).forEach((act,i)=>{ let am=parseFloat(act.amount)||0, aw=parseFloat(act.weight)||0; ta+=am; tw+=aw; h+=`<tr><td class="border border-gray-800 text-center">${i+1}</td><td class="border border-gray-800 p-1">${act.name}</td><td class="border border-gray-800 text-right">${(parseFloat(act.qty)||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="border border-gray-800 text-right">${am.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="border border-gray-800 text-center">${aw.toFixed(2)}</td>`; sd.activityMatrix[i].forEach(v=>h+=`<td class="border border-gray-800 text-center">${v>0?v.toFixed(2):'0'}</td>`); h+=`</tr>`; });
-                h+=`<tr class="font-bold bg-gray-50"><td colspan="3" class="border border-gray-800 text-right">รวม</td><td class="border border-gray-800 text-right">${ta.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="border border-gray-800 text-center">${tw.toFixed(2)}</td><td colspan="${sd.labelsV124.length}" class="border border-gray-800"></td></tr>`;
-                h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">แผนงานรายเดือน (%)</td>`; sd.plannedMonthly.forEach(v=>h+=`<td class="border border-gray-800 text-center">${v}</td>`); h+=`</tr>`;
-                h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">แผนงานสะสม (%)</td>`; sd.planned.forEach(v=>h+=`<td class="border border-gray-800 text-center">${v}</td>`); h+=`</tr>`;
-                h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">ผลงานจริงรายเดือน (%)</td>`; sd.actualMonthly.forEach((v,i)=>{ if(sd.monthBounds[i].start>new Date()&&parseFloat(v)===0) h+=`<td class="border border-gray-800 text-center text-gray-300">0</td>`; else h+=`<td class="border border-gray-800 text-center">${v}</td>`; }); h+=`</tr>`;
-                h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">ผลงานจริงสะสม (%)</td>`; sd.actual.forEach((v,i)=>{ if(sd.monthBounds[i].start>new Date()&&parseFloat(v)===0&&parseFloat(sd.planned[i])===0) h+=`<td class="border border-gray-800 text-center text-gray-300">0.00</td>`; else h+=`<td class="border border-gray-800 text-center">${v}</td>`; }); h+=`</tr></tbody></table>`; tc.innerHTML=h;
-            } else tc.innerHTML='<div class="text-center py-4 border">ไม่มีข้อมูลแผนงาน</div>';
+            if (tc) {
+                if(sd.labelsV124&&sd.labelsV124.length>0&&p.activities&&p.activities.length>0){
+                    let h=`<table class="w-full text-[10px] border-collapse border border-gray-800"><thead><tr><th rowspan="2" class="border border-gray-800 bg-gray-100">ที่</th><th rowspan="2" class="border border-gray-800 bg-gray-100">กิจกรรม</th><th rowspan="2" class="border border-gray-800 bg-gray-100">ปริมาณ</th><th rowspan="2" class="border border-gray-800 bg-gray-100">เป็นเงิน</th><th rowspan="2" class="border border-gray-800 bg-gray-100">ค่างาน(%)</th><th colspan="${sd.labelsV124.length}" class="border border-gray-800 bg-gray-100">เดือนที่ดำเนินการ</th></tr><tr>`;
+                    sd.labelsV124.forEach(l=>h+=`<th class="border border-gray-800 bg-gray-100">${l.replace('เดือนที่ ','')}</th>`); h+=`</tr></thead><tbody>`;
+                    let ta=0, tw=0; p.activities.filter(a=>a.startDate&&a.endDate).forEach((act,i)=>{ let am=parseFloat(act.amount)||0, aw=parseFloat(act.weight)||0; ta+=am; tw+=aw; h+=`<tr><td class="border border-gray-800 text-center">${i+1}</td><td class="border border-gray-800 p-1">${act.name}</td><td class="border border-gray-800 text-right">${(parseFloat(act.qty)||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="border border-gray-800 text-right">${am.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="border border-gray-800 text-center">${aw.toFixed(2)}</td>`; sd.activityMatrix[i].forEach(v=>h+=`<td class="border border-gray-800 text-center">${v>0?v.toFixed(2):'0'}</td>`); h+=`</tr>`; });
+                    h+=`<tr class="font-bold bg-gray-50"><td colspan="3" class="border border-gray-800 text-right">รวม</td><td class="border border-gray-800 text-right">${ta.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="border border-gray-800 text-center">${tw.toFixed(2)}</td><td colspan="${sd.labelsV124.length}" class="border border-gray-800"></td></tr>`;
+                    h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">แผนงานรายเดือน (%)</td>`; sd.plannedMonthly.forEach(v=>h+=`<td class="border border-gray-800 text-center">${v}</td>`); h+=`</tr>`;
+                    h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">แผนงานสะสม (%)</td>`; sd.planned.forEach(v=>h+=`<td class="border border-gray-800 text-center">${v}</td>`); h+=`</tr>`;
+                    h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">ผลงานจริงรายเดือน (%)</td>`; sd.actualMonthly.forEach((v,i)=>{ if(sd.monthBounds[i].start>new Date()&&parseFloat(v)===0) h+=`<td class="border border-gray-800 text-center text-gray-300">0</td>`; else h+=`<td class="border border-gray-800 text-center">${v}</td>`; }); h+=`</tr>`;
+                    h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">ผลงานจริงสะสม (%)</td>`; sd.actual.forEach((v,i)=>{ if(sd.monthBounds[i].start>new Date()&&parseFloat(v)===0&&parseFloat(sd.planned[i])===0) h+=`<td class="border border-gray-800 text-center text-gray-300">0.00</td>`; else h+=`<td class="border border-gray-800 text-center">${v}</td>`; }); h+=`</tr></tbody></table>`; tc.innerHTML=h;
+                } else tc.innerHTML='<div class="text-center py-4 border">ไม่มีข้อมูลแผนงาน</div>';
+            }
 
-            const ab=document.getElementById('v124AlertBox'); ab.innerHTML='กรุณาระบุวันที่และผลงาน...';
-            let ca=0; if(p.activities) p.activities.forEach(a=>ca+=(parseFloat(a.actual)||0));
-            if(p.contractStartDate&&p.contractEndDate){ const cs=new Date(p.contractStartDate), ce=new Date(p.contractEndDate), td=new Date(); if(ce>cs&&td>=cs){ const tc=(ce-cs)/(8.64e7)+1, pc=(td-cs)/(8.64e7)+1, tr=pc/tc; let wh='สถานะปกติ'; if(tr>=1.0){if(ca<85)wh=`<span class="text-red-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.4</span>`;} else if(tr>=0.75){if(ca<65)wh=`<span class="text-red-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.3</span>`;} else if(tr>=0.50){if(ca<25)wh=`<span class="text-red-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.1</span>`; else if(ca<50)wh=`<span class="text-yellow-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.1</span>`;} ab.innerHTML=wh; } }
-            setTimeout(()=>{ if(v124SCurveChartInstance)v124SCurveChartInstance.destroy(); 
-            // กราฟสีน้ำเงินและแดง ตัดกันชัดเจน
-            v124SCurveChartInstance=new Chart(document.getElementById('v124SCurveChart').getContext('2d'),{type:'line',data:{labels:sd.labelsV124||[''],datasets:[{label:'แผนสะสม',data:sd.planned,borderColor:'#2563eb',borderWidth:3},{label:'จริงสะสม',data:sd.actual,borderColor:'#ef4444',borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false}}); }, 300);
-            document.getElementById('reportV124Modal').classList.remove('hidden');
+            const ab=document.getElementById('v124AlertBox'); 
+            if(ab) {
+                ab.innerHTML='กรุณาระบุวันที่และผลงาน...';
+                let ca=0; if(p.activities) p.activities.forEach(a=>ca+=(parseFloat(a.actual)||0));
+                if(p.contractStartDate&&p.contractEndDate){ const cs=new Date(p.contractStartDate), ce=new Date(p.contractEndDate), td=new Date(); if(ce>cs&&td>=cs){ const tc=(ce-cs)/(8.64e7)+1, pc=(td-cs)/(8.64e7)+1, tr=pc/tc; let wh='สถานะปกติ'; if(tr>=1.0){if(ca<85)wh=`<span class="text-red-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.4</span>`;} else if(tr>=0.75){if(ca<65)wh=`<span class="text-red-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.3</span>`;} else if(tr>=0.50){if(ca<25)wh=`<span class="text-red-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.1</span>`; else if(ca<50)wh=`<span class="text-yellow-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.1</span>`;} ab.innerHTML=wh; } }
+            }
+            
+            setTimeout(()=>{ 
+                if(v124SCurveChartInstance)v124SCurveChartInstance.destroy(); 
+                const cv = document.getElementById('v124SCurveChart');
+                if(cv) {
+                    v124SCurveChartInstance=new Chart(cv.getContext('2d'),{
+                        type:'line',
+                        data:{
+                            labels:sd.labelsV124||[''],
+                            datasets:[
+                                {type: 'line', label:'แผนสะสม(%)', data:sd.planned, borderColor:'#2563eb', backgroundColor: '#2563eb', borderWidth:3, tension:0.4, yAxisID: 'y'},
+                                {type: 'line', label:'จริงสะสม(%)', data:sd.actual, borderColor:'#ef4444', backgroundColor: '#ef4444', borderWidth:3, tension:0.4, yAxisID: 'y'},
+                                {type: 'bar', label:'แผนรายเดือน(%)', data:sd.plannedMonthly, backgroundColor:'rgba(59, 130, 246, 0.4)', yAxisID: 'y1'},
+                                {type: 'bar', label:'จริงรายเดือน(%)', data:sd.actualMonthly, backgroundColor:'rgba(239, 68, 68, 0.4)', yAxisID: 'y1'}
+                            ]
+                        },
+                        options:{
+                            responsive:true, maintainAspectRatio:false,
+                            plugins: { legend: { labels: { font: { family: "'Sarabun', sans-serif", size: 10 } } } },
+                            scales: {
+                                x: { ticks: { font: { family: "'Sarabun', sans-serif", size: 9 } } },
+                                y: { type: 'linear', display: true, position: 'left', max: 100, ticks: { font: { family: "'Sarabun', sans-serif", size: 9 } } },
+                                y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { family: "'Sarabun', sans-serif", size: 9 } } }
+                            }
+                        }
+                    }); 
+                }
+            }, 300);
+            
+            const rm = document.getElementById('reportV124Modal');
+            if (rm) rm.classList.remove('hidden');
         }
-        function closeReportV124() { document.body.classList.remove('printing-v124'); document.getElementById('reportV124Modal').classList.add('hidden'); }
+        
+        function closeReportV124() { document.body.classList.remove('printing-v124'); const rm = document.getElementById('reportV124Modal'); if(rm) rm.classList.add('hidden'); }
 
         // Dashboard Functions
-        function openDashboardModal() { populateDashboardFilters(); renderDashboard(); const m=document.getElementById('dashboardModal'); m.classList.remove('hidden'); setTimeout(()=>m.style.opacity='1', 10); }
-        function closeDashboardModal() { document.getElementById('dashboardModal').style.opacity='0'; setTimeout(()=>document.getElementById('dashboardModal').classList.add('hidden'),300); }
-        function resetDashboardFilters() { document.getElementById('dbFilterDistrict').value='all'; document.getElementById('dbFilterYear').value='all'; document.getElementById('dbFilterBudgetType').value='all'; renderDashboard(); }
+        function openDashboardModal() { populateDashboardFilters(); renderDashboard(); const m=document.getElementById('dashboardModal'); if(m){ m.classList.remove('hidden'); setTimeout(()=>m.style.opacity='1', 10); } }
+        function closeDashboardModal() { const m = document.getElementById('dashboardModal'); if(m){ m.style.opacity='0'; setTimeout(()=>m.classList.add('hidden'),300); } }
+        function resetDashboardFilters() { const d1=document.getElementById('dbFilterDistrict'), d2=document.getElementById('dbFilterYear'), d3=document.getElementById('dbFilterBudgetType'); if(d1)d1.value='all'; if(d2)d2.value='all'; if(d3)d3.value='all'; renderDashboard(); }
         function populateDashboardFilters(){
             const ds=new Set(), ys=new Set(), ts=new Set(); projects.forEach(p=>{if(p.district)ds.add(p.district); if(p.year)ys.add(p.year); if(p.budgetType)ts.add(p.budgetType);}); 
             const d=document.getElementById('dbFilterDistrict'); if(d) { d.innerHTML='<option value="all">ทุกอำเภอ</option>'; [...ds].sort().forEach(v=>d.innerHTML+=`<option value="${v}">${v}</option>`); }
@@ -1480,11 +1774,12 @@
         }
 
         function renderDashboard() {
-            const fd=document.getElementById('dbFilterDistrict').value, fy=document.getElementById('dbFilterYear').value, ft=document.getElementById('dbFilterBudgetType').value;
+            const fdEl=document.getElementById('dbFilterDistrict'), fyEl=document.getElementById('dbFilterYear'), ftEl=document.getElementById('dbFilterBudgetType');
+            const fd = fdEl ? fdEl.value : 'all', fy = fyEl ? fyEl.value : 'all', ft = ftEl ? ftEl.value : 'all';
             const fp=projects.filter(p=>(fd==='all'||p.district===fd)&&(fy==='all'||p.year===fy)&&(ft==='all'||p.budgetType===ft));
             
-            if(document.getElementById('dbTotalProjects')) document.getElementById('dbTotalProjects').innerText=fp.length.toLocaleString();
-            if(document.getElementById('dbTotalBudget')) document.getElementById('dbTotalBudget').innerText=fp.reduce((s,p)=>s+(p.budget||0),0).toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
+            const tProj = document.getElementById('dbTotalProjects'); if(tProj) tProj.innerText=fp.length.toLocaleString();
+            const tBudg = document.getElementById('dbTotalBudget'); if(tBudg) tBudg.innerText=fp.reduce((s,p)=>s+(p.budget||0),0).toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
             
             let wl=[], completed=0, crit=0, del=0; const today=new Date();
             fp.forEach(p=>{ 
@@ -1493,8 +1788,8 @@
                 let diff=ca-cp; if(diff<-10){crit++; wl.push({...p,cp,ca,diff});} else if(diff<-0.5){del++; wl.push({...p,cp,ca,diff});}
             });
 
-            if(document.getElementById('dbCompleted')) document.getElementById('dbCompleted').innerText=completed.toLocaleString(); 
-            if(document.getElementById('dbInProgress')) document.getElementById('dbInProgress').innerText=(fp.length-completed).toLocaleString();
+            const tComp = document.getElementById('dbCompleted'); if(tComp) tComp.innerText=completed.toLocaleString(); 
+            const tInprog = document.getElementById('dbInProgress'); if(tInprog) tInprog.innerText=(fp.length-completed).toLocaleString();
             
             const wBody = document.getElementById('dbWatchlistBody');
             if(wBody) {
@@ -1506,8 +1801,71 @@
             if(ctx1) {
                 if(dbBudgetChartInstance) dbBudgetChartInstance.destroy();
                 const dd={}; fp.forEach(p=>{const d=p.district||'ไม่ระบุ'; dd[d]=(dd[d]||0)+(p.budget||0);});
-                let bL=Object.keys(dd), bD=Object.values(dd); if(fd!=='all'){ const tp=fp.sort((a,b)=>(b.budget||0)-(a.budget||0)).slice(0,10); bL=tp.map(x=>x.name); bD=tp.map(x=>x.budget||0); document.getElementById('dbChart1Title').innerHTML='<i class="fa-solid fa-chart-column text-blue-600 mr-2"></i> 10 อันดับงบสูงสุด'; } else { document.getElementById('dbChart1Title').innerHTML='<i class="fa-solid fa-chart-column text-blue-600 mr-2"></i> งบประมาณแยกตามอำเภอ'; }
+                let bL=Object.keys(dd), bD=Object.values(dd); 
+                const c1Title = document.getElementById('dbChart1Title');
+                if(fd!=='all'){ 
+                    const tp=fp.sort((a,b)=>(b.budget||0)-(a.budget||0)).slice(0,10); bL=tp.map(x=>x.name); bD=tp.map(x=>x.budget||0); 
+                    if(c1Title) c1Title.innerHTML='<i class="fa-solid fa-chart-column text-blue-600 mr-2"></i> 10 อันดับงบสูงสุด'; 
+                } else { 
+                    if(c1Title) c1Title.innerHTML='<i class="fa-solid fa-chart-column text-blue-600 mr-2"></i> งบประมาณแยกอำเภอ'; 
+                }
                 dbBudgetChartInstance = new Chart(ctx1.getContext('2d'),{ type:'bar', data:{labels:bL,datasets:[{label:'งบประมาณ',data:bD,backgroundColor:'#3b82f6',borderRadius:4}]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{font:{size:10},callback:function(v){let l=this.getLabelForValue(v); if(l.length>22) return l.substring(0,20)+'...'; return l;}}}, y:{beginAtZero:true, ticks:{callback:v=>'฿'+(v/1e6).toFixed(1)+'M'}}}} });
+            }
+
+            const ctx3 = document.getElementById('dbDistrictStatusChart');
+            if(ctx3) {
+                if(dbDistrictStatusChartInstance) dbDistrictStatusChartInstance.destroy();
+                
+                const dtd={}, sSet2=new Set(); 
+                fp.forEach(p=>{ 
+                    const d=p.district||'ไม่ระบุ'; 
+                    const s=p.status||'ไม่ระบุสถานะ'; 
+                    if(!dtd[d])dtd[d]={}; 
+                    dtd[d][s]=(dtd[d][s]||0)+1; 
+                    sSet2.add(s); 
+                });
+                
+                const distL=Object.keys(dtd);
+                const statusOrder2 = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ทบทวนราคากลาง', 'ดำเนินการก่อสร้าง', 'ส่งมอบงานงวดสุดท้าย', 'แล้วเสร็จ'];
+                const dsA2=Array.from(sSet2).sort((a,b) => {
+                    let ia = statusOrder2.indexOf(a); if(ia===-1 && a.includes('ส่งมอบงาน')) ia = 4.5;
+                    let ib = statusOrder2.indexOf(b); if(ib===-1 && b.includes('ส่งมอบงาน')) ib = 4.5;
+                    return (ia !== -1 ? ia : 99) - (ib !== -1 ? ib : 99);
+                });
+                
+                const getColorfulStatus = (st) => {
+                    if(st.includes('แบบรูป')) return '#94a3b8'; 
+                    if(st.includes('ระบบ egp')) return '#38bdf8'; 
+                    if(st.includes('อนุมัติราคากลาง')) return '#3b82f6'; 
+                    if(st.includes('ทบทวน')) return '#f43f5e'; 
+                    if(st==='ดำเนินการก่อสร้าง') return '#f59e0b'; 
+                    if(st.includes('ส่งมอบงานงวดที่')) return '#14b8a6'; 
+                    if(st.includes('สุดท้าย')) return '#0ea5e9'; 
+                    if(st==='แล้วเสร็จ') return '#10b981'; 
+                    return '#c084fc'; 
+                };
+
+                dbDistrictStatusChartInstance = new Chart(ctx3.getContext('2d'),{ 
+                    type:'bar', 
+                    data:{
+                        labels:distL, 
+                        datasets:dsA2.map((s)=>({
+                            label:s, 
+                            data:distL.map(d=>dtd[d][s]||0), 
+                            backgroundColor: getColorfulStatus(s), 
+                            borderRadius: 4
+                        }))
+                    }, 
+                    options:{
+                        responsive:true, 
+                        maintainAspectRatio:false, 
+                        plugins: { legend: { display: false } }, 
+                        scales:{
+                            x:{stacked:true, ticks:{font:{size:10, family: "'Sarabun', sans-serif"}}}, 
+                            y:{stacked:true, ticks:{stepSize: 1}}
+                        } 
+                    } 
+                });
             }
 
             const ctx2 = document.getElementById('dbHealthChart');
@@ -1519,9 +1877,58 @@
             const ctx4 = document.getElementById('dbBudgetTypeChart');
             if(ctx4) {
                 if(dbBudgetTypeChartInstance) dbBudgetTypeChartInstance.destroy();
-                const btd={}, dSet=new Set(); fp.forEach(p=>{ const d=p.district||'ไม่ระบุ', t=p.budgetType||'ไม่ระบุ'; if(!btd[t])btd[t]={}; btd[t][d]=(btd[t][d]||0)+(p.budget||0); dSet.add(d); });
-                const btL=Object.keys(btd), dsA=Array.from(dSet), pal=['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316'];
-                dbBudgetTypeChartInstance = new Chart(ctx4.getContext('2d'),{ type:'bar', data:{labels:btL, datasets:dsA.map((d,i)=>({label:d, data:btL.map(t=>btd[t][d]||0), backgroundColor:pal[i%pal.length], borderRadius: 4}))}, options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, scales:{x:{stacked:true, ticks:{callback:v=>'฿'+(v/1e6).toFixed(1)+'M'}}, y:{stacked:true}} } });
+                
+                const c4Title = document.getElementById('dbChart4Title');
+                if(c4Title) c4Title.innerHTML='<i class="fa-solid fa-list-check text-emerald-600 mr-2"></i> สถานะการดำเนินงาน แยกตามประเภทงบประมาณ (จำนวนโครงการ)';
+                
+                const btd={}, sSet=new Set(); 
+                fp.forEach(p=>{ 
+                    const t=p.budgetType||'ไม่ระบุงบ'; 
+                    const s=p.status||'ไม่ระบุสถานะ'; 
+                    if(!btd[t])btd[t]={}; 
+                    btd[t][s]=(btd[t][s]||0)+1; 
+                    sSet.add(s); 
+                });
+                
+                const btL=Object.keys(btd);
+                const statusOrder = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ทบทวนราคากลาง', 'ดำเนินการก่อสร้าง', 'ส่งมอบงานงวดสุดท้าย', 'แล้วเสร็จ'];
+                const dsA=Array.from(sSet).sort((a,b) => {
+                    let ia = statusOrder.indexOf(a); if(ia===-1 && a.includes('ส่งมอบงาน')) ia = 4.5;
+                    let ib = statusOrder.indexOf(b); if(ib===-1 && b.includes('ส่งมอบงาน')) ib = 4.5;
+                    return (ia !== -1 ? ia : 99) - (ib !== -1 ? ib : 99);
+                });
+                
+                const getStatusColor = (st) => {
+                    if(st.includes('แบบรูป')) return '#94a3b8'; 
+                    if(st.includes('ราคากลาง')) return '#60a5fa'; 
+                    if(st==='ดำเนินการก่อสร้าง') return '#f59e0b'; 
+                    if(st.includes('ส่งมอบงาน')) return '#14b8a6'; 
+                    if(st==='แล้วเสร็จ') return '#10b981'; 
+                    return '#8b5cf6'; 
+                };
+
+                dbBudgetTypeChartInstance = new Chart(ctx4.getContext('2d'),{ 
+                    type:'bar', 
+                    data:{
+                        labels:btL, 
+                        datasets:dsA.map(s=>({
+                            label:s, 
+                            data:btL.map(t=>btd[t][s]||0), 
+                            backgroundColor: getStatusColor(s), 
+                            borderRadius: 4
+                        }))
+                    }, 
+                    options:{
+                        indexAxis:'y', 
+                        responsive:true, 
+                        maintainAspectRatio:false, 
+                        plugins: { legend: { position: 'bottom', labels: { font: { size: 11, family: "'Sarabun', sans-serif" } } } },
+                        scales:{
+                            x:{stacked:true, title: { display: true, text: 'จำนวนโครงการ (แห่ง)', font: {weight: 'bold', family: "'Sarabun', sans-serif"} }, ticks:{stepSize: 1}}, 
+                            y:{stacked:true}
+                        } 
+                    } 
+                });
             }
         }
     </script>
