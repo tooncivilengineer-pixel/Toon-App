@@ -60,7 +60,7 @@
 <body class="h-screen w-screen overflow-hidden bg-gray-100 flex flex-col">
 
     <!-- Auth Alert Modal -->
-    <div id="authFixModal" class="fixed inset-0 bg-black bg-opacity-70 z-[6000] hidden justify-center items-center p-4">
+    <div id="authFixModal" class="fixed inset-0 bg-black bg-opacity-70 z-[6000] hidden flex justify-center items-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
             <div class="bg-red-600 text-white p-4 flex items-center gap-3">
                 <i class="fa-solid fa-triangle-exclamation text-2xl"></i><h2 class="font-bold">ต้องตั้งค่าระบบหลังบ้านเพิ่มเติม</h2>
@@ -179,7 +179,7 @@
     </main>
 
     <!-- 1. Project Modal -->
-    <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 z-[2000] hidden justify-center items-center text-gray-700 no-print">
+    <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 z-[2000] hidden flex justify-center items-center text-gray-700 no-print">
         <div id="projectModalContent" class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto transform transition-all custom-scrollbar relative">
             <div id="projectModalHeader" class="bg-blue-600 text-white px-6 py-4 rounded-t-xl flex justify-between items-center sticky top-0 z-10 shadow-sm font-bold cursor-move">
                 <h2 id="modalTitleText" class="text-lg"><i class="fa-solid fa-clipboard-list mr-2"></i> ป้อนรายละเอียดโครงการก่อสร้าง</h2>
@@ -409,6 +409,32 @@
         </div>
     </div>
 
+    <!-- ไดอะล็อกตั้งค่าการพิมพ์ -->
+    <div id="printOptionsModal" class="fixed inset-0 bg-black bg-opacity-60 z-[5000] hidden justify-center items-center no-print">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-gray-800 transform scale-100 transition-all">
+            <h3 class="text-lg font-bold mb-4 border-b border-gray-200 pb-3 text-blue-800"><i class="fa-solid fa-print mr-2"></i> ตั้งค่าการพิมพ์รายงาน</h3>
+            <div class="space-y-4 mb-6">
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <label class="font-bold text-sm text-gray-700 block mb-2"><i class="fa-solid fa-map mr-1"></i> 1. รูปแบบแผนที่:</label>
+                    <select id="printOptMap" class="w-full border border-gray-300 rounded-md p-2 text-sm font-bold text-blue-700 outline-none focus:ring-2 focus:ring-blue-500" onchange="toggleRptMap(this.value)">
+                        <option value="street">🗺️ แผนที่ปกติ (ถนน)</option>
+                        <option value="satellite">🛰️ แผนที่ดาวเทียม</option>
+                        <option value="none">❌ ซ่อนแผนที่</option>
+                    </select>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <label class="font-bold text-sm text-gray-700 block mb-2"><i class="fa-solid fa-layer-group mr-1"></i> 2. การแสดงผลเนื้อหา:</label>
+                    <label class="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-blue-700 cursor-pointer transition-colors"><input type="checkbox" id="printOptChart" checked onchange="toggleRptSection('rptChartSection', this.checked)" class="w-4 h-4 text-blue-600 rounded"> พิมพ์กราฟความก้าวหน้า</label>
+                    <label class="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-blue-700 cursor-pointer transition-colors mt-2"><input type="checkbox" id="printOptImg" checked onchange="toggleRptSection('rptImgSection', this.checked)" class="w-4 h-4 text-blue-600 rounded"> พิมพ์รูปภาพประกอบ</label>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="const m=document.getElementById('printOptionsModal'); if(m){m.classList.add('hidden');m.classList.remove('flex');}" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition-colors">ยกเลิก</button>
+                <button type="button" onclick="const m=document.getElementById('printOptionsModal'); if(m){m.classList.add('hidden');m.classList.remove('flex');} window.print();" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition-colors"><i class="fa-solid fa-print mr-1"></i> สั่งพิมพ์</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 5. Report (Portrait) -->
     <div id="reportModal" class="fixed inset-0 bg-gray-500 bg-opacity-80 z-[4000] hidden justify-center items-start overflow-y-auto py-8">
         <div class="fixed top-4 right-6 p-3 flex gap-4 no-print z-50 bg-white rounded-xl shadow-2xl border border-gray-200 items-center">
@@ -606,9 +632,9 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
                     <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbChart1Title" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-chart-column text-blue-600 mr-2"></i> งบประมาณแยกอำเภอ</h3><div class="relative h-60 w-full flex-1"><canvas id="dbBudgetChart"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-city text-pink-500 mr-2"></i> สถานะโครงการทุกอำเภอ</h3><div class="relative h-60 w-full flex-1"><canvas id="dbDistrictStatusChart"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbChart2Title" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-heart-pulse text-indigo-600 mr-2"></i> สุขภาพโครงการ</h3><div class="relative h-60 w-full flex-1 flex justify-center items-center"><canvas id="dbHealthChart"></canvas></div></div>
-                    <div class="lg:col-span-3 bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbChart4Title" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-layer-group text-emerald-600 mr-2"></i> ภาพรวมการทำงานแยกตามประเภทงบประมาณ</h3><div class="relative h-64 w-full flex-1"><canvas id="dbBudgetTypeChart"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbDistrictStatusTitle" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-city text-pink-500 mr-2"></i> สถานะโครงการทุกอำเภอ</h3><div class="relative h-60 w-full flex-1"><canvas id="dbDistrictStatusChart"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbOverallPieTitle" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-chart-pie text-indigo-600 mr-2"></i> ภาพรวมโครงการทุกอำเภอ</h3><div class="relative h-60 w-full flex-1 flex justify-center items-center"><canvas id="dbOverallPieChart"></canvas></div></div>
+                    <div class="lg:col-span-3 bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbChart4Title" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-list-check text-emerald-600 mr-2"></i> สถานะการดำเนินงาน แยกตามประเภทงบประมาณ (จำนวนโครงการ)</h3><div class="relative h-64 w-full flex-1"><canvas id="dbBudgetTypeChart"></canvas></div></div>
                 </div>
 
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-red-200 flex flex-col">
@@ -663,22 +689,24 @@
         }
 
         function getDashboardStatusColor(st) {
-            if(st.includes('แบบรูป')) return '#94a3b8'; 
-            if(st.includes('ระบบ egp')) return '#38bdf8'; 
-            if(st.includes('อนุมัติราคากลาง')) return '#3b82f6'; 
-            if(st.includes('ทบทวน')) return '#f43f5e'; 
-            if(st==='ดำเนินการก่อสร้าง') return '#f59e0b'; 
-            if(st.includes('ส่งมอบงานงวดที่')) return '#14b8a6'; 
-            if(st.includes('สุดท้าย')) return '#0ea5e9'; 
-            if(st==='แล้วเสร็จ') return '#10b981'; 
-            return '#c084fc'; 
+            if(st.includes('แบบรูป')) return '#94A3B8'; // Slate 400
+            if(st.includes('ระบบ egp')) return '#38BDF8'; // Light Blue 400
+            if(st.includes('อนุมัติราคากลาง')) return '#60A5FA'; // Blue 400
+            if(st.includes('ทบทวน')) return '#FB7185'; // Rose 400
+            if(st==='ดำเนินการก่อสร้าง') return '#FBBF24'; // Amber 400
+            if(st.includes('ส่งมอบงานงวดที่')) return '#34D399'; // Emerald 400
+            if(st.includes('สุดท้าย')) return '#2DD4BF'; // Cyan 400
+            if(st==='แล้วเสร็จ') return '#10B981'; // Emerald 500
+            return '#A78BFA'; // Purple 400
         }
+
+        const vibrantColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FDCB6E', '#6C5CE7', '#A8E6CF', '#FD79A8', '#E056FD', '#F9CA24', '#00B894'];
 
         let map, projects = [], markers = [], osmLayer, satelliteLayer, terrainLayer, currentMapType = 'street';
         let userRole = 'viewer', editingProjectId = null, projectToDeleteId = null, progressProjectId = null;
         let segmentCounter = 0, activeSegmentsData = {}, currentDrawingSegId = null, isDrawingMode = false;
         let tempPoints = [], tempDrawLayer = null, dynamicDrawLayer = null, isStreetViewMode = false, activeImages = [];
-        let sCurveChartInstance=null, dbBudgetChartInstance=null, dbHealthChartInstance=null, dbBudgetTypeChartInstance=null, dbDistrictStatusChartInstance=null;
+        let sCurveChartInstance=null, dbBudgetChartInstance=null, dbOverallPieChartInstance=null, dbBudgetTypeChartInstance=null, dbDistrictStatusChartInstance=null;
         let rptMapInstance=null, rptSCurveChartInstance=null, v124SCurveChartInstance=null; 
         let rptOsmLayer=null, rptSatLayer=null, isRptSat=false; 
 
@@ -1997,7 +2025,18 @@
                 wBody.innerHTML=wl.sort((a,b)=>a.diff-b.diff).slice(0,10).map(p=>`<tr class="border-b hover:bg-red-50 transition-all"><td class="p-4 font-bold text-slate-800">${p.name}</td><td class="p-4 text-center text-blue-600 font-bold">${p.cp.toFixed(2)}%</td><td class="p-4 text-center text-emerald-600 font-bold">${p.ca.toFixed(2)}%</td><td class="p-4 text-center"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-xl font-bold border border-red-200 shadow-sm">-${Math.abs(p.diff).toFixed(2)}%</span></td><td class="p-4 text-center"><button onclick="closeDashboardModal();openAnalysisModal('${p.id}')" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-bold shadow-sm hover:bg-indigo-700 transition-all">เจาะลึก</button></td></tr>`).join('');
             }
             
+            // เปลี่ยนชื่อหัวข้อกราฟแบบไดนามิก
+            const c2Title = document.getElementById('dbDistrictStatusTitle');
+            if(c2Title) {
+                c2Title.innerHTML = fd !== 'all' ? `<i class="fa-solid fa-city text-pink-500 mr-2"></i> สถานะโครงการ อ.${fd}` : `<i class="fa-solid fa-city text-pink-500 mr-2"></i> สถานะโครงการทุกอำเภอ`;
+            }
+            const c3Title = document.getElementById('dbOverallPieTitle');
+            if(c3Title) {
+                c3Title.innerHTML = fd !== 'all' ? `<i class="fa-solid fa-chart-pie text-indigo-500 mr-2"></i> ภาพรวมโครงการ อ.${fd}` : `<i class="fa-solid fa-chart-pie text-indigo-500 mr-2"></i> ภาพรวมโครงการทุกอำเภอ`;
+            }
+
             Chart.defaults.font.family="'Sarabun', sans-serif";
+            
             const ctx1 = document.getElementById('dbBudgetChart');
             if(ctx1) {
                 if(dbBudgetChartInstance) dbBudgetChartInstance.destroy();
@@ -2010,7 +2049,7 @@
                 } else { 
                     if(c1Title) c1Title.innerHTML='<i class="fa-solid fa-chart-column text-blue-600 mr-2"></i> งบประมาณแยกอำเภอ'; 
                 }
-                dbBudgetChartInstance = new Chart(ctx1.getContext('2d'),{ type:'bar', data:{labels:bL,datasets:[{label:'งบประมาณ',data:bD,backgroundColor:'#3b82f6',borderRadius:4}]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{font:{size:10},callback:function(v){let l=this.getLabelForValue(v); if(l.length>22) return l.substring(0,20)+'...'; return l;}}}, y:{beginAtZero:true, ticks:{callback:v=>'฿'+(v/1e6).toFixed(1)+'M'}}}} });
+                dbBudgetChartInstance = new Chart(ctx1.getContext('2d'),{ type:'bar', data:{labels:bL,datasets:[{label:'งบประมาณ',data:bD,backgroundColor: vibrantColors.slice(0, bL.length),borderRadius:6}]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{font:{size:10},callback:function(v){let l=this.getLabelForValue(v); if(l.length>22) return l.substring(0,20)+'...'; return l;}}}, y:{beginAtZero:true, ticks:{callback:v=>'฿'+(v/1e6).toFixed(1)+'M'}}}} });
             }
 
             const ctx3 = document.getElementById('dbDistrictStatusChart');
@@ -2057,18 +2096,46 @@
                 });
             }
 
-            const ctx2 = document.getElementById('dbHealthChart');
-            if(ctx2) {
-                if(dbHealthChartInstance) dbHealthChartInstance.destroy();
-                dbHealthChartInstance = new Chart(ctx2.getContext('2d'),{ type:'doughnut', data:{labels:['เร็วกว่าแผน','ตามแผน','ล่าช้า','วิกฤต'], datasets:[{data:[fp.length-(crit+del), 0, del, crit], backgroundColor:['#3b82f6','#10b981','#facc15','#ef4444']}]}, options:{responsive:true,maintainAspectRatio:false, cutout:'60%', plugins:{legend:{position:'right'}} } });
+            // Pie Chart ภาพรวมสถานะโครงการ
+            const ctxPie = document.getElementById('dbOverallPieChart');
+            if(ctxPie) {
+                if(dbOverallPieChartInstance) dbOverallPieChartInstance.destroy();
+                const pieData = {};
+                fp.forEach(p => {
+                    const s = p.status || 'ไม่ระบุสถานะ';
+                    pieData[s] = (pieData[s] || 0) + 1;
+                });
+                
+                const pLabels = Object.keys(pieData);
+                const pData = Object.values(pieData);
+                const pColors = pLabels.map(s => getDashboardStatusColor(s));
+
+                dbOverallPieChartInstance = new Chart(ctxPie.getContext('2d'), {
+                    type: 'doughnut', 
+                    data: {
+                        labels: pLabels,
+                        datasets: [{
+                            data: pData,
+                            backgroundColor: pColors,
+                            borderWidth: 2,
+                            borderColor: '#ffffff',
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '60%', 
+                        plugins: {
+                            legend: { position: 'right', labels: { font: { family: "'Sarabun', sans-serif", size: 11 } } }
+                        }
+                    }
+                });
             }
 
             const ctx4 = document.getElementById('dbBudgetTypeChart');
             if(ctx4) {
                 if(dbBudgetTypeChartInstance) dbBudgetTypeChartInstance.destroy();
-                
-                const c4Title = document.getElementById('dbChart4Title');
-                if(c4Title) c4Title.innerHTML='<i class="fa-solid fa-list-check text-emerald-600 mr-2"></i> สถานะการดำเนินงาน แยกตามประเภทงบประมาณ (จำนวนโครงการ)';
                 
                 const btd={}, sSet=new Set(); 
                 fp.forEach(p=>{ 
