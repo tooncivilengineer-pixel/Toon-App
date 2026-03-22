@@ -113,7 +113,7 @@
                 </div>
             </div>
             <div id="userRoleBadge" class="text-sm bg-blue-700 px-3 py-1 rounded-full border border-blue-600 shadow-sm transition-colors duration-300">
-                <span id="userRoleText"><i class="fa-solid fa-user-tie mr-1"></i> TooN - CIVIL ENGINEER</span>
+                <span id="userRoleText"><i class="fa-solid fa-helmet-safety text-white mr-1"></i> TooN - CIVIL ENGINEER</span>
             </div>
         </div>
     </header>
@@ -580,7 +580,7 @@
         </div>
     </div>
 
-    <!-- 7. Delete Modal -->
+    <!-- Delete Modal -->
     <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 z-[3000] hidden justify-center items-center text-gray-700 no-print">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
             <div class="text-red-500 mb-4"><i class="fa-solid fa-triangle-exclamation text-5xl"></i></div>
@@ -593,7 +593,7 @@
         </div>
     </div>
 
-    <!-- 8. Data Management Modal -->
+    <!-- Data Management Modal -->
     <div id="dataManagementModal" class="fixed inset-0 bg-black bg-opacity-50 z-[2000] hidden justify-center items-center text-gray-700 no-print">
         <div id="dataManagementModalContent" class="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden relative">
             <div id="dataManagementModalHeader" class="bg-teal-600 text-white px-6 py-4 flex justify-between items-center font-bold shadow-sm cursor-move">
@@ -628,7 +628,7 @@
         </div>
     </div>
 
-    <!-- 10. Table Report Modal (แนวนอน) -->
+    <!-- Table Report Modal -->
     <div id="tableReportModal" class="fixed inset-0 bg-gray-500 bg-opacity-80 z-[4000] hidden justify-center items-start overflow-y-auto py-8">
         <div class="absolute top-4 right-6 p-2 flex gap-3 no-print z-50 bg-white rounded-lg shadow-lg border border-gray-200">
             <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-print"></i> พิมพ์ PDF (แนวนอน)</button>
@@ -664,7 +664,7 @@
         </div>
     </div>
 
-    <!-- 9. Dashboard Modal -->
+    <!-- Dashboard Modal -->
     <div id="dashboardModal" class="fixed inset-0 bg-black bg-opacity-50 z-[3000] hidden justify-center items-center transition-opacity duration-300 p-4 opacity-0 no-print">
         <div id="dashboardModalContent" class="bg-gray-100 rounded-2xl shadow-2xl w-full max-w-[1200px] max-h-[92vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 relative">
             <div id="dashboardModalHeader" class="bg-gradient-to-r from-purple-800 to-indigo-700 text-white px-6 py-4 flex justify-between items-center font-bold shadow-md z-10 cursor-move">
@@ -845,7 +845,7 @@
                 } else { 
                     adminEls.forEach(el => { if(el.classList) el.classList.remove('hidden'); }); 
                     if (urText) {
-                        urText.innerHTML = '<i class="fa-solid fa-user-tie mr-1"></i> TooN - CIVIL ENGINEER'; 
+                        urText.innerHTML = '<i class="fa-solid fa-helmet-safety text-white mr-1"></i> TooN - CIVIL ENGINEER'; 
                         if(urText.parentElement) urText.parentElement.className = "text-sm bg-blue-700 px-3 py-1 rounded-full border border-blue-600 font-bold text-white shadow-sm"; 
                     }
                 }
@@ -918,6 +918,13 @@
                     if (svBtn) { svBtn.style.backgroundColor = 'white'; svBtn.style.color = '#4b5563'; }
                     const mapEl = document.getElementById('map');
                     if (mapEl) mapEl.style.cursor = '';
+                }
+            };
+
+            window.flyToLocation = function(lat, lng) {
+                if(map) {
+                    map.setView([lat, lng], 16);
+                    window.closeSearchModal();
                 }
             };
 
@@ -1275,7 +1282,7 @@
                     r.innerHTML = `
                         <div class="flex gap-2 mb-2">
                             <input type="text" class="seg-name flex-1 font-bold text-sm border-b outline-none px-2" value="${n||'พิกัดที่ '+segmentCounter}">
-                            <button type="button" onclick="this.closest('.segment-entry').remove(); delete window.activeSegmentsData['${id}'];" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                            <button type="button" onclick="window.removeSegmentData(this, '${id}')" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
                         </div>
                         <div class="flex gap-2">
                             <input type="number" step="any" class="lat-input w-1/2 border border-gray-300 rounded p-1.5 text-xs outline-none focus:border-blue-400" onchange="window.manualCoordUpdate('${id}','point')" placeholder="Lat">
@@ -1287,7 +1294,7 @@
                     r.innerHTML = `
                         <div class="flex gap-2 mb-2">
                             <input type="text" class="seg-name flex-1 font-bold text-sm border-b outline-none px-2" value="${n||'ช่วง '+segmentCounter}">
-                            <button type="button" onclick="this.closest('.segment-entry').remove(); delete window.activeSegmentsData['${id}'];" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                            <button type="button" onclick="window.removeSegmentData(this, '${id}')" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
                         </div>
                         <div class="flex flex-col gap-1.5 bg-gray-50 p-2 rounded">
                             <div class="flex gap-2 items-center">
@@ -1325,6 +1332,12 @@
                         activeSegmentsData[id] = {coordinates: [[l1,n1], [l2,n2]]};
                     }
                 } 
+            };
+
+            window.removeSegmentData = function(btn, id) {
+                const entry = btn.closest('.segment-entry');
+                if (entry) entry.remove();
+                if (activeSegmentsData[id] !== undefined) delete activeSegmentsData[id];
             };
 
             window.startDrawing = function(id) { 
@@ -1418,6 +1431,62 @@
                         if(bp > 0 && document.activeElement !== wInp) wInp.value = ((a / bp) * 100).toFixed(4);
                     } 
                 }); 
+            };
+
+            window.downloadActivityTemplate = function() {
+                const ws_data = [
+                    ["ชื่อรายการ", "หน่วย", "ปริมาณ", "ราคา/หน่วย", "เริ่มสัญญา (YYYY-MM-DD)", "สิ้นสุดสัญญา (YYYY-MM-DD)", "ค่างาน(%)", "ผลงานจริง(%)"]
+                ];
+                const ws = XLSX.utils.aoa_to_sheet(ws_data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Activities");
+                XLSX.writeFile(wb, "Activity_Template.xlsx");
+            };
+
+            window.handleActivityUpload = function(input) {
+                if (!input.files || input.files.length === 0) return;
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = e.target.result;
+                        const workbook = XLSX.read(data, { type: 'binary' });
+                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const json = XLSX.utils.sheet_to_json(worksheet);
+                        
+                        const container = document.getElementById('activitiesContainer');
+                        if (container) container.innerHTML = '';
+                        
+                        const formatDate = function(excelDate) {
+                            if(!excelDate) return '';
+                            if(typeof excelDate === 'number') {
+                                let d = new Date(Math.round((excelDate - 25569)*86400*1000));
+                                return !isNaN(d) ? d.toISOString().split('T')[0] : '';
+                            }
+                            return excelDate.toString(); 
+                        };
+
+                        json.forEach(row => {
+                            const n = row["ชื่อรายการ"] || '';
+                            const u = row["หน่วย"] || '';
+                            const q = row["ปริมาณ"] || '';
+                            const p = row["ราคา/หน่วย"] || '';
+                            const s = formatDate(row["เริ่มสัญญา (YYYY-MM-DD)"]);
+                            const end = formatDate(row["สิ้นสุดสัญญา (YYYY-MM-DD)"]);
+                            const w = row["ค่างาน(%)"] || '';
+                            const act = row["ผลงานจริง(%)"] || 0;
+                            const a = (parseFloat(q) * parseFloat(p)) || 0;
+                            
+                            window.addActivity(n, u, q, p, a, w, act, s, end);
+                        });
+                        window.calculateActivityRows();
+                    } catch (err) {
+                        console.error(err);
+                        alert("รูปแบบไฟล์ไม่ถูกต้อง กรุณาใช้ไฟล์ที่โหลดจากระบบ");
+                    }
+                };
+                reader.readAsBinaryString(file);
+                input.value = ''; 
             };
 
             window.handleImageUpload = function(input) { 
@@ -1801,7 +1870,7 @@
                                 let mB = ''; 
                                 if(p.segments && p.segments.length > 0){ 
                                     const cd = p.geomType === 'line' ? p.segments[0].coordinates[0] : p.segments[0].coordinates; 
-                                    mB = `<button type="button" onclick="if(window.map){window.map.setView([${cd[0]}, ${cd[1]}],15);window.closeSearchModal();}" class="w-8 h-8 bg-white text-blue-600 border border-slate-200 rounded-full hover:bg-blue-600 hover:text-white shadow-sm transition-colors shrink-0 flex items-center justify-center text-sm" title="ดูบนแผนที่"><i class="fa-solid fa-location-dot"></i></button>`; 
+                                    mB = `<button type="button" onclick="window.flyToLocation(${cd[0]}, ${cd[1]})" class="w-8 h-8 bg-white text-blue-600 border border-slate-200 rounded-full hover:bg-blue-600 hover:text-white shadow-sm transition-colors shrink-0 flex items-center justify-center text-sm" title="ดูบนแผนที่"><i class="fa-solid fa-location-dot"></i></button>`; 
                                 }
 
                                 let actionBtns = '';
@@ -1837,7 +1906,9 @@
                                             ${mB}
                                         </div>
                                         <div class="flex gap-1.5 pt-3 border-t border-slate-100">
-                                            ${actionBtns}
+                                            <button type="button" onclick="window.viewProject('${p.id}')" class="w-full bg-slate-50 hover:bg-blue-600 text-slate-600 hover:text-white border border-slate-200 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2">
+                                                <i class="fa-solid fa-folder-open"></i> เปิดดูข้อมูลโครงการ
+                                            </button>
                                         </div>
                                     </div>
                                 `;
@@ -1865,6 +1936,7 @@
             };
 
             window.viewProject = function(id) {
+                if(map) map.closePopup();
                 const safeProjects = window.projects || [];
                 const p = safeProjects.find(pj => pj.id.toString() === id.toString());
                 if(!p) return;
@@ -1984,6 +2056,7 @@
             };
 
             window.openProgressModal = function(id) {
+                if(map) map.closePopup();
                 progressProjectId = id; 
                 const safeProjects = window.projects || [];
                 const p = safeProjects.find(x => x.id == id); 
