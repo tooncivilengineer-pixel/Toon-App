@@ -26,7 +26,7 @@
         .modern-popup .leaflet-popup-content { margin: 16px; width: auto !important; }
         .modern-popup .leaflet-popup-tip { box-shadow: none; border: 1px solid #e2e8f0; border-top: none; border-left: none; }
         .modern-popup .leaflet-popup-close-button { display: none; }
-        .expanded-popup .leaflet-popup-content { width: 340px !important; }
+        .expanded-popup .leaflet-popup-content { width: 500px !important; }
         
         .create-proj-popup .leaflet-popup-content-wrapper { border-radius: 0.75rem; border: 2px solid #2563eb; padding: 0px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         .create-proj-popup .leaflet-popup-content { margin: 12px; width: 160px !important; }
@@ -691,11 +691,11 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
                     <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbChart1Title" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-chart-column text-blue-600 mr-2"></i> งบประมาณแยกอำเภอ</h3><div class="relative h-60 w-full flex-1"><canvas id="dbBudgetChart"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbDistrictStatusTitle" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-city text-pink-500 mr-2"></i> สถานะโครงการทุกอำเภอ</h3><div class="relative h-60 w-full flex-1"><canvas id="dbDistrictStatusChart"></canvas></div></div>
                     <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbOverallPieTitle" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-chart-pie text-indigo-600 mr-2"></i> ภาพรวมโครงการทุกอำเภอ</h3><div class="relative h-60 w-full flex-1 flex justify-center items-center"><canvas id="dbOverallPieChart"></canvas></div></div>
                     <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbContractorChartTitle" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-users-gear text-amber-500 mr-2"></i> 5 อันดับผู้รับจ้าง (จำนวนโครงการ)</h3><div class="relative h-60 w-full flex-1 flex justify-center items-center"><canvas id="dbContractorChart"></canvas></div></div>
-                    <div class="lg:col-span-4 bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbChart4Title" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-list-check text-emerald-600 mr-2"></i> สถานะการดำเนินงาน แยกตามประเภทงบประมาณ (จำนวนโครงการ)</h3><div class="relative h-64 w-full flex-1"><canvas id="dbBudgetTypeChart"></canvas></div></div>
+                    <div class="lg:col-span-3 bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbChart4Title" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-list-check text-emerald-600 mr-2"></i> สถานะการดำเนินงาน แยกตามประเภทงบประมาณ (จำนวนโครงการ)</h3><div class="relative h-[500px] w-full flex-1"><canvas id="dbBudgetTypeChart"></canvas></div></div>
                 </div>
 
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-red-200 flex flex-col">
@@ -723,7 +723,7 @@
             let userRole = 'viewer', editingProjectId = null, projectToDeleteId = null, progressProjectId = null;
             let segmentCounter = 0, activeSegmentsData = {}, currentDrawingSegId = null, isDrawingMode = false;
             let tempPoints = [], tempDrawLayer = null, dynamicDrawLayer = null, isStreetViewMode = false, activeImages = [];
-            let sCurveChartInstance = null, dbBudgetChartInstance = null, dbOverallPieChartInstance = null, dbBudgetTypeChartInstance = null, dbDistrictStatusChartInstance = null, dbContractorChartInstance = null;
+            let sCurveChartInstance = null, dbBudgetChartInstance = null, dbOverallPieChartInstance = null, dbBudgetTypeChartInstance = null, dbContractorChartInstance = null;
             let rptMapInstance = null, rptSCurveChartInstance = null, v124SCurveChartInstance = null, rptOsmLayer = null, rptSatLayer = null, isRptSat = false;
 
             window.vibrantColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FDCB6E', '#6C5CE7', '#A8E6CF'];
@@ -1046,7 +1046,7 @@
                         let probHtml = p.problem ? `<div class="mt-1.5 pt-1.5 border-t border-red-100 text-red-600"><span class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> อุปสรรค/หมายเหตุ:</span> <span class="font-normal">${p.problem}</span></div>` : '';
 
                         let pop = `
-                            <div class="font-sans w-full max-h-[450px] flex flex-col popup-inner-container">
+                            <div class="font-sans w-full max-h-[550px] flex flex-col popup-inner-container">
                                 <div class="mb-2 shrink-0 relative pr-8">
                                     <button type="button" onclick="window.togglePopupExpand(this)" class="absolute -top-1 -right-1 text-gray-500 hover:text-blue-600 bg-white hover:bg-gray-100 w-7 h-7 rounded border border-gray-200 shadow-sm flex items-center justify-center transition-all z-10" title="ขยาย/ย่อ หน้าต่าง">
                                         <i class="fa-solid fa-expand popup-expand-icon"></i>
@@ -1090,7 +1090,7 @@
                             </div>
                         `;
 
-                        const popupOptions = { minWidth: 260, maxWidth: 300, className: 'modern-popup' };
+                        const popupOptions = { minWidth: 340, maxWidth: 400, className: 'modern-popup' };
 
                         if (p.geomType === 'line') { 
                             p.segments.forEach(s => {
@@ -2631,6 +2631,12 @@
                 }
             };
 
+            window.printDashboard = function() {
+                if (document.body.classList) document.body.classList.add('printing-dashboard');
+                window.print();
+                setTimeout(() => { if (document.body.classList) document.body.classList.remove('printing-dashboard'); }, 1000);
+            };
+
             window.resetDashboardFilters = function() { 
                 const d1 = document.getElementById('dbFilterDistrict'); if(d1) d1.value = 'all'; 
                 const d2 = document.getElementById('dbFilterContractor'); if(d2) d2.value = 'all'; 
@@ -2667,6 +2673,12 @@
                 const tComp = document.getElementById('dbCompleted'); if(tComp) tComp.innerText = c.toLocaleString(); 
                 const tInp = document.getElementById('dbInProgress'); if(tInp) tInp.innerText = (fp.length - c).toLocaleString();
                 
+                // --- ส่วนที่เพิ่มใหม่: เปลี่ยนชื่อหัวกราฟตามอำเภอที่เลือก ---
+                const distText = fd === 'all' ? 'ทุกอำเภอ' : `อำเภอ${fd}`;
+                const c3Title = document.getElementById('dbOverallPieTitle'); if (c3Title) c3Title.innerHTML = `<i class="fa-solid fa-chart-pie text-indigo-600 mr-2"></i> ภาพรวมโครงการ${distText}`;
+                const c4Title = document.getElementById('dbContractorChartTitle'); if (c4Title) c4Title.innerHTML = `<i class="fa-solid fa-users-gear text-amber-500 mr-2"></i> 5 อันดับผู้รับจ้าง (${distText})`;
+                const c5Title = document.getElementById('dbChart4Title'); if (c5Title) c5Title.innerHTML = `<i class="fa-solid fa-list-check text-emerald-600 mr-2"></i> สถานะแยกตามประเภทงบ (${distText})`;
+
                 const ctxBudget = document.getElementById('dbBudgetChart');
                 if(ctxBudget) {
                     if(dbBudgetChartInstance) dbBudgetChartInstance.destroy();
@@ -2676,8 +2688,10 @@
                     let bL=Object.keys(dd), bD=Object.values(dd); 
                     const c1Title = document.getElementById('dbChart1Title');
                     if(fd!=='all'){ 
-                        const tp=fp.sort((a,b)=>(b.budget||0)-(a.budget||0)).slice(0,10); bL=tp.map(x=>x.name); bD=tp.map(x=>x.budget||0); 
-                        if(c1Title) c1Title.innerHTML='<i class="fa-solid fa-chart-column text-blue-600 mr-2"></i> 10 อันดับงบสูงสุด'; 
+                        const tp=fp.sort((a,b)=>(b.budget||0)-(a.budget||0)).slice(0,10); 
+                        bL=tp.map(x=>x.name.length>15?x.name.substring(0,15)+'...':x.name); 
+                        bD=tp.map(x=>x.budget||0); 
+                        if(c1Title) c1Title.innerHTML=`<i class="fa-solid fa-chart-column text-blue-600 mr-2"></i> 10 อันดับงบสูงสุด (${distText})`; 
                     } else { 
                         if(c1Title) c1Title.innerHTML='<i class="fa-solid fa-chart-column text-blue-600 mr-2"></i> งบประมาณแยกอำเภอ'; 
                     }
@@ -2697,53 +2711,31 @@
                     dbOverallPieChartInstance = new Chart(ctxPie.getContext('2d'), {
                         type: 'doughnut',
                         data: { labels: Object.keys(pd), datasets: [{ data: Object.values(pd), backgroundColor: Object.keys(pd).map(s => window.getDashboardStatusColor(s)) }] },
-                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: false, 
+                            plugins: { 
+                                legend: { position: 'right' },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            let value = context.raw || 0;
+                                            let total = context.chart._metasets[context.datasetIndex].total;
+                                            let percentage = total > 0 ? Math.round((value / total) * 100) + '%' : '0%';
+                                            return label + value + ' โครงการ (' + percentage + ')';
+                                        }
+                                    }
+                                }
+                            } 
+                        }
                     });
                 }
                 
-                const ctxDistrictStatus = document.getElementById('dbDistrictStatusChart');
-                if(ctxDistrictStatus) {
-                    if(dbDistrictStatusChartInstance) dbDistrictStatusChartInstance.destroy();
-                    
-                    const dtd={}, sSet2=new Set(); 
-                    fp.forEach(p=>{ 
-                        const d=p.district||'ไม่ระบุ'; 
-                        const s=p.status||'ไม่ระบุสถานะ'; 
-                        if(!dtd[d])dtd[d]={}; 
-                        dtd[d][s]=(dtd[d][s]||0)+1; 
-                        sSet2.add(s); 
-                    });
-                    
-                    const distL=Object.keys(dtd);
-                    const statusOrder2 = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ทบทวนราคากลาง', 'ดำเนินการก่อสร้าง', 'ส่งมอบงานงวดสุดท้าย', 'แล้วเสร็จ'];
-                    const dsA2=Array.from(sSet2).sort((a,b) => {
-                        let ia = statusOrder2.indexOf(a); if(ia===-1 && a.includes('ส่งมอบงาน')) ia = 4.5;
-                        let ib = statusOrder2.indexOf(b); if(ib===-1 && b.includes('ส่งมอบงาน')) ib = 4.5;
-                        return (ia !== -1 ? ia : 99) - (ib !== -1 ? ib : 99);
-                    });
-                    
-                    dbDistrictStatusChartInstance = new Chart(ctxDistrictStatus.getContext('2d'),{ 
-                        type:'bar', 
-                        data:{
-                            labels:distL, 
-                            datasets:dsA2.map((s)=>({
-                                label:s, 
-                                data:distL.map(d=>dtd[d][s]||0), 
-                                backgroundColor: window.getDashboardStatusColor(s), 
-                                borderRadius: 4
-                            }))
-                        }, 
-                        options:{
-                            responsive:true, 
-                            maintainAspectRatio:false, 
-                            plugins: { legend: { display: false } }, 
-                            scales:{
-                                x:{stacked:true, ticks:{font:{size:10, family: "'Sarabun', sans-serif"}}}, 
-                                y:{stacked:true, ticks:{stepSize: 1}}
-                            } 
-                        } 
-                    });
-                }
+                // ลบกราฟ DistrictStatus ออกตามที่ผู้ใช้ต้องการ
 
                 const ctxContractor = document.getElementById('dbContractorChart');
                 if(ctxContractor) {
@@ -2759,7 +2751,11 @@
                         .slice(0, 5);
                     
                     const cLabels = sortedContractors.map(item => item[0].length > 15 ? item[0].substring(0,15)+'...' : item[0]);
+                    const cFullLabels = sortedContractors.map(item => item[0]);
                     const cData = sortedContractors.map(item => item[1]);
+                    
+                    // ไล่เฉดสีจากเข้มไปอ่อน
+                    const gradientColors = ['#b45309', '#d97706', '#f59e0b', '#fbbf24', '#fcd34d'];
 
                     dbContractorChartInstance = new Chart(ctxContractor.getContext('2d'), {
                         type: 'bar', 
@@ -2768,7 +2764,7 @@
                             datasets: [{
                                 label: 'จำนวนโครงการ',
                                 data: cData,
-                                backgroundColor: '#F59E0B',
+                                backgroundColor: gradientColors.slice(0, cData.length),
                                 borderRadius: 4
                             }]
                         },
@@ -2776,7 +2772,17 @@
                             indexAxis: 'y',
                             responsive: true,
                             maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
+                            plugins: { 
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        title: function(context) {
+                                            // ดึงชื่อเต็มมาแสดงตอนเอาเมาส์ชี้
+                                            return cFullLabels[context[0].dataIndex];
+                                        }
+                                    }
+                                }
+                            },
                             scales: {
                                 x: { beginAtZero: true, ticks: { stepSize: 1, font: { family: "'Sarabun', sans-serif", size: 10 } } },
                                 y: { ticks: { font: { family: "'Sarabun', sans-serif", size: 10 } } }
@@ -2814,17 +2820,18 @@
                                 label:s, 
                                 data:btL.map(t=>btd[t][s]||0), 
                                 backgroundColor: window.getDashboardStatusColor(s), 
-                                borderRadius: 4
+                                borderRadius: 4,
+                                maxBarThickness: 60 // ปรับให้แท่งกราฟหนาและใหญ่ขึ้น
                             }))
                         }, 
                         options:{
-                            indexAxis:'y', 
+                            // เปลี่ยนเป็นกราฟแนวตั้ง
                             responsive:true, 
                             maintainAspectRatio:false, 
                             plugins: { legend: { position: 'bottom', labels: { font: { size: 11, family: "'Sarabun', sans-serif" } } } },
                             scales:{
-                                x:{stacked:true, title: { display: true, text: 'จำนวนโครงการ (แห่ง)', font: {weight: 'bold', family: "'Sarabun', sans-serif"} }, ticks:{stepSize: 1}}, 
-                                y:{stacked:true}
+                                x:{stacked:true, ticks: { font: { family: "'Sarabun', sans-serif", size: 11 } }}, 
+                                y:{stacked:true, title: { display: true, text: 'จำนวนโครงการ (แห่ง)', font: {weight: 'bold', family: "'Sarabun', sans-serif"} }, ticks:{stepSize: 1}}
                             } 
                         } 
                     });
@@ -2869,6 +2876,113 @@
                 }
             };
 
+            window.openStatusSummaryModal = function() {
+                const fd = document.getElementById('dbFilterDistrict') ? document.getElementById('dbFilterDistrict').value : 'all';
+                const fc = document.getElementById('dbFilterContractor') ? document.getElementById('dbFilterContractor').value : 'all';
+                const fy = document.getElementById('dbFilterYear') ? document.getElementById('dbFilterYear').value : 'all';
+                const ft = document.getElementById('dbFilterBudgetType') ? document.getElementById('dbFilterBudgetType').value : 'all';
+                
+                const fp = window.projects.filter(p => 
+                    (fd === 'all' || p.district === fd) && 
+                    (fc === 'all' || p.contractor === fc) &&
+                    (fy === 'all' || p.year === fy) &&
+                    (ft === 'all' || p.budgetType === ft)
+                );
+
+                fp.sort((a,b) => (a.district||'').localeCompare(b.district||'') || 
+                                 (a.year||'').localeCompare(b.year||'') || 
+                                 (a.budgetType||'').localeCompare(b.budgetType||''));
+
+                const tbody = document.getElementById('statusSummaryBody');
+                if(!tbody) return;
+                tbody.innerHTML = '';
+
+                if(fp.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="10" class="p-6 text-center text-gray-500 font-bold text-sm">ไม่พบข้อมูลโครงการตามเงื่อนไขที่เลือก</td></tr>';
+                } else {
+                    fp.forEach((p, index) => {
+                        let ca = 0;
+                        if(p.activities) p.activities.forEach(a => ca += (parseFloat(a.actual)||0));
+
+                        let s1 = '<span class="text-gray-200">-</span>', s2 = '<span class="text-gray-200">-</span>', s3 = '<span class="text-gray-200">-</span>', s4 = '<span class="text-gray-200">-</span>';
+                        let st = p.status || '';
+                        
+                        let stepHtml = (text, colorClass) => `<div class="px-2 py-1.5 rounded text-[10px] font-bold ${colorClass} shadow-sm inline-block w-full text-center whitespace-normal leading-tight">${text}</div>`;
+
+                        if (st.includes('แล้วเสร็จ')) {
+                            s4 = stepHtml(st, 'bg-emerald-100 text-emerald-800 border border-emerald-200');
+                        } else if (st.includes('ก่อสร้าง') || st.includes('งวด')) {
+                            s3 = stepHtml(st, 'bg-orange-100 text-orange-800 border border-orange-200');
+                        } else if (st === 'ประกาศจัดซื้อจัดจ้าง') {
+                            let extra = (p.procurementMethod || '') + (p.procurementIteration ? ` (ครั้งที่ ${p.procurementIteration})` : '');
+                            s2 = stepHtml(st + (extra ? `<br><span class="font-normal text-[9px] mt-0.5 block">${extra}</span>` : ''), 'bg-indigo-100 text-indigo-800 border border-indigo-200');
+                        } else {
+                            s1 = stepHtml(st, 'bg-blue-100 text-blue-800 border border-blue-200');
+                        }
+
+                        let bgClass = index % 2 === 0 ? 'bg-white' : 'bg-slate-50';
+                        let contractorText = p.contractor ? `<div class="text-[9px] text-gray-500 font-normal mt-1"><i class="fa-solid fa-helmet-safety text-amber-600"></i> ${p.contractor}</div>` : '';
+
+                        tbody.innerHTML += `
+                            <tr class="${bgClass} border-b border-gray-100 hover:bg-yellow-50 transition-colors">
+                                <td class="p-2 border-r text-center align-top">${index + 1}</td>
+                                <td class="p-2 border-r font-bold text-gray-700 align-top">${p.district || '-'}</td>
+                                <td class="p-2 border-r text-center align-top">${p.year || '-'}</td>
+                                <td class="p-2 border-r text-gray-600 align-top">${p.budgetType || '-'}</td>
+                                <td class="p-2 border-r font-bold text-blue-900 whitespace-normal min-w-[200px] leading-tight align-top">
+                                    ${p.name || '-'}
+                                    ${contractorText}
+                                </td>
+                                <td class="p-2 border-r align-middle">${s1}</td>
+                                <td class="p-2 border-r align-middle">${s2}</td>
+                                <td class="p-2 border-r align-middle">${s3}</td>
+                                <td class="p-2 border-r align-middle">${s4}</td>
+                                <td class="p-2 text-center align-middle">
+                                    <span class="font-bold ${ca >= 100 ? 'text-emerald-600' : 'text-blue-600'}">${ca.toFixed(2)}%</span>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                const m = document.getElementById('statusSummaryModal');
+                if(m) { 
+                    m.classList.remove('hidden'); 
+                    m.classList.add('flex');
+                    setTimeout(() => m.style.opacity = '1', 10);
+                }
+            };
+
+            window.closeStatusSummaryModal = function() {
+                const m = document.getElementById('statusSummaryModal');
+                if(m) {
+                    m.style.opacity = '0'; 
+                    setTimeout(() => {
+                        m.classList.add('hidden'); 
+                        m.classList.remove('flex');
+                        if (document.body.classList) document.body.classList.remove('printing-status-summary');
+                    }, 300);
+                }
+            };
+
+            window.printStatusSummary = function() {
+                if (document.body.classList) document.body.classList.add('printing-status-summary');
+                let printHeader = document.getElementById('printHeaderStatusSummary');
+                if (!printHeader) {
+                    printHeader = document.createElement('div');
+                    printHeader.id = 'printHeaderStatusSummary';
+                    printHeader.className = 'hidden print:block text-center mb-4 border-b-2 border-blue-800 pb-3';
+                    printHeader.innerHTML = `
+                        <h1 class="text-xl font-bold text-blue-900 mb-1">ตารางสรุปสถานะการดำเนินโครงการก่อสร้าง</h1>
+                        <p class="text-sm text-gray-600 font-bold">กองช่าง อบจ.พิษณุโลก (อัปเดตข้อมูล ณ วันที่ ${new Date().toLocaleDateString('th-TH')})</p>
+                    `;
+                    const area = document.getElementById('printAreaStatusSummary');
+                    if (area) area.prepend(printHeader);
+                }
+                window.print();
+                setTimeout(() => { if (document.body.classList) document.body.classList.remove('printing-status-summary'); }, 1000);
+            };
+
             // เพิ่มคำสั่งโหลดแผนที่และระบบต่างๆ อัตโนมัติเมื่อเปิดเว็บ
             window.onload = function() { 
                 window.initMap(); 
@@ -2879,6 +2993,7 @@
                 window.makeDraggable('dataManagementModalContent', 'dataManagementModalHeader'); 
                 window.makeDraggable('dashboardModalContent', 'dashboardModalHeader');
                 window.makeDraggable('viewModalContent', 'viewModalHeader');
+                window.makeDraggable('statusSummaryModalContent', 'statusSummaryModalHeader');
             };
 
         })();
