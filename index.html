@@ -1483,8 +1483,8 @@
                     <div class="col-span-4"><label class="text-[10px] font-bold text-gray-500">ปริมาณ</label><input type="text" oninput="window.formatNumberInput(this); window.calculateActivityRows()" class="act-qty w-full border border-gray-300 rounded p-1.5 text-xs outline-none focus:border-blue-400 font-bold" value="${q}"></div>
                     <div class="col-span-4"><label class="text-[10px] font-bold text-gray-500">ราคา/หน่วย</label><input type="text" oninput="window.formatNumberInput(this); window.calculateActivityRows()" class="act-price w-full border border-gray-300 rounded p-1.5 text-xs outline-none focus:border-blue-400 font-bold" value="${p}"></div>
                     <div class="col-span-4"><label class="text-[10px] font-bold text-blue-600">รวมเป็นเงิน</label><input type="text" oninput="window.formatNumberInput(this); window.calculateActivityRows()" class="act-amount w-full bg-blue-50 border border-blue-200 rounded p-1.5 text-xs font-bold text-blue-700 outline-none" value="${a}"></div>
-                    <div class="col-span-4"><label class="text-[10px] font-bold text-gray-500">เริ่มสัญญา</label><input type="date" class="act-start w-full border border-gray-300 rounded p-1.5 text-[10px] outline-none" value="${s}"></div>
-                    <div class="col-span-4"><label class="text-[10px] font-bold text-gray-500">สิ้นสุดสัญญา</label><input type="date" class="act-end w-full border border-gray-300 rounded p-1.5 text-[10px] outline-none" value="${e}"></div>
+                    <div class="col-span-4"><label class="text-[10px] font-bold text-gray-500">เริ่มทำงาน</label><input type="date" class="act-start w-full border border-gray-300 rounded p-1.5 text-[10px] outline-none" value="${s}"></div>
+                    <div class="col-span-4"><label class="text-[10px] font-bold text-gray-500">ทำงานเสร็จ</label><input type="date" class="act-end w-full border border-gray-300 rounded p-1.5 text-[10px] outline-none" value="${e}"></div>
                     <div class="col-span-4"><label class="text-[10px] font-bold text-gray-500">ค่างาน(%)</label><input type="text" class="act-weight w-full border border-gray-300 bg-gray-50 rounded p-1.5 text-[10px] text-center outline-none" oninput="window.formatNumberInput(this)" value="${w}"></div>
                     <input type="hidden" class="act-actual" value="${ac}">
                 `; 
@@ -1509,7 +1509,7 @@
 
             window.downloadActivityTemplate = function() {
                 const ws_data = [
-                    ["ชื่อรายการ", "หน่วย", "ปริมาณ", "ราคา/หน่วย", "เริ่มสัญญา (YYYY-MM-DD)", "สิ้นสุดสัญญา (YYYY-MM-DD)", "ค่างาน(%)", "ผลงานจริง(%)"]
+                    ["ชื่อรายการ", "หน่วย", "ปริมาณ", "ราคา/หน่วย", "เริ่มทำงาน (YYYY-MM-DD)", "ทำงานเสร็จ (YYYY-MM-DD)", "ค่างาน(%)", "ผลงานจริง(%)"]
                 ];
                 const ws = XLSX.utils.aoa_to_sheet(ws_data);
                 const wb = XLSX.utils.book_new();
@@ -1545,8 +1545,8 @@
                             const u = row["หน่วย"] || '';
                             const q = row["ปริมาณ"] || '';
                             const p = row["ราคา/หน่วย"] || '';
-                            const s = formatDate(row["เริ่มสัญญา (YYYY-MM-DD)"]);
-                            const end = formatDate(row["สิ้นสุดสัญญา (YYYY-MM-DD)"]);
+                            const s = formatDate(row["เริ่มทำงาน (YYYY-MM-DD)"] || row["เริ่มสัญญา (YYYY-MM-DD)"]);
+                            const end = formatDate(row["ทำงานเสร็จ (YYYY-MM-DD)"] || row["สิ้นสุดสัญญา (YYYY-MM-DD)"]);
                             const w = row["ค่างาน(%)"] || '';
                             const act = row["ผลงานจริง(%)"] || 0;
                             const a = (parseFloat(q) * parseFloat(p)) || 0;
@@ -2194,17 +2194,59 @@
             window.generateSCurveData = function(p) {
                 let acts=(p.activities||[]).filter(a=>a.startDate&&a.endDate&&new Date(a.startDate)<=new Date(a.endDate));
                 if(acts.length===0) return {labels:['ไม่มีข้อมูล'], labelsV124:[], planned:[0], actual:[0], plannedMonthly:[0], actualMonthly:[0], activityMatrix:[], monthBounds:[]};
-                let md=new Date(Math.min(...acts.map(a=>new Date(a.startDate)))), mx=new Date(Math.max(...acts.map(a=>new Date(a.endDate))));
-                if(p.contractStartDate){let ps=new Date(p.contractStartDate); if(ps<md)md=ps;} if(p.contractEndDate){let pe=new Date(p.contractEndDate); if(pe>mx)mx=pe;}
-                let lbs=[], lbV=[], bds=[], cr=new Date(md.getFullYear(),md.getMonth(),1), ed=new Date(mx.getFullYear(),mx.getMonth(),1), cnt=1; const mn=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-                while(cr<=ed){ lbs.push(`${mn[cr.getMonth()]} ${(cr.getFullYear()+543).toString().slice(-2)}`); lbV.push(`เดือนที่ ${cnt++}`); bds.push({start:new Date(cr.getFullYear(),cr.getMonth(),1), end:new Date(cr.getFullYear(),cr.getMonth()+1,0)}); cr.setMonth(cr.getMonth()+1); }
-                let pm=new Array(lbs.length).fill(0), am=new Array(lbs.length).fill(0), mat=[], td=new Date();
-                acts.forEach((a,i)=>{ mat[i]=new Array(lbs.length).fill(0); let as=new Date(a.startDate), ae=new Date(a.endDate), d=(ae-as)/(8.64e7)+1, w=parseFloat(a.weight)||0, v=parseFloat(a.actual)||0, aee=new Date(Math.min(td,ae)), ad=(aee-as)/(8.64e7)+1; if(ad<1)ad=1;
-                    bds.forEach((b,j)=>{ let os=new Date(Math.max(as,b.start)), oe=new Date(Math.min(ae,b.end)), od=(oe-os)/(8.64e7)+1; if(od>0){let pv=w*(od/d); pm[j]+=pv; mat[i][j]=pv;}
-                        if(v>0&&as<=td){ let aos=new Date(Math.max(as,b.start)), aoe=new Date(Math.min(aee,b.end)), aod=(aoe-aos)/(8.64e7)+1; if(aod>0) am[j]+=v*(aod/ad); }
+                
+                let td=new Date();
+                let md=new Date(Math.min(...acts.map(a=>new Date(a.startDate))));
+                let mx=new Date(Math.max(...acts.map(a=>new Date(a.endDate))));
+                
+                // ปรับแก้: ถ้ามีผลงานจริงเกิดขึ้นแล้วแม้จะยังไม่ถึงแผน ให้เริ่มกราฟตั้งแต่วันนี้
+                if(acts.some(a=>parseFloat(a.actual)>0) && td < md) md = new Date(td.getFullYear(), td.getMonth(), 1);
+                
+                if(p.contractStartDate){let ps=new Date(p.contractStartDate); if(ps<md)md=ps;} 
+                if(p.contractEndDate){let pe=new Date(p.contractEndDate); if(pe>mx)mx=pe;}
+                
+                let lbs=[], lbV=[], bds=[], cr=new Date(md.getFullYear(),md.getMonth(),1), ed=new Date(mx.getFullYear(),mx.getMonth(),1), cnt=1; 
+                const mn=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+                
+                while(cr<=ed){ 
+                    lbs.push(`${mn[cr.getMonth()]} ${(cr.getFullYear()+543).toString().slice(-2)}`); 
+                    lbV.push(`เดือนที่ ${cnt++}`); 
+                    bds.push({start:new Date(cr.getFullYear(),cr.getMonth(),1), end:new Date(cr.getFullYear(),cr.getMonth()+1,0)}); 
+                    cr.setMonth(cr.getMonth()+1); 
+                }
+                
+                let pm=new Array(lbs.length).fill(0), am=new Array(lbs.length).fill(0), mat=[];
+                
+                acts.forEach((a,i)=>{ 
+                    mat[i]=new Array(lbs.length).fill(0); 
+                    let as=new Date(a.startDate), ae=new Date(a.endDate), d=(ae-as)/(8.64e7)+1, w=parseFloat(a.weight)||0, v=parseFloat(a.actual)||0;
+                    
+                    bds.forEach((b,j)=>{ 
+                        let os=new Date(Math.max(as,b.start)), oe=new Date(Math.min(ae,b.end)), od=(oe-os)/(8.64e7)+1; 
+                        if(od>0){let pv=w*(od/d); pm[j]+=pv; mat[i][j]=pv;}
                     });
+
+                    // ปรับแก้: รองรับการทำงานเสร็จก่อนแผน (Early Completion) แบบ 100%
+                    if(v > 0) {
+                        let actStart = as > td ? td : as;
+                        let actEnd = new Date(Math.min(td, ae));
+                        if(actEnd < actStart) actEnd = actStart;
+                        let ad=(actEnd-actStart)/(8.64e7)+1; if(ad<1) ad=1;
+                        
+                        bds.forEach((b,j)=>{ 
+                            let aos=new Date(Math.max(actStart,b.start)), aoe=new Date(Math.min(actEnd,b.end)), aod=(aoe-aos)/(8.64e7)+1; 
+                            if(aod>0) am[j]+=v*(aod/ad); 
+                        });
+                    }
                 });
-                let pA=[], aA=[], sp=0, sa=0; for(let i=0;i<lbs.length;i++){ sp+=pm[i]; sa+=am[i]; pA.push(sp.toFixed(2)); aA.push(sa.toFixed(2)); pm[i]=pm[i].toFixed(2); am[i]=am[i].toFixed(2); }
+                
+                let pA=[], aA=[], sp=0, sa=0; 
+                for(let i=0;i<lbs.length;i++){ 
+                    sp+=pm[i]; sa+=am[i]; 
+                    pA.push(sp.toFixed(2)); aA.push(sa.toFixed(2)); 
+                    pm[i]=pm[i].toFixed(2); am[i]=am[i].toFixed(2); 
+                }
+                
                 return {labels:lbs, labelsV124:lbV, planned:pA, actual:aA, plannedMonthly:pm, actualMonthly:am, activityMatrix:mat, monthBounds:bds};
             };
 
