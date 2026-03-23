@@ -1101,6 +1101,13 @@
                         // สร้าง HTML รูปภาพขนาดย่อสำหรับแสดงใน Popup แผนที่
                         let popupImgsHtml = (p.images && p.images.length > 0) ? `<div class="mt-1.5 pt-1.5 border-t border-gray-200"><div class="text-gray-500 mb-1">รูปภาพประกอบ:</div><div class="flex gap-2 overflow-x-auto custom-scrollbar pb-1">` + p.images.map(img => `<img src="${img}" onclick="window.openImageModal('${img}')" class="h-14 w-14 object-cover rounded border border-gray-200 shadow-sm cursor-pointer hover:opacity-80 shrink-0">`).join('') + `</div></div>` : '';
 
+                        let navUrl = '';
+                        if(p.segments && p.segments.length > 0) {
+                            const cd = p.geomType === 'line' ? p.segments[0].coordinates[0] : p.segments[0].coordinates;
+                            navUrl = `https://www.google.com/maps/dir/?api=1&destination=${cd[0]},${cd[1]}`;
+                        }
+                        let navBtnHtml = navUrl ? `<a href="${navUrl}" target="_blank" class="mt-2 w-full bg-emerald-50 hover:bg-emerald-500 text-emerald-700 hover:text-white border border-emerald-200 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-route"></i> นำทางไปยังโครงการ (Google Maps)</a>` : '';
+
                         let pop = `
                             <div class="font-sans w-full max-h-[550px] flex flex-col popup-inner-container">
                                 <div class="mb-2 shrink-0 relative pr-8">
@@ -1148,6 +1155,7 @@
                                         </div>
                                         ${probHtml}
                                         ${popupImgsHtml}
+                                        ${navBtnHtml}
                                     </div>
                                 </div>
                                 <div class="mt-2 pt-2 border-t border-gray-200 shrink-0">
@@ -1936,7 +1944,13 @@
                                 let mB = ''; 
                                 if(p.segments && p.segments.length > 0){ 
                                     const cd = p.geomType === 'line' ? p.segments[0].coordinates[0] : p.segments[0].coordinates; 
-                                    mB = `<button type="button" onclick="window.flyToLocation(${cd[0]}, ${cd[1]})" class="w-8 h-8 bg-white text-blue-600 border border-slate-200 rounded-full hover:bg-blue-600 hover:text-white shadow-sm transition-colors shrink-0 flex items-center justify-center text-sm" title="ดูบนแผนที่"><i class="fa-solid fa-location-dot"></i></button>`; 
+                                    const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${cd[0]},${cd[1]}`;
+                                    mB = `
+                                        <div class="flex flex-col gap-1.5 shrink-0">
+                                            <button type="button" onclick="window.flyToLocation(${cd[0]}, ${cd[1]})" class="w-8 h-8 bg-white text-blue-600 border border-slate-200 rounded-full hover:bg-blue-600 hover:text-white shadow-sm transition-colors flex items-center justify-center text-sm" title="ดูบนแผนที่"><i class="fa-solid fa-location-dot"></i></button>
+                                            <a href="${navUrl}" target="_blank" class="w-8 h-8 bg-white text-emerald-600 border border-slate-200 rounded-full hover:bg-emerald-600 hover:text-white shadow-sm transition-colors flex items-center justify-center text-sm" title="นำทาง (Google Maps)"><i class="fa-solid fa-route"></i></a>
+                                        </div>
+                                    `; 
                                 }
 
                                 let actionBtns = '';
@@ -2092,7 +2106,16 @@
                 const vb = document.getElementById('viewProjectBody');
                 if(vb) vb.innerHTML = html;
 
+                let navUrl = '';
+                if(p.segments && p.segments.length > 0) {
+                    const cd = p.geomType === 'line' ? p.segments[0].coordinates[0] : p.segments[0].coordinates;
+                    navUrl = `https://www.google.com/maps/dir/?api=1&destination=${cd[0]},${cd[1]}`;
+                }
+                let navBtnAction = navUrl ? `<a href="${navUrl}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center"><i class="fa-solid fa-route mr-1"></i> นำทาง</a>` : '';
+
                 let actions = `<button type="button" onclick="window.closeViewModal()" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition-colors text-xs md:text-sm">ปิดหน้าต่าง</button><div class="flex flex-wrap gap-2">`;
+                if(navBtnAction) actions += navBtnAction;
+                
                 if (userRole === 'admin') {
                     actions += `
                         <button type="button" onclick="window.closeViewModal(); window.openProgressModal('${p.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"><i class="fa-solid fa-bars-progress mr-1"></i> อัปเดตผลงาน</button>
