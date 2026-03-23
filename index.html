@@ -1097,6 +1097,9 @@
                         let supsHtml = (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => `<div class="truncate">- ${s.name} <span class="text-gray-400 font-normal">(${s.position})</span></div>`).join('') : '<div class="text-gray-400">-</div>';
                         let comsHtml = (p.committees && p.committees.length > 0) ? p.committees.map(c => `<div class="truncate">- ${c.name} <span class="text-gray-400 font-normal">(${c.position || '-'})</span></div>`).join('') : '<div class="text-gray-400">-</div>';
                         let probHtml = p.problem ? `<div class="mt-1.5 pt-1.5 border-t border-red-100 text-red-600"><span class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> อุปสรรค/หมายเหตุ:</span> <span class="font-normal">${p.problem}</span></div>` : '';
+                        
+                        // สร้าง HTML รูปภาพขนาดย่อสำหรับแสดงใน Popup แผนที่
+                        let popupImgsHtml = (p.images && p.images.length > 0) ? `<div class="mt-1.5 pt-1.5 border-t border-gray-200"><div class="text-gray-500 mb-1">รูปภาพประกอบ:</div><div class="flex gap-2 overflow-x-auto custom-scrollbar pb-1">` + p.images.map(img => `<img src="${img}" onclick="window.openImageModal('${img}')" class="h-14 w-14 object-cover rounded border border-gray-200 shadow-sm cursor-pointer hover:opacity-80 shrink-0">`).join('') + `</div></div>` : '';
 
                         let pop = `
                             <div class="font-sans w-full max-h-[550px] flex flex-col popup-inner-container">
@@ -1121,6 +1124,15 @@
                                     </div>
                                     <div class="bg-gray-50 p-2 rounded border border-gray-200 text-[11px]">
                                         <div class="mb-1.5"><span class="text-gray-500">สถานะ:</span> <b class="text-orange-600">${p.status || '-'}</b>${procInfoHtml}</div>
+                                        <div class="mb-2">
+                                            <div class="flex justify-between items-end mb-0.5">
+                                                <span class="text-gray-500">ผลงานจริง:</span>
+                                                <span class="font-bold text-emerald-600">${ca.toFixed(2)}%</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden border border-gray-300">
+                                                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: ${ca}%"></div>
+                                            </div>
+                                        </div>
                                         <div class="flex justify-between mb-1.5">
                                             <span><span class="text-gray-500">เริ่ม:</span> <b>${p.contractStartDate ? new Date(p.contractStartDate).toLocaleDateString('th-TH', { year: '2-digit', month: 'short', day: 'numeric' }) : '-'}</b></span>
                                             <span><span class="text-gray-500">สิ้นสุด:</span> <b>${p.contractEndDate ? new Date(p.contractEndDate).toLocaleDateString('th-TH', { year: '2-digit', month: 'short', day: 'numeric' }) : '-'}</b></span>
@@ -1135,6 +1147,7 @@
                                             <div class="font-bold pl-2">${comsHtml}</div>
                                         </div>
                                         ${probHtml}
+                                        ${popupImgsHtml}
                                     </div>
                                 </div>
                                 <div class="mt-2 pt-2 border-t border-gray-200 shrink-0">
