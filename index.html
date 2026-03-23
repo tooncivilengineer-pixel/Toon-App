@@ -734,8 +734,8 @@
     </div>
 
     <!-- Status Summary Modal (Matrix View) -->
-    <div id="statusSummaryModal" class="fixed inset-0 bg-black bg-opacity-50 z-[3500] hidden justify-center items-center transition-opacity duration-300 p-4 opacity-0 no-print">
-        <div id="statusSummaryModalContent" class="bg-white rounded-2xl shadow-2xl w-[95vw] max-w-[1400px] max-h-[92vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 relative">
+    <div id="statusSummaryModal" class="fixed inset-0 bg-black bg-opacity-50 z-[3500] hidden justify-center items-center transition-opacity duration-300 p-4 opacity-0">
+        <div id="statusSummaryModalContent" class="bg-white rounded-2xl shadow-2xl w-[98vw] max-w-[1920px] h-[95vh] max-h-[95vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 relative">
             <div id="statusSummaryModalHeader" class="bg-gradient-to-r from-blue-800 to-indigo-700 text-white px-6 py-4 flex justify-between items-center font-bold shadow-md z-10 cursor-move">
                 <h2 class="text-xl flex items-center gap-3"><i class="fa-solid fa-table-list text-2xl"></i> ตารางสรุปสถานะการดำเนินโครงการเชิงลึก (Matrix View)</h2>
                 <div class="flex gap-2">
@@ -2877,8 +2877,8 @@
                     });
                     
                     const distL = Object.keys(dtd).filter(d => {
-                        if (fd !== 'all') return d === fd; // ถ้าเลือกอำเภอใดอำเภอหนึ่ง ให้แสดงเฉพาะอำเภอนั้น
-                        return dtd[d].total > 0 || allDistricts.includes(d); // ถ้าเลือกทั้งหมด ให้แสดง 9 อำเภอ
+                        if (fd !== 'all') return d === fd; 
+                        return dtd[d].total > 0 || allDistricts.includes(d); 
                     }).sort((a, b) => {
                         const pctA = dtd[a].total > 0 ? (dtd[a].completed / dtd[a].total) : 0;
                         const pctB = dtd[b].total > 0 ? (dtd[b].completed / dtd[b].total) : 0;
@@ -2903,13 +2903,7 @@
                             maintainAspectRatio:false, 
                             plugins: { 
                                 legend: { position: 'bottom', labels: { font: { family: "'Sarabun', sans-serif", size: 12 } } },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            return context.dataset.label + ': ' + context.raw + ' โครงการ';
-                                        }
-                                    }
-                                }
+                                tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + context.raw + ' โครงการ'; } } }
                             }, 
                             scales:{
                                 x:{stacked:true, title: { display: true, text: 'จำนวนโครงการ (แห่ง)', font: {weight: 'bold', family: "'Sarabun', sans-serif"} }, ticks:{stepSize: 1}}, 
@@ -2922,61 +2916,29 @@
                 const ctxStuck = document.getElementById('dbStuckBudgetChart');
                 if(ctxStuck) {
                     if(dbStuckBudgetChartInstance) dbStuckBudgetChartInstance.destroy();
-                    
                     const sBudget = {};
                     fp.forEach(p => {
                         const s = p.status || 'ไม่ระบุสถานะ';
                         const b = parseFloat(p.contractPrice || p.budget) || 0; 
                         sBudget[s] = (sBudget[s] || 0) + b;
                     });
-
                     const statusOrder = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ประกาศจัดซื้อจัดจ้าง', 'ทบทวนราคากลาง', 'ดำเนินการก่อสร้าง', 'ส่งมอบงานงวดที่', 'ส่งมอบงานงวดสุดท้าย', 'แล้วเสร็จ'];
                     const labels = Object.keys(sBudget).sort((a,b) => {
                         let ia = statusOrder.indexOf(a); if(ia===-1 && a.includes('ส่งมอบงาน')) ia = 6.5;
                         let ib = statusOrder.indexOf(b); if(ib===-1 && b.includes('ส่งมอบงาน')) ib = 6.5;
                         return (ia !== -1 ? ia : 99) - (ib !== -1 ? ib : 99);
                     });
-                    
                     const data = labels.map(l => sBudget[l]);
                     const colors = labels.map(l => window.getDashboardStatusColor(l));
-
                     dbStuckBudgetChartInstance = new Chart(ctxStuck.getContext('2d'), {
                         type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: 'มูลค่ารวม (บาท)',
-                                data: data,
-                                backgroundColor: colors,
-                                borderRadius: 4
-                            }]
-                        },
+                        data: { labels: labels, datasets: [{ label: 'มูลค่ารวม (บาท)', data: data, backgroundColor: colors, borderRadius: 4 }] },
                         options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { 
-                                legend: { display: false },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            return 'มูลค่า: ฿' + context.raw.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                                        }
-                                    }
-                                }
-                            },
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { return 'มูลค่า: ฿' + context.raw.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); } } } },
                             scales: {
                                 x: { ticks: { font: { family: "'Sarabun', sans-serif", size: 11 } } },
-                                y: { 
-                                    title: { display: true, text: 'มูลค่า (ล้านบาท)', font: { family: "'Sarabun', sans-serif", weight: 'bold' } }, 
-                                    ticks: { 
-                                        font: { family: "'Sarabun', sans-serif" },
-                                        callback: function(value) {
-                                            if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
-                                            if (value >= 1000) return (value / 1000).toFixed(1) + 'k';
-                                            return value;
-                                        }
-                                    } 
-                                }
+                                y: { title: { display: true, text: 'มูลค่า (ล้านบาท)', font: { family: "'Sarabun', sans-serif", weight: 'bold' } }, ticks: { font: { family: "'Sarabun', sans-serif" }, callback: function(value) { if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M'; if (value >= 1000) return (value / 1000).toFixed(1) + 'k'; return value; } } }
                             }
                         }
                     });
@@ -2986,50 +2948,19 @@
                 if(ctxContractor) {
                     if(dbContractorChartInstance) dbContractorChartInstance.destroy();
                     const contractorCounts = {};
-                    fp.forEach(p => {
-                        const cName = (p.contractor && p.contractor.trim() !== '') ? p.contractor.trim() : 'ไม่ระบุ/ดำเนินการเอง';
-                        contractorCounts[cName] = (contractorCounts[cName] || 0) + 1;
-                    });
-                    
-                    const sortedContractors = Object.entries(contractorCounts)
-                        .sort((a, b) => b[1] - a[1])
-                        .slice(0, 5);
-                    
+                    fp.forEach(p => { const cName = (p.contractor && p.contractor.trim() !== '') ? p.contractor.trim() : 'ไม่ระบุ/ดำเนินการเอง'; contractorCounts[cName] = (contractorCounts[cName] || 0) + 1; });
+                    const sortedContractors = Object.entries(contractorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
                     const cLabels = sortedContractors.map(item => item[0].length > 15 ? item[0].substring(0,15)+'...' : item[0]);
                     const cFullLabels = sortedContractors.map(item => item[0]);
                     const cData = sortedContractors.map(item => item[1]);
-                    
                     const gradientColors = ['#b45309', '#d97706', '#f59e0b', '#fbbf24', '#fcd34d'];
-
                     dbContractorChartInstance = new Chart(ctxContractor.getContext('2d'), {
                         type: 'bar', 
-                        data: {
-                            labels: cLabels,
-                            datasets: [{
-                                label: 'จำนวนโครงการ',
-                                data: cData,
-                                backgroundColor: gradientColors.slice(0, cData.length),
-                                borderRadius: 4
-                            }]
-                        },
+                        data: { labels: cLabels, datasets: [{ label: 'จำนวนโครงการ', data: cData, backgroundColor: gradientColors.slice(0, cData.length), borderRadius: 4 }] },
                         options: {
-                            indexAxis: 'y',
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { 
-                                legend: { display: false },
-                                tooltip: {
-                                    callbacks: {
-                                        title: function(context) {
-                                            return cFullLabels[context[0].dataIndex];
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: { beginAtZero: true, ticks: { stepSize: 1, font: { family: "'Sarabun', sans-serif", size: 10 } } },
-                                y: { ticks: { font: { family: "'Sarabun', sans-serif", size: 10 } } }
-                            }
+                            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { callbacks: { title: function(context) { return cFullLabels[context[0].dataIndex]; } } } },
+                            scales: { x: { beginAtZero: true, ticks: { stepSize: 1, font: { family: "'Sarabun', sans-serif", size: 10 } } }, y: { ticks: { font: { family: "'Sarabun', sans-serif", size: 10 } } } }
                         }
                     });
                 }
@@ -3037,16 +2968,8 @@
                 const ctx4 = document.getElementById('dbBudgetTypeChart');
                 if(ctx4) {
                     if(dbBudgetTypeChartInstance) dbBudgetTypeChartInstance.destroy();
-                    
                     const btd={}, sSet=new Set(); 
-                    fp.forEach(p => { 
-                        const t = p.budgetType||'ไม่ระบุงบ'; 
-                        const s = p.status||'ไม่ระบุสถานะ'; 
-                        if(!btd[t]) btd[t]={}; 
-                        btd[t][s] = (btd[t][s]||0) + 1; 
-                        sSet.add(s); 
-                    });
-                    
+                    fp.forEach(p => { const t = p.budgetType||'ไม่ระบุงบ'; const s = p.status||'ไม่ระบุสถานะ'; if(!btd[t]) btd[t]={}; btd[t][s] = (btd[t][s]||0) + 1; sSet.add(s); });
                     const btL = Object.keys(btd);
                     const statusOrder = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ประกาศจัดซื้อจัดจ้าง', 'ทบทวนราคากลาง', 'ดำเนินการก่อสร้าง', 'ส่งมอบงานงวดสุดท้าย', 'แล้วเสร็จ'];
                     const dsA = Array.from(sSet).sort((a,b) => {
@@ -3054,35 +2977,16 @@
                         let ib = statusOrder.indexOf(b); if(ib===-1 && b.includes('ส่งมอบงาน')) ib = 5.5;
                         return (ia !== -1 ? ia : 99) - (ib !== -1 ? ib : 99);
                     });
-
                     dbBudgetTypeChartInstance = new Chart(ctx4.getContext('2d'),{ 
                         type:'bar', 
-                        data:{
-                            labels:btL, 
-                            datasets:dsA.map(s=>({
-                                label:s, 
-                                data:btL.map(t=>btd[t][s]||0), 
-                                backgroundColor: window.getDashboardStatusColor(s), 
-                                borderRadius: 4,
-                                maxBarThickness: 60
-                            }))
-                        }, 
-                        options:{
-                            responsive:true, 
-                            maintainAspectRatio:false, 
-                            plugins: { legend: { position: 'bottom', labels: { font: { size: 11, family: "'Sarabun', sans-serif" } } } },
-                            scales:{
-                                x:{stacked:true, ticks: { font: { family: "'Sarabun', sans-serif", size: 11 } }}, 
-                                y:{stacked:true, title: { display: true, text: 'จำนวนโครงการ (แห่ง)', font: {weight: 'bold', family: "'Sarabun', sans-serif"} }, ticks:{stepSize: 1}}
-                            } 
-                        } 
+                        data:{ labels:btL, datasets:dsA.map(s=>({ label:s, data:btL.map(t=>btd[t][s]||0), backgroundColor: window.getDashboardStatusColor(s), borderRadius: 4, maxBarThickness: 60 })) }, 
+                        options:{ responsive:true, maintainAspectRatio:false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11, family: "'Sarabun', sans-serif" } } } }, scales:{ x:{stacked:true, ticks: { font: { family: "'Sarabun', sans-serif", size: 11 } }}, y:{stacked:true, title: { display: true, text: 'จำนวนโครงการ (แห่ง)', font: {weight: 'bold', family: "'Sarabun', sans-serif"} }, ticks:{stepSize: 1}} } } 
                     });
                 }
 
                 const wBody = document.getElementById('dbWatchlistBody');
                 if(wBody) {
-                    let wl = [];
-                    const today = new Date();
+                    let wl = []; const today = new Date();
                     fp.forEach(p => { 
                         if(p.status && ['ดำเนินการก่อสร้าง', 'ส่งมอบงานงวดที่', 'ส่งมอบงานงวดสุดท้าย'].some(s => p.status.includes(s))) {
                             let cp=0, ca=0; 
@@ -3096,26 +3000,55 @@
                                     } 
                                 }); 
                             }
-                            let diff = ca - cp; 
-                            if(diff < -0.5){ wl.push({...p, cp, ca, diff}); }
+                            let diff = ca - cp; if(diff < -0.5){ wl.push({...p, cp, ca, diff}); }
                         }
                     });
-                    
-                    wBody.innerHTML = wl.sort((a,b) => a.diff - b.diff).slice(0,10).map(p => `
-                        <tr class="border-b hover:bg-red-50 transition-all">
-                            <td class="p-4 font-bold text-slate-800">${p.name}</td>
-                            <td class="p-4 text-center text-blue-600 font-bold">${p.cp.toFixed(2)}%</td>
-                            <td class="p-4 text-center text-emerald-600 font-bold">${p.ca.toFixed(2)}%</td>
-                            <td class="p-4 text-center"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-xl font-bold border border-red-200 shadow-sm">-${Math.abs(p.diff).toFixed(2)}%</span></td>
-                            <td class="p-4 text-center">
-                                <button type="button" onclick="window.closeDashboardModal(); window.viewProject('${p.id}')" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-bold shadow-sm hover:bg-indigo-700 transition-all">ดูข้อมูล</button>
-                            </td>
-                        </tr>
-                    `).join('');
-                    if (wl.length === 0) {
-                        wBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500 font-bold">ไม่มีโครงการที่ล่าช้าผิดปกติ</td></tr>';
-                    }
+                    wBody.innerHTML = wl.sort((a,b) => a.diff - b.diff).slice(0,10).map(p => `<tr class="border-b hover:bg-red-50 transition-all"><td class="p-4 font-bold text-slate-800">${p.name}</td><td class="p-4 text-center text-blue-600 font-bold">${p.cp.toFixed(2)}%</td><td class="p-4 text-center text-emerald-600 font-bold">${p.ca.toFixed(2)}%</td><td class="p-4 text-center"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-xl font-bold border border-red-200 shadow-sm">-${Math.abs(p.diff).toFixed(2)}%</span></td><td class="p-4 text-center"><button type="button" onclick="window.closeDashboardModal(); window.viewProject('${p.id}')" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-bold shadow-sm hover:bg-indigo-700 transition-all">ดูข้อมูล</button></td></tr>`).join('');
+                    if (wl.length === 0) { wBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500 font-bold">ไม่มีโครงการที่ล่าช้าผิดปกติ</td></tr>'; }
                 }
+            };
+
+            window.openStatusSummaryModal = function() {
+                const fd = document.getElementById('dbFilterDistrict')?.value||'all', fc = document.getElementById('dbFilterContractor')?.value||'all', fy = document.getElementById('dbFilterYear')?.value||'all', ft = document.getElementById('dbFilterBudgetType')?.value||'all';
+                const fp = window.projects.filter(p => (fd==='all'||p.district===fd) && (fc==='all'||p.contractor===fc) && (fy==='all'||p.year===fy) && (ft==='all'||p.budgetType===ft));
+                fp.sort((a,b) => (a.district||'').localeCompare(b.district||''));
+                
+                const tbody = document.getElementById('statusSummaryBody'); if(!tbody) return; tbody.innerHTML = '';
+                if(fp.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="p-6 text-center text-gray-500 font-bold text-sm">ไม่พบข้อมูลโครงการตามเงื่อนไขที่เลือก</td></tr>'; } 
+                else {
+                    fp.forEach((p, index) => {
+                        let ca = 0; if(p.activities) p.activities.forEach(a => ca += (parseFloat(a.actual)||0));
+                        let s1 = '<span class="text-gray-200">-</span>', s2 = '<span class="text-gray-200">-</span>', s3 = '<span class="text-gray-200">-</span>', s4 = '<span class="text-gray-200">-</span>';
+                        let st = p.status || '';
+                        let stepHtml = (text, colorClass) => `<div class="px-2 py-1.5 rounded text-[10px] font-bold ${colorClass} shadow-sm inline-block w-full text-center whitespace-normal leading-tight">${text}</div>`;
+                        if (st.includes('แล้วเสร็จ')) { s4 = stepHtml(st, 'bg-emerald-100 text-emerald-800 border border-emerald-200'); } 
+                        else if (st.includes('ก่อสร้าง') || st.includes('งวด')) { s3 = stepHtml(st, 'bg-orange-100 text-orange-800 border border-orange-200'); } 
+                        else if (st === 'ประกาศจัดซื้อจัดจ้าง') { let extra = (p.procurementMethod || '') + (p.procurementIteration ? ` (ครั้งที่ ${p.procurementIteration})` : ''); s2 = stepHtml(st + (extra ? `<br><span class="font-normal text-[9px] mt-0.5 block">${extra}</span>` : ''), 'bg-indigo-100 text-indigo-800 border border-indigo-200'); } 
+                        else { s1 = stepHtml(st, 'bg-blue-100 text-blue-800 border border-blue-200'); }
+                        let bgClass = index % 2 === 0 ? 'bg-white' : 'bg-slate-50';
+                        let contractorText = p.contractor ? `<div class="text-[9px] text-gray-500 font-normal mt-1"><i class="fa-solid fa-helmet-safety text-amber-600"></i> ${p.contractor}</div>` : '';
+                        tbody.innerHTML += `<tr class="${bgClass} border-b border-gray-100 hover:bg-yellow-50 transition-colors"><td class="p-2 border-r text-center align-top">${index + 1}</td><td class="p-2 border-r font-bold text-gray-700 align-top">${p.district || '-'}</td><td class="p-2 border-r text-center align-top">${p.year || '-'}</td><td class="p-2 border-r text-gray-600 align-top">${p.budgetType || '-'}</td><td class="p-2 border-r font-bold text-blue-900 whitespace-normal min-w-[200px] leading-tight align-top">${p.name || '-'}${contractorText}</td><td class="p-2 border-r align-middle">${s1}</td><td class="p-2 border-r align-middle">${s2}</td><td class="p-2 border-r align-middle">${s3}</td><td class="p-2 border-r align-middle">${s4}</td><td class="p-2 text-center align-middle"><span class="font-bold ${ca >= 100 ? 'text-emerald-600' : 'text-blue-600'}">${ca.toFixed(2)}%</span></td></tr>`;
+                    });
+                }
+                const m = document.getElementById('statusSummaryModal');
+                if(m) { m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => m.style.opacity = '1', 10); }
+            };
+
+            window.closeStatusSummaryModal = function() {
+                const m = document.getElementById('statusSummaryModal');
+                if(m) { m.style.opacity = '0'; setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
+            };
+
+            window.printStatusSummary = function() {
+                if (document.body.classList) document.body.classList.add('printing-status-summary');
+                let printHeader = document.getElementById('printHeaderStatusSummary');
+                if (!printHeader) {
+                    printHeader = document.createElement('div'); printHeader.id = 'printHeaderStatusSummary'; printHeader.className = 'hidden print:block text-center mb-4 border-b-2 border-blue-800 pb-3';
+                    printHeader.innerHTML = `<h1 class="text-xl font-bold text-blue-900 mb-1">ตารางสรุปสถานะการดำเนินโครงการก่อสร้าง</h1><p class="text-sm text-gray-600 font-bold">กองช่าง อบจ.พิษณุโลก (อัปเดตข้อมูล ณ วันที่ ${new Date().toLocaleDateString('th-TH')})</p>`;
+                    const area = document.getElementById('printAreaStatusSummary'); if (area) area.prepend(printHeader);
+                }
+                window.print();
+                setTimeout(() => { if (document.body.classList) document.body.classList.remove('printing-status-summary'); }, 1000);
             };
 
             window.onload = function() { 
