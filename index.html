@@ -1109,7 +1109,7 @@
                         let navBtnHtml = navUrl ? `<a href="${navUrl}" target="_blank" class="mt-2 w-full bg-emerald-50 hover:bg-emerald-500 text-emerald-700 hover:text-white border border-emerald-200 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-route"></i> นำทางไปยังโครงการ (Google Maps)</a>` : '';
 
                         let pop = `
-                            <div class="font-sans w-full max-h-[550px] flex flex-col popup-inner-container">
+                            <div class="font-sans w-full max-h-[650px] flex flex-col popup-inner-container">
                                 <div class="mb-2 shrink-0 relative pr-8">
                                     <button type="button" onclick="window.togglePopupExpand(this)" class="absolute -top-1 -right-1 text-gray-500 hover:text-blue-600 bg-white hover:bg-gray-100 w-7 h-7 rounded border border-gray-200 shadow-sm flex items-center justify-center transition-all z-10" title="ขยาย/ย่อ หน้าต่าง">
                                         <i class="fa-solid fa-expand popup-expand-icon"></i>
@@ -1164,7 +1164,7 @@
                             </div>
                         `;
 
-                        const popupOptions = { minWidth: 340, maxWidth: 400, className: 'modern-popup' };
+                        const popupOptions = { minWidth: 400, maxWidth: 500, className: 'modern-popup' };
 
                         if (p.geomType === 'line') { 
                             p.segments.forEach(s => {
