@@ -2252,8 +2252,16 @@
                 
                 let pA=[], aA=[], sp=0, sa=0; 
                 for(let i=0;i<lbs.length;i++){ 
-                    sp+=pm[i]; sa+=am[i]; 
-                    pA.push(sp.toFixed(2)); aA.push(sa.toFixed(2)); 
+                    sp+=pm[i]; 
+                    pA.push(sp.toFixed(2)); 
+                    
+                    if (bds[i].start <= td) {
+                        sa+=am[i]; 
+                        aA.push(sa.toFixed(2)); 
+                    } else {
+                        aA.push(null); // ทำให้เส้นทำงานจริงหยุดวาดเมื่อเลยเดือนปัจจุบัน
+                    }
+
                     pm[i]=pm[i].toFixed(2); am[i]=am[i].toFixed(2); 
                 }
                 
@@ -2547,8 +2555,8 @@
                         h+=`<tr class="font-bold bg-gray-50"><td colspan="3" class="border border-gray-800 text-right">รวม</td><td class="border border-gray-800 text-right">${ta.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="border border-gray-800 text-center">${tw.toFixed(2)}</td><td colspan="${sd.labelsV124.length}" class="border border-gray-800"></td></tr>`;
                         h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">แผนงานรายเดือน (%)</td>`; sd.plannedMonthly.forEach(v=>h+=`<td class="border border-gray-800 text-center">${v}</td>`); h+=`</tr>`;
                         h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">แผนงานสะสม (%)</td>`; sd.planned.forEach(v=>h+=`<td class="border border-gray-800 text-center">${v}</td>`); h+=`</tr>`;
-                        h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">ผลงานจริงรายเดือน (%)</td>`; sd.actualMonthly.forEach((v,i)=>{ if(sd.monthBounds[i].start>new Date()&&parseFloat(v)===0) h+=`<td class="border border-gray-800 text-center text-gray-300">0</td>`; else h+=`<td class="border border-gray-800 text-center">${v}</td>`; }); h+=`</tr>`;
-                        h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">ผลงานจริงสะสม (%)</td>`; sd.actual.forEach((v,i)=>{ if(sd.monthBounds[i].start>new Date()&&parseFloat(v)===0&&parseFloat(sd.planned[i])===0) h+=`<td class="border border-gray-800 text-center text-gray-300">0.00</td>`; else h+=`<td class="border border-gray-800 text-center">${v}</td>`; }); h+=`</tr></tbody></table>`; tc.innerHTML=h;
+                        h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">ผลงานจริงรายเดือน (%)</td>`; sd.actualMonthly.forEach((v,i)=>{ if(sd.monthBounds[i].start>new Date()) h+=`<td class="border border-gray-800 text-center text-gray-300">-</td>`; else h+=`<td class="border border-gray-800 text-center">${v}</td>`; }); h+=`</tr>`;
+                        h+=`<tr><td colspan="5" class="border border-gray-800 font-bold text-right">ผลงานจริงสะสม (%)</td>`; sd.actual.forEach((v,i)=>{ if(v === null) h+=`<td class="border border-gray-800 text-center text-gray-300">-</td>`; else h+=`<td class="border border-gray-800 text-center">${v}</td>`; }); h+=`</tr></tbody></table>`; tc.innerHTML=h;
                     } else tc.innerHTML='<div class="text-center py-4 border">ไม่มีข้อมูลแผนงาน</div>';
                 }
 
@@ -3160,9 +3168,25 @@
                                     let dateStr = p.statusDate ? new Date(p.statusDate).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' }) : '-';
 
                                     const card = `
-                                        <div onclick="window.closeDashboardModal(); window.viewProject('${p.id}')" class="bg-white p-2.5 rounded-lg border ${borderClass} shadow-sm hover:shadow cursor-pointer transition-all flex flex-col gap-1.5 min-h-[60px] mb-2">
-                                            <div class="text-[11px] font-bold text-gray-800 leading-tight line-clamp-2" title="${p.name}">${p.name}</div>
-                                            <div class="flex justify-between items-center mt-auto pt-1 border-t border-gray-100">
+                                        <div onclick="window.viewProject('${p.id}', 'dashboard')" class="group bg-white p-2.5 rounded-lg border ${borderClass} shadow-sm hover:shadow-md cursor-pointer transition-all duration-300 hover:border-blue-400 flex flex-col gap-1.5 min-h-[60px] mb-2 relative">
+                                            <!-- โชว์ชื่อเต็มเมื่อเอาเมาส์ชี้ เพิ่ม pointer-events-none เพื่อให้คลิกทะลุได้ -->
+                                            <div class="text-[11px] font-bold text-gray-800 leading-tight line-clamp-2 group-hover:line-clamp-none transition-all duration-300 pointer-events-none">${p.name}</div>
+                                            
+                                            <!-- ส่วนรายละเอียดและข้อความให้คลิก (ใช้ pointer-events-none ทั้งแผง) -->
+                                            <div class="hidden group-hover:flex flex-col gap-1 text-[10px] text-gray-600 border-t border-gray-100 pt-1.5 mt-0.5 pointer-events-none">
+                                                <div class="flex justify-between items-center text-orange-700 font-bold bg-orange-50 px-1.5 py-0.5 rounded"><span>สถานะ:</span> <span class="text-right truncate max-w-[65%]" title="${st}">${st}</span></div>
+                                                <div class="flex justify-between items-center"><span><i class="fa-solid fa-sack-dollar text-gray-400 w-3"></i> งบฯ:</span><span class="font-bold text-blue-700">฿${(p.budget||0).toLocaleString('en-US', {minimumFractionDigits: 2})}</span></div>
+                                                <div class="flex justify-between items-center"><span><i class="fa-solid fa-bars-progress text-gray-400 w-3"></i> ผลงาน:</span><span class="font-bold text-emerald-600">${ca.toFixed(2)}%</span></div>
+                                                <div class="flex justify-between items-start gap-1 mt-0.5"><span class="whitespace-nowrap"><i class="fa-solid fa-helmet-safety text-gray-400 w-3"></i> รับจ้าง:</span><span class="font-bold text-right leading-tight">${p.contractor || '-'}</span></div>
+                                                
+                                                <!-- ปุ่มจำลองให้ดูเหมือนปุ่ม แต่จริงๆ แล้วคลิกที่กล่องหลัก -->
+                                                <div class="w-full mt-1.5 py-1.5 text-center bg-blue-100 text-blue-700 rounded font-bold shadow-sm border border-blue-200 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                    <i class="fa-solid fa-hand-pointer mr-1"></i> คลิกดูข้อมูล / แก้ไข
+                                                </div>
+                                            </div>
+
+                                            <!-- สถานะแบบย่อตอนไม่ได้ Hover -->
+                                            <div class="flex justify-between items-end mt-auto pt-1 border-t border-gray-100 group-hover:hidden pointer-events-none">
                                                 <span class="text-[9px] px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded font-bold truncate max-w-[65%]" title="${st}">${st}</span>
                                                 <span class="text-[9px] text-gray-500 whitespace-nowrap" title="วันที่อัปเดตสถานะ"><i class="fa-regular fa-clock"></i> ${dateStr}</span>
                                             </div>
@@ -3171,7 +3195,7 @@
                                     
                                     if (st.includes('แล้วเสร็จ') || st.includes('ส่งมอบงานงวดสุดท้าย')) { h4 += card; c4++; }
                                     else if (st.includes('ก่อสร้าง') || st.includes('งวดที่')) { h3 += card; c3++; }
-                                    else if (st === 'ประกาศจัดซื้อจัดจ้าง' || st.includes('ประกาศผู้ชนะ') || st.includes('ทบทวน')) { h2 += card; c2++; }
+                                    else if (st === 'ประกาศจัดซื้อจัดจ้าง' || st.includes('ประกาศผู้ชนะ')) { h2 += card; c2++; }
                                     else { h1 += card; c1++; }
                                 });
 
