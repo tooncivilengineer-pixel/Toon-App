@@ -43,32 +43,72 @@
 
         /* Print Layouts */
         @media print {
-            body:not(.printing-v124):not(.printing-table):not(.printing-status-summary):not(.printing-dashboard):not(.printing-kanban-summary) @page { size: A4 portrait; margin: 10mm; }
+            body.printing-main @page { size: A4 portrait; margin: 10mm; }
             body.printing-v124 @page { size: A4 landscape; margin: 10mm; } 
             body.printing-table @page { size: A4 landscape; margin: 10mm; }
             body.printing-status-summary @page { size: A4 landscape; margin: 10mm; }
-            body.printing-dashboard @page { size: A4 landscape; margin: 10mm; }
             body.printing-kanban-summary @page { size: A4 portrait; margin: 10mm; }
-            body, #printArea, #printAreaV124, #printAreaTable, table, th, td, div, span, p { font-family: 'Sarabun', sans-serif !important; }
+            body.printing-weekly @page { size: A4 portrait; margin: 15mm; }
+
+            /* บังคับใช้ฟอนต์ Sarabun และขนาด 16pt สำหรับรายงานทั้งหมด */
+            #printArea, #printAreaV124, #printAreaTable, #printAreaStatusSummary, #printAreaKanbanSummary, #printAreaWeekly {
+                font-family: 'Sarabun', sans-serif !important;
+                color: #000 !important;
+            }
+
+            #printArea *:not(canvas), #printAreaV124 *:not(canvas), #printAreaTable *:not(canvas), 
+            #printAreaStatusSummary *:not(canvas), #printAreaKanbanSummary *:not(canvas), #printAreaWeekly *:not(canvas) {
+                font-family: 'Sarabun', sans-serif !important;
+                font-size: 16pt !important;
+                line-height: 1.4 !important;
+            }
+
+            /* ปรับขนาดหัวข้อรายงานให้ใหญ่กว่าข้อความปกติเล็กน้อย (18pt - 22pt) */
+            #printArea h1, #printAreaV124 h1, #printAreaTable h1, #printAreaKanbanSummary h1, #printAreaWeekly h1,
+            #printArea .text-2xl, #printAreaV124 .text-xl, #printAreaTable .text-2xl, #printAreaWeekly .text-\\[20pt\\] {
+                font-size: 22pt !important;
+                font-weight: bold !important;
+                line-height: 1.2 !important;
+            }
+            
+            #printArea h3, #printAreaV124 h3, #printAreaKanbanSummary h3,
+            #printArea .text-lg, #printAreaV124 .text-lg, #printAreaKanbanSummary .text-lg {
+                font-size: 18pt !important;
+                font-weight: bold !important;
+            }
+
+            /* สำหรับตารางข้อมูลที่ช่องเยอะ ขอลดขนาดลงมาเหลือ 14pt เพื่อให้ใส่ในกระดาษ A4 ได้พอดี */
+            table, th, td, table *:not(i) {
+                font-size: 14pt !important;
+            }
+            
+            /* หน้าบันทึกข้อความ (Weekly Report) ไม่มีตารางล้น ให้ใช้ 16pt ทั้งหมดตามระเบียบสารบรรณ */
+            #printAreaWeekly table, #printAreaWeekly th, #printAreaWeekly td, #printAreaWeekly table *:not(i) {
+                font-size: 16pt !important;
+            }
+
+            /* ควบคุมการแสดงผล Modal ให้เป็นรูปแบบหน้ากระดาษ */
             body { background: white; margin: 0; padding: 0; overflow: visible; height: auto; width: auto; }
-            body:not(.printing-v124):not(.printing-table):not(.printing-status-summary):not(.printing-dashboard):not(.printing-kanban-summary) > *:not(#reportModal) { display: none !important; }
+            body.printing-main > *:not(#reportModal) { display: none !important; }
             body.printing-v124 > *:not(#reportV124Modal) { display: none !important; }
             body.printing-table > *:not(#tableReportModal) { display: none !important; }
             body.printing-status-summary > *:not(#statusSummaryModal) { display: none !important; }
-            body.printing-dashboard > *:not(#dashboardModal) { display: none !important; }
             body.printing-kanban-summary > *:not(#kanbanSummaryModal) { display: none !important; }
-            #reportModal, #reportV124Modal, #tableReportModal, #statusSummaryModal, #dashboardModal, #kanbanSummaryModal { position: relative !important; display: block !important; background: white !important; padding: 0 !important; z-index: auto !important; height: auto !important; overflow: visible !important; opacity: 1 !important; transform: none !important;}
-            #printArea, #printAreaV124, #printAreaTable, #printAreaKanbanSummary { box-shadow: none !important; width: 100% !important; max-width: none !important; margin: 0 !important; border: none !important; padding: 0 !important;}
+            body.printing-weekly > *:not(#weeklyReportPrintModal) { display: none !important; }
+            
+            #reportModal, #reportV124Modal, #tableReportModal, #statusSummaryModal, #kanbanSummaryModal, #weeklyReportPrintModal { position: relative !important; display: block !important; background: white !important; padding: 0 !important; z-index: auto !important; height: auto !important; overflow: visible !important; opacity: 1 !important; transform: none !important;}
+            #printArea, #printAreaV124, #printAreaTable, #printAreaStatusSummary, #printAreaKanbanSummary, #printAreaWeekly { box-shadow: none !important; width: 100% !important; max-width: none !important; margin: 0 !important; border: none !important; padding: 0 !important;}
+            
             body.printing-status-summary #statusSummaryModalContent { max-width: none !important; max-height: none !important; box-shadow: none !important; border: none !important; }
             body.printing-status-summary #statusSummaryModalHeader { display: none !important; }
             body.printing-status-summary #printAreaStatusSummary { padding: 0 !important; overflow: visible !important; }
-            body.printing-dashboard #dashboardModalContent { max-width: none !important; max-height: none !important; box-shadow: none !important; border: none !important; background: white !important; }
-            body.printing-dashboard #dashboardModalHeader { display: none !important; }
-            body.printing-dashboard .overflow-y-auto { overflow: visible !important; }
+            
             body.printing-kanban-summary #kanbanSummaryModalContent { max-width: none !important; max-height: none !important; box-shadow: none !important; border: none !important; margin: 0 !important; }
             body.printing-kanban-summary #kanbanSummaryModalHeader { display: none !important; }
+
             .no-print { display: none !important; }
             .page-break-inside-avoid { break-inside: avoid; page-break-inside: avoid; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
 </head>
@@ -91,20 +131,33 @@
         <img id="expandedImage" src="" class="max-w-full max-h-[90vh] object-contain rounded shadow-2xl border border-white/20">
     </div>
 
-    <div id="loginModal" class="fixed inset-0 bg-blue-900 bg-opacity-95 z-[5000] flex justify-center items-center">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+    <div id="loginModal" class="fixed inset-0 bg-blue-900 bg-opacity-95 z-[5000] hidden justify-center items-center">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center relative">
+            <button type="button" onclick="document.getElementById('loginModal').classList.replace('flex', 'hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times text-xl"></i></button>
             <i class="fa-solid fa-shield-halved text-5xl text-blue-600 mb-4"></i>
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">เข้าสู่ระบบจัดการโครงการ</h2>
-            <div class="space-y-4">
-                <button onclick="window.selectRole('viewer')" class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg transition-all flex items-center justify-center gap-2 border border-gray-300"><i class="fa-solid fa-eye"></i> เข้าชมในฐานะ Viewer (ดูข้อมูล)</button>
-                <div class="relative py-2"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-300"></div></div><div class="relative flex justify-center text-sm"><span class="px-2 bg-white text-gray-500">หรือ</span></div></div>
-                <div class="text-left bg-blue-50 p-4 rounded-lg border border-blue-100">
-                    <div class="flex gap-2">
-                        <input type="password" id="pinInput" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-center tracking-[0.5em] font-bold text-lg" placeholder="****" maxlength="4" onkeydown="if(event.key === 'Enter') window.loginAsAdmin()">
-                        <button onclick="window.loginAsAdmin()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-lg font-bold transition-all shadow-md">เข้าสู่ระบบ</button>
-                    </div>
-                    <p id="loginError" class="text-red-500 text-xs font-bold mt-2 hidden text-center">รหัสผ่านไม่ถูกต้อง!</p>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">ยืนยันสิทธิ์เจ้าหน้าที่</h2>
+            <p class="text-sm text-gray-500 mb-6" id="authContextText">กรุณาระบุรหัสผ่านเพื่อดำเนินการต่อ</p>
+            
+            <div class="text-left bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <label class="block text-xs font-bold text-blue-800 mb-2">เลือกอำเภอ / สิทธิ์การเข้าถึง</label>
+                <select id="loginDistrict" class="w-full px-3 py-2 mb-3 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500 font-bold text-gray-700 disabled:opacity-70 disabled:cursor-not-allowed">
+                    <option value="admin">ส่วนกลาง (จัดการได้ทุกอำเภอ)</option>
+                    <option value="เมืองพิษณุโลก">ช่างเขต อ.เมืองพิษณุโลก</option>
+                    <option value="นครไทย">ช่างเขต อ.นครไทย</option>
+                    <option value="ชาติตระการ">ช่างเขต อ.ชาติตระการ</option>
+                    <option value="บางระกำ">ช่างเขต อ.บางระกำ</option>
+                    <option value="บางกระทุ่ม">ช่างเขต อ.บางกระทุ่ม</option>
+                    <option value="พรหมพิราม">ช่างเขต อ.พรหมพิราม</option>
+                    <option value="วัดโบสถ์">ช่างเขต อ.วัดโบสถ์</option>
+                    <option value="วังทอง">ช่างเขต อ.วังทอง</option>
+                    <option value="เนินมะปราง">ช่างเขต อ.เนินมะปราง</option>
+                </select>
+                <label class="block text-xs font-bold text-blue-800 mb-2">รหัสผ่าน (PIN 4 หลัก)</label>
+                <div class="flex gap-2">
+                    <input type="password" id="pinInput" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-center tracking-[0.5em] font-bold text-lg" placeholder="****" maxlength="4" onkeydown="if(event.key === 'Enter') window.submitAuth()">
+                    <button onclick="window.submitAuth()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-lg font-bold transition-all shadow-md">ยืนยัน</button>
                 </div>
+                <p id="loginError" class="text-red-500 text-xs font-bold mt-2 hidden text-center">รหัสผ่านไม่ถูกต้อง!</p>
             </div>
         </div>
     </div>
@@ -807,6 +860,136 @@
         </div>
     </div>
 
+    <!-- Weekly Report Input Modal -->
+    <div id="weeklyReportInputModal" class="fixed inset-0 bg-black/60 z-[4000] hidden justify-center items-center p-4 backdrop-blur-sm no-print">
+        <div id="weeklyReportInputContent" class="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden relative">
+            <div id="weeklyReportInputHeader" class="bg-amber-600 text-white px-6 py-4 flex justify-between items-center font-bold cursor-move">
+                <h2 class="text-lg"><i class="fa-solid fa-file-pen mr-2"></i> สร้างบันทึกข้อความรายงานผล (ว.124)</h2>
+                <button type="button" onclick="window.closeWeeklyReportInput()" class="hover:text-amber-200"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 bg-slate-50 flex-1 overflow-y-auto custom-scrollbar space-y-4">
+                <div class="bg-amber-50 p-3 rounded border border-amber-200 mb-2">
+                    <div class="font-bold text-amber-800 text-sm mb-1" id="wrProjNameDisplay"></div>
+                    <div class="text-xs text-amber-700">ผลงานจริงล่าสุดในระบบ: <span id="wrAccumulatedDisplay" class="font-bold text-lg"></span></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่ทำบันทึกข้อความ</label><input type="date" id="wrDocDate" class="w-full px-3 py-2 border rounded outline-none text-sm font-bold"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">เลขที่คำสั่ง/สัญญา</label><input type="text" id="wrContractNo" class="w-full px-3 py-2 border rounded outline-none text-sm" placeholder="เช่น 1/2567"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">ลงวันที่ (สัญญา)</label><input type="date" id="wrContractDate" class="w-full px-3 py-2 border rounded outline-none text-sm"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">สัปดาห์ที่</label><input type="number" id="wrWeekNo" class="w-full px-3 py-2 border rounded outline-none text-sm" placeholder="1"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">ตั้งแต่วันที่</label><input type="date" id="wrWeekStart" class="w-full px-3 py-2 border rounded outline-none text-sm"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">ถึงวันที่</label><input type="date" id="wrWeekEnd" class="w-full px-3 py-2 border rounded outline-none text-sm"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">ส่งงวดงานที่ (ถ้ามี)</label><input type="number" id="wrInstCurrent" class="w-full px-3 py-2 border rounded outline-none text-sm" placeholder="-"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">จากทั้งหมด (งวด)</label><input type="number" id="wrInstTotal" class="w-full px-3 py-2 border rounded outline-none text-sm" placeholder="-"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">เลขที่ใบสั่งจ้าง (ถ้ามี)</label><input type="text" id="wrOrderNo" class="w-full px-3 py-2 border rounded outline-none text-sm" placeholder="-"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">ลงวันที่ (ใบสั่งจ้าง)</label><input type="date" id="wrOrderDate" class="w-full px-3 py-2 border rounded outline-none text-sm"></div>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 mt-2">
+                    <h3 class="font-bold text-blue-800 text-sm mb-3">สรุปผลงาน (%)</h3>
+                    <div class="grid grid-cols-2 gap-4 items-center">
+                        <div class="text-right text-xs font-bold text-gray-600">ผลงานทำได้สัปดาห์นี้:</div>
+                        <div><input type="number" id="wrThisWeekVal" class="w-full px-3 py-2 border rounded outline-none text-sm font-bold text-blue-700 text-center" placeholder="เช่น 5" oninput="window.calcWeeklyReport()"></div>
+                        <div class="text-right text-xs font-bold text-gray-600">ผลงานยกมา (สัปดาห์ก่อน):</div>
+                        <div class="text-center font-bold text-gray-800" id="wrPrevValLabel">-</div>
+                        <div class="text-right text-xs font-bold text-gray-600">รวมผลงานสะสม:</div>
+                        <div class="text-center font-bold text-emerald-600 text-lg border-t border-blue-200 pt-1" id="wrTotalValLabel">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t flex justify-end gap-3 bg-white">
+                <button type="button" onclick="window.closeWeeklyReportInput()" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-sm">ยกเลิก</button>
+                <button type="button" onclick="window.generateWeeklyReportPDF()" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-sm shadow-sm"><i class="fa-solid fa-file-pdf mr-1"></i> สร้างแบบฟอร์ม</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Report Print Modal -->
+    <div id="weeklyReportPrintModal" class="fixed inset-0 bg-gray-500 bg-opacity-80 z-[4500] hidden justify-center items-start overflow-y-auto py-8">
+        <div class="fixed top-4 right-6 p-2 flex gap-3 no-print z-50 bg-white rounded-lg shadow-lg border border-gray-200">
+            <button onclick="window.print()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-print"></i> พิมพ์ PDF</button>
+            <button onclick="document.getElementById('weeklyReportPrintModal').classList.replace('flex','hidden'); window.clearPrintingClasses();" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-times"></i> ปิด</button>
+        </div>
+        
+        <div id="printAreaWeekly" class="bg-white w-[210mm] min-h-[297mm] shadow-2xl relative px-16 py-20 font-sans text-black mx-auto mt-8 border border-gray-300 text-[15pt] leading-relaxed">
+            <!-- ครุฑ -->
+            <div class="flex justify-center mb-4">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/National_emblem_of_Thailand.svg/800px-National_emblem_of_Thailand.svg.png" class="h-24 object-contain" crossorigin="anonymous">
+            </div>
+            
+            <h1 class="text-[20pt] font-bold text-center mb-6">บันทึกข้อความ</h1>
+            
+            <div class="flex items-end mb-2">
+                <span class="font-bold w-16">ส่วนราชการ</span>
+                <span class="flex-1 border-b border-dotted border-gray-500 pl-4">องค์การบริหารส่วนจังหวัดพิษณุโลก กองช่าง</span>
+            </div>
+            
+            <div class="flex items-end mb-2">
+                <div class="flex-1 flex items-end">
+                    <span class="font-bold w-6">ที่</span>
+                    <span class="flex-1 border-b border-dotted border-gray-500 pl-4">พล ๕๑๐๐<span class="inline-block w-8 border-b border-dotted border-gray-500 text-center" id="prtOrderNo"></span>/</span>
+                </div>
+                <div class="w-1/2 flex items-end pl-4">
+                    <span class="font-bold w-12">วันที่</span>
+                    <span class="flex-1 border-b border-dotted border-gray-500 pl-4 text-center" id="prtDocDate"></span>
+                </div>
+            </div>
+            
+            <div class="flex items-end mb-8">
+                <span class="font-bold w-12">เรื่อง</span>
+                <span class="flex-1 border-b border-dotted border-gray-500 pl-4">รายงานผลการปฏิบัติงานโครงการ<span id="prtProjName"></span></span>
+            </div>
+            
+            <div class="mb-4">
+                <span class="font-bold">เรียน</span>
+                <span>ประธานกรรมการตรวจรับพัสดุ</span>
+            </div>
+            
+            <div class="indent-12 mb-4 text-justify">
+                ตามคำสั่งองค์การบริหารส่วนจังหวัดพิษณุโลก ที่ <span id="prtOrderNo2" class="border-b border-dotted border-gray-500 inline-block w-16 text-center"></span>
+                ลงวันที่ <span id="prtOrderDate" class="border-b border-dotted border-gray-500 inline-block w-40 text-center"></span> ได้แต่งตั้งข้าพเจ้าเป็นผู้ควบคุมงาน
+                โครงการ<span id="prtProjName2" class="border-b border-dotted border-gray-500 px-2"></span>
+                สัญญาจ้างเลขที่ <span id="prtContractNo" class="border-b border-dotted border-gray-500 inline-block w-20 text-center"></span>
+                ลงวันที่ <span id="prtContractDate" class="border-b border-dotted border-gray-500 inline-block w-40 text-center"></span>
+                ผู้รับจ้าง <span id="prtContractor" class="border-b border-dotted border-gray-500 px-2"></span>
+                เริ่มสัญญาจ้างวันที่ <span id="prtStartDate" class="border-b border-dotted border-gray-500 inline-block w-40 text-center"></span>
+                สิ้นสุดสัญญาจ้างวันที่ <span id="prtEndDate" class="border-b border-dotted border-gray-500 inline-block w-40 text-center"></span>
+                ระยะเวลา <span id="prtDuration" class="border-b border-dotted border-gray-500 inline-block w-16 text-center"></span> วัน นั้น
+            </div>
+            
+            <div class="indent-12 mb-4 text-justify">
+                ข้าพเจ้าในฐานะผู้ควบคุมงาน ขอรายงานผลการปฏิบัติงาน สัปดาห์ที่ <span id="prtWeekNo" class="border-b border-dotted border-gray-500 inline-block w-16 text-center"></span>
+                ตั้งแต่วันที่ <span id="prtWeekStart" class="border-b border-dotted border-gray-500 inline-block w-40 text-center"></span>
+                ถึงวันที่ <span id="prtWeekEnd" class="border-b border-dotted border-gray-500 inline-block w-40 text-center"></span>
+                (งวดงานที่ <span id="prtInstCurr" class="border-b border-dotted border-gray-500 inline-block w-16 text-center"></span>
+                จากทั้งหมด <span id="prtInstTotal" class="border-b border-dotted border-gray-500 inline-block w-16 text-center"></span> งวด)
+                รายละเอียดดังนี้
+            </div>
+            
+            <div class="pl-12 mb-6 space-y-2">
+                <div class="flex"><span class="w-48">- ผลงานยกมา (สัปดาห์ที่แล้ว)</span><span>ร้อยละ <span id="prtValPrev" class="inline-block w-16 text-center border-b border-dotted border-gray-500"></span></span></div>
+                <div class="flex"><span class="w-48">- ผลงานทำได้ (สัปดาห์นี้)</span><span>ร้อยละ <span id="prtValThis" class="inline-block w-16 text-center border-b border-dotted border-gray-500"></span></span></div>
+                <div class="flex"><span class="w-48">- รวมผลงานสะสม</span><span>ร้อยละ <span id="prtValTotal" class="inline-block w-16 text-center border-b border-dotted border-gray-500 font-bold"></span></span></div>
+                <div class="flex"><span class="w-48">- คงเหลือผลงาน</span><span>ร้อยละ <span id="prtValRemain" class="inline-block w-16 text-center border-b border-dotted border-gray-500"></span></span></div>
+            </div>
+            
+            <div class="indent-12 mb-16">
+                จึงเรียนมาเพื่อโปรดทราบ
+            </div>
+            
+            <!-- ลายเซ็นผู้ควบคุมงาน -->
+            <div id="prtSupervisorsContainer" class="flex flex-col items-end gap-8 mb-12 mr-12"></div>
+            
+            <!-- ส่วนคณะกรรมการตรวจรับ -->
+            <div class="border-t-2 border-black pt-4 mt-8">
+                <div class="font-bold mb-4">ความเห็นของคณะกรรมการตรวจรับพัสดุ</div>
+                <div class="indent-12 mb-8">ได้ตรวจรายงานผลการปฏิบัติงานแล้ว เห็นว่าการปฏิบัติงานเป็นไปตามสัญญาจ้าง/รูปแบบรายการ</div>
+                <div id="prtCommitteesContainer" class="flex flex-col items-center gap-6 mt-8"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- MAIN SCRIPT -->
     <script>
         (function() {
@@ -817,10 +1000,18 @@
             let tempPoints = [], tempDrawLayer = null, dynamicDrawLayer = null, isStreetViewMode = false, activeImages = [];
             let sCurveChartInstance = null, dbBudgetChartInstance = null, dbOverallPieChartInstance = null, dbBudgetTypeChartInstance = null, dbDistrictStatusChartInstance = null, dbContractorChartInstance = null, dbStuckBudgetChartInstance = null, dbUpdateStatChartInstance = null;
             let rptMapInstance = null, rptSCurveChartInstance = null, v124SCurveChartInstance = null, rptOsmLayer = null, rptSatLayer = null, isRptSat = false;
-            let currentDashboardProjects = []; // เพิ่มตัวแปรนี้เพื่อจำว่าตอนนี้กำลังดูกราฟข้อมูลไหนอยู่
+            let currentDashboardProjects = []; 
+            let currentWeeklyProject = null;
 
             window.vibrantColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FDCB6E', '#6C5CE7', '#A8E6CF'];
             
+            // ฟังก์ชันสำหรับเคลียร์โหมดพิมพ์ป้องกันกระดาษเปล่า
+            window.clearPrintingClasses = function() {
+                if (document.body.classList) {
+                    document.body.classList.remove('printing-main', 'printing-v124', 'printing-table', 'printing-status-summary', 'printing-dashboard', 'printing-kanban-summary', 'printing-weekly');
+                }
+            };
+
             window.supervisorDB = {
                 "เมืองพิษณุโลก": [{name:"นางสาวพิมพ์ไฉล คมขำ", position:"วิศวกรโยธาปฏิบัติการ"},{name:"สิบโทอรรถพล เพชรทิม", position:"นายช่างโยธาชำนาญงาน"},{name:"นายวัชรพงษ์ สกุลวงศ์เวโรจน์", position:"นายช่างโยธาชำนาญงาน"}],
                 "นครไทย": [{name:"นายศราวุธ แสงเกตุ", position:"วิศวกรโยธาชำนาญการพิเศษ"}],
@@ -2491,7 +2682,9 @@
                 const p = safeProjects.find(pj => pj.id.toString() === id.toString()); 
                 if(!p) return; 
                 window.closeSearchModal(); 
-                if (document.body.classList) document.body.classList.remove('printing-v124');
+                
+                window.clearPrintingClasses();
+                if (document.body.classList) document.body.classList.add('printing-main');
                 
                 const optMap = document.getElementById('directPrintOptMap');
                 if (optMap) optMap.value = 'street';
@@ -2598,11 +2791,20 @@
                 }, 300);
             };
 
-            window.closeReport = function() { const rm = document.getElementById('reportModal'); if (rm && rm.classList) { rm.classList.add('hidden'); rm.classList.remove('flex'); } };
+            window.closeReport = function() { 
+                window.clearPrintingClasses();
+                const rm = document.getElementById('reportModal'); 
+                if (rm && rm.classList) { rm.classList.add('hidden'); rm.classList.remove('flex'); } 
+            };
 
             window.openReportV124 = function(id) {
                 const safeProjects = window.projects || [];
-                const p=safeProjects.find(pj=>pj.id.toString()===id.toString()); if(!p)return; window.closeSearchModal(); if(document.body.classList) document.body.classList.add('printing-v124');
+                const p=safeProjects.find(pj=>pj.id.toString()===id.toString()); if(!p)return; 
+                window.closeSearchModal(); 
+                
+                window.clearPrintingClasses();
+                if(document.body.classList) document.body.classList.add('printing-v124');
+                
                 const elProj = document.getElementById('v124ProjectName'); if(elProj) elProj.innerText=p.name||'-'; 
                 let dur='-';
                 
@@ -2680,7 +2882,7 @@
             };
             
             window.closeReportV124 = function() { 
-                if(document.body.classList) document.body.classList.remove('printing-v124'); 
+                window.clearPrintingClasses();
                 const rm = document.getElementById('reportV124Modal'); 
                 if(rm && rm.classList) { rm.classList.add('hidden'); rm.classList.remove('flex'); } 
             };
@@ -2739,7 +2941,10 @@
 
             window.openTableReport = function() { 
                 window.closeDataManagementModal();
-                document.body.classList.add('printing-table');
+                
+                window.clearPrintingClasses();
+                if (document.body.classList) document.body.classList.add('printing-table');
+                
                 const tbody = document.getElementById('tableReportBody');
                 if(!tbody) return;
                 tbody.innerHTML = '';
@@ -2790,7 +2995,7 @@
             };
             
             window.closeTableReport = function() { 
-                document.body.classList.remove('printing-table');
+                window.clearPrintingClasses();
                 const tm = document.getElementById('tableReportModal');
                 if(tm) { tm.classList.add('hidden'); tm.classList.remove('flex'); }
             };
@@ -3409,17 +3614,21 @@
                         tbody.innerHTML += `<tr class="${bgClass} border-b border-gray-100 hover:bg-yellow-50 transition-colors"><td class="p-2 border-r text-center align-top">${index + 1}</td><td class="p-2 border-r font-bold text-gray-700 align-top">${p.district || '-'}</td><td class="p-2 border-r text-center align-top">${p.year || '-'}</td><td class="p-2 border-r text-gray-600 align-top">${p.budgetType || '-'}</td><td class="p-2 border-r font-bold text-blue-900 whitespace-normal min-w-[200px] leading-tight align-top">${p.name || '-'}${contractorText}</td><td class="p-2 border-r align-middle">${s1}</td><td class="p-2 border-r align-middle">${s2}</td><td class="p-2 border-r align-middle">${s3}</td><td class="p-2 border-r align-middle">${s4}</td><td class="p-2 text-center align-middle"><span class="font-bold ${ca >= 100 ? 'text-emerald-600' : 'text-blue-600'}">${ca.toFixed(2)}%</span></td></tr>`;
                     });
                 }
+                
+                window.clearPrintingClasses();
+                if (document.body.classList) document.body.classList.add('printing-status-summary');
+                
                 const m = document.getElementById('statusSummaryModal');
                 if(m) { m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => m.style.opacity = '1', 10); }
             };
 
             window.closeStatusSummaryModal = function() {
+                window.clearPrintingClasses();
                 const m = document.getElementById('statusSummaryModal');
                 if(m) { m.style.opacity = '0'; setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
             };
 
             window.printStatusSummary = function() {
-                if (document.body.classList) document.body.classList.add('printing-status-summary');
                 let printHeader = document.getElementById('printHeaderStatusSummary');
                 if (!printHeader) {
                     printHeader = document.createElement('div'); printHeader.id = 'printHeaderStatusSummary'; printHeader.className = 'hidden print:block text-center mb-4 border-b-2 border-blue-800 pb-3';
@@ -3427,7 +3636,6 @@
                     const area = document.getElementById('printAreaStatusSummary'); if (area) area.prepend(printHeader);
                 }
                 window.print();
-                setTimeout(() => { if (document.body.classList) document.body.classList.remove('printing-status-summary'); }, 1000);
             };
 
             // ==========================================
@@ -3435,19 +3643,21 @@
             // ==========================================
             window.openKanbanSummaryModal = function() {
                 window.renderKanbanSummary();
+                window.clearPrintingClasses();
+                if (document.body.classList) document.body.classList.add('printing-kanban-summary');
                 const m = document.getElementById('kanbanSummaryModal');
                 if(m) { m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => m.style.opacity = '1', 10); }
             };
 
             window.closeKanbanSummaryModal = function() {
+                window.clearPrintingClasses();
                 const m = document.getElementById('kanbanSummaryModal');
                 if(m) { m.style.opacity = '0'; setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
             };
 
             window.printKanbanSummary = function() {
-                if (document.body.classList) document.body.classList.add('printing-kanban-summary');
+                // เอา Timeout ออก เพื่อให้เรียกคำสั่ง Print โดยตรง (เบราว์เซอร์จะได้ไม่บล็อก)
                 window.print();
-                setTimeout(() => { if (document.body.classList) document.body.classList.remove('printing-kanban-summary'); }, 1000);
             };
 
             window.renderKanbanSummary = function() {
@@ -3522,18 +3732,40 @@
                     for (let i = 1; i <= 4; i++) {
                         const cat = group[i];
                         if (cat.projects.length > 0) {
-                            // เรียงชื่อโครงการตามตัวอักษร
-                            cat.projects.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+                            // 1. เรียงลำดับตาม ปี พ.ศ. (น้อยไปมาก) แล้วตามด้วยชื่อโครงการ
+                            cat.projects.sort((a,b) => {
+                                const yearA = parseInt(a.year) || 0;
+                                const yearB = parseInt(b.year) || 0;
+                                if (yearA !== yearB) {
+                                    return yearA - yearB;
+                                }
+                                return (a.name||'').localeCompare(b.name||'');
+                            });
                             
                             const projectListHtml = cat.projects.map(p => {
                                 let extra = '';
                                 if(i === 2 && p.procurementMethod) extra = ` <span class="text-[10px] text-gray-500">(${p.procurementMethod})</span>`;
+                                
+                                // ปรับปรุง: หมวดกำลังก่อสร้าง โชว์ตามจริง | หมวดแล้วเสร็จ โชว์ 100% | หมวดอื่น ไม่โชว์ %
                                 if(i === 3) {
                                     let ca = 0; if(p.activities) p.activities.forEach(a => ca += (parseFloat(a.actual)||0));
-                                    extra = ` <span class="text-[10px] text-emerald-600 font-bold">(ผลงาน ${ca.toFixed(2)}%)</span>`;
+                                    extra = ` <span class="text-[11px] text-emerald-600 font-bold">(ผลงาน ${ca.toFixed(2)}%)</span>`;
+                                } else if (i === 4) {
+                                    extra = ` <span class="text-[11px] text-emerald-600 font-bold">(ผลงาน 100%)</span>`;
                                 }
-                                let budgetInfo = ` <span class="text-[10px] text-gray-500 font-normal">[${p.budgetType || '-'} ปี ${p.year || '-'}]</span>`;
-                                return `<li class="mb-1 leading-snug">${p.name||'-'}${budgetInfo}${extra}</li>`;
+                                
+                                let budgetInfo = ` <span class="text-[11px] text-gray-500 font-normal">[${p.budgetType || '-'} ปี ${p.year || '-'}]</span>`;
+                                
+                                // เพิ่มการแสดงสถานะจริงของโครงการ
+                                let actualStatusHtml = ` <span class="text-[11.5px] font-bold ${cat.text} ml-1"><i class="fa-solid fa-arrow-right-long text-gray-400 mx-1"></i> สถานะ: ${p.status || '-'}</span>`;
+                                
+                                // 2. เพิ่มการแสดงหมายเหตุ (ปัญหาอุปสรรค) ด้วยตัวอักษรสีแดง
+                                let problemHtml = '';
+                                if (p.problem && p.problem.trim() !== '') {
+                                    problemHtml = `<div class="text-[11px] text-red-600 font-normal mt-0.5 pl-2 border-l-2 border-red-300"><i class="fa-solid fa-triangle-exclamation"></i> หมายเหตุ: ${p.problem}</div>`;
+                                }
+                                
+                                return `<li class="mb-2 leading-snug">${p.name||'-'}${budgetInfo}${actualStatusHtml}${extra}${problemHtml}</li>`;
                             }).join('');
 
                             html += `
@@ -3697,7 +3929,10 @@
                 }
 
                 window.closeWeeklyReportInput();
-                document.body.classList.add('printing-weekly');
+                
+                window.clearPrintingClasses();
+                if(document.body.classList) document.body.classList.add('printing-weekly');
+                
                 const pModal = document.getElementById('weeklyReportPrintModal');
                 if(pModal) { pModal.classList.remove('hidden'); pModal.classList.add('flex'); }
             };
