@@ -131,33 +131,20 @@
         <img id="expandedImage" src="" class="max-w-full max-h-[90vh] object-contain rounded shadow-2xl border border-white/20">
     </div>
 
-    <div id="loginModal" class="fixed inset-0 bg-blue-900 bg-opacity-95 z-[5000] hidden justify-center items-center">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center relative">
-            <button type="button" onclick="document.getElementById('loginModal').classList.replace('flex', 'hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times text-xl"></i></button>
+    <div id="loginModal" class="fixed inset-0 bg-blue-900 bg-opacity-95 z-[5000] flex justify-center items-center">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
             <i class="fa-solid fa-shield-halved text-5xl text-blue-600 mb-4"></i>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">ยืนยันสิทธิ์เจ้าหน้าที่</h2>
-            <p class="text-sm text-gray-500 mb-6" id="authContextText">กรุณาระบุรหัสผ่านเพื่อดำเนินการต่อ</p>
-            
-            <div class="text-left bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <label class="block text-xs font-bold text-blue-800 mb-2">เลือกอำเภอ / สิทธิ์การเข้าถึง</label>
-                <select id="loginDistrict" class="w-full px-3 py-2 mb-3 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500 font-bold text-gray-700 disabled:opacity-70 disabled:cursor-not-allowed">
-                    <option value="admin">ส่วนกลาง (จัดการได้ทุกอำเภอ)</option>
-                    <option value="เมืองพิษณุโลก">ช่างเขต อ.เมืองพิษณุโลก</option>
-                    <option value="นครไทย">ช่างเขต อ.นครไทย</option>
-                    <option value="ชาติตระการ">ช่างเขต อ.ชาติตระการ</option>
-                    <option value="บางระกำ">ช่างเขต อ.บางระกำ</option>
-                    <option value="บางกระทุ่ม">ช่างเขต อ.บางกระทุ่ม</option>
-                    <option value="พรหมพิราม">ช่างเขต อ.พรหมพิราม</option>
-                    <option value="วัดโบสถ์">ช่างเขต อ.วัดโบสถ์</option>
-                    <option value="วังทอง">ช่างเขต อ.วังทอง</option>
-                    <option value="เนินมะปราง">ช่างเขต อ.เนินมะปราง</option>
-                </select>
-                <label class="block text-xs font-bold text-blue-800 mb-2">รหัสผ่าน (PIN 4 หลัก)</label>
-                <div class="flex gap-2">
-                    <input type="password" id="pinInput" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-center tracking-[0.5em] font-bold text-lg" placeholder="****" maxlength="4" onkeydown="if(event.key === 'Enter') window.submitAuth()">
-                    <button onclick="window.submitAuth()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-lg font-bold transition-all shadow-md">ยืนยัน</button>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">เข้าสู่ระบบจัดการโครงการ</h2>
+            <div class="space-y-4">
+                <button onclick="window.selectRole('viewer')" class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg transition-all flex items-center justify-center gap-2 border border-gray-300"><i class="fa-solid fa-eye"></i> เข้าชมในฐานะ Viewer (ดูข้อมูล)</button>
+                <div class="relative py-2"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-300"></div></div><div class="relative flex justify-center text-sm"><span class="px-2 bg-white text-gray-500">หรือ</span></div></div>
+                <div class="text-left bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <div class="flex gap-2">
+                        <input type="password" id="pinInput" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-center tracking-[0.5em] font-bold text-lg" placeholder="****" maxlength="4" onkeydown="if(event.key === 'Enter') window.loginAsAdmin()">
+                        <button onclick="window.loginAsAdmin()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-lg font-bold transition-all shadow-md">เข้าสู่ระบบ</button>
+                    </div>
+                    <p id="loginError" class="text-red-500 text-xs font-bold mt-2 hidden text-center">รหัสผ่านไม่ถูกต้อง!</p>
                 </div>
-                <p id="loginError" class="text-red-500 text-xs font-bold mt-2 hidden text-center">รหัสผ่านไม่ถูกต้อง!</p>
             </div>
         </div>
     </div>
