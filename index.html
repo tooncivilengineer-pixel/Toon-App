@@ -191,9 +191,12 @@
             <button onclick="window.toggleMapType()" class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold py-1.5 px-2.5 border border-gray-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
                 <i id="mapIcon" class="fa-solid fa-satellite text-blue-600 w-3 text-center"></i><span id="mapText">เปิดแผนที่ดาวเทียม</span>
             </button>
-            <button onclick="window.openModal()" class="admin-only bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1.5 px-2.5 border border-blue-700 rounded shadow-sm flex items-center gap-1.5 transition-all">
-                <i class="fa-solid fa-plus-circle w-3 text-center"></i><span>ป้อนรายละเอียดโครงการ</span>
+            
+            <!-- ปรับปรุงปุ่มป้อนรายละเอียดโครงการ ให้โดดเด่นเป็นปุ่มหลัก -->
+            <button onclick="window.openModal()" class="admin-only bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-extrabold py-2 px-3 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2 transition-all duration-300 ring-2 ring-blue-300 ring-offset-1">
+                <i class="fa-solid fa-plus-circle text-base animate-pulse"></i><span>ป้อนรายละเอียดโครงการ</span>
             </button>
+
             <button onclick="window.openSearchModal()" class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold py-1.5 px-2.5 border border-gray-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
                 <i class="fa-solid fa-magnifying-glass-chart text-blue-600 w-3 text-center"></i><span>ค้นหา/แก้ไขโครงการ</span>
             </button>
@@ -369,15 +372,20 @@
                             </div>
                         </div>
 
-                        <!-- แถวที่ 2: แผนจัดหาพัสดุสิ้นสุด และ แผนสิ้นสุดโครงการ -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                        <div class="mb-4">
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1">แผนพัสดุสิ้นสุด</label>
+                            <input type="date" id="pProcurementEndDate" class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm font-bold text-blue-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        </div>
+
+                        <!-- เพิ่มส่วน ประกาศจัดซื้อจัดจ้าง -->
+                        <div id="procurementSection" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-3 bg-indigo-50 border border-indigo-100 rounded-lg hidden">
                             <div>
-                                <label class="block text-[10px] font-bold text-blue-800 mb-1">แผนการจัดหาพัสดุ (วันที่)</label>
-                                <input type="date" id="pProcurementPlanDate" class="w-full px-3 py-1.5 border border-blue-200 rounded-md text-sm outline-none bg-white focus:ring-2 focus:ring-blue-500" title="เลือกวันที่แผนการจัดหาพัสดุ">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-blue-800 mb-1">แผนจัดหาพัสดุสิ้นสุด (เดือน)</label>
-                                <select id="pPlanMonth" class="w-full px-3 py-1.5 border border-blue-200 rounded-md text-sm outline-none bg-white focus:ring-2 focus:ring-blue-500">
+                                <label class="block text-[10px] font-bold text-indigo-700 mb-1">วิธีจัดซื้อจัดจ้าง</label>
+                                <select id="pProcurementMethod" class="w-full px-3 py-1.5 border border-indigo-200 rounded-md text-sm outline-none bg-white">
+                                    <option value="" disabled selected>เลือกวิธี...</option>
+                                    <option value="วิธี e-bidding">วิธี e-bidding</option>
+                                    <option value="วิธีคัดเลือก">วิธีคัดเลือก</option>
+                                    <option value="วิธีเฉพาะเจาะจง">วิธีเฉพาะเจาะจง</option>
                                 </select>
                             </div>
                             <div>
@@ -539,8 +547,8 @@
                     <label class="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-blue-700 cursor-pointer transition-colors mt-2"><input type="checkbox" id="printOptImg" checked onchange="window.toggleRptSection('rptImgSection', this.checked)" class="w-4 h-4 text-blue-600 rounded"> พิมพ์รูปภาพประกอบ</label>
                 </div>
             </div>
-            <div class="flex justify-end gap-3 pt-2">
-                <button type="button" onclick="const m=document.getElementById('printOptionsModal'); if(m){m.classList.add('hidden');m.classList.remove('flex');}" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition-colors">ยกเลิก</button>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="const m=document.getElementById('printOptionsModal'); if(m){m.classList.add('hidden');m.classList.remove('flex');}" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition-colors"><i class="fa-solid fa-arrow-left mr-1"></i> ย้อนกลับ</button>
                 <button type="button" onclick="const m=document.getElementById('printOptionsModal'); if(m){m.classList.add('hidden');m.classList.remove('flex');} window.print();" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition-colors"><i class="fa-solid fa-print mr-1"></i> สั่งพิมพ์</button>
             </div>
         </div>
@@ -563,7 +571,7 @@
             </div>
             <div class="flex gap-2">
                 <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg shadow-sm font-bold transition-colors text-xs flex items-center"><i class="fa-solid fa-print mr-1.5"></i> พิมพ์ PDF</button>
-                <button onclick="window.closeReport()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-lg shadow-sm font-bold transition-colors text-xs flex items-center"><i class="fa-solid fa-times mr-1.5"></i> ปิด</button>
+                <button onclick="window.closeReport()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-lg shadow-sm font-bold transition-colors text-xs flex items-center"><i class="fa-solid fa-arrow-left mr-1.5"></i> ย้อนกลับ</button>
             </div>
         </div>
         <div id="printArea" class="bg-white w-[210mm] min-h-[297mm] shadow-2xl relative p-10 font-sans text-gray-800 mx-auto mt-8 border border-gray-300">
@@ -605,7 +613,7 @@
     <div id="reportV124Modal" class="fixed inset-0 bg-gray-500 bg-opacity-80 z-[4000] hidden justify-center items-start overflow-y-auto py-8">
         <div class="absolute top-4 right-6 p-2 flex gap-3 no-print z-50 bg-white rounded-lg shadow-lg border border-gray-200">
             <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-print"></i> พิมพ์ PDF (แนวนอน)</button>
-            <button onclick="window.closeReportV124()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-times"></i> ปิด</button>
+            <button onclick="window.closeReportV124()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded shadow font-bold transition-colors"><i class="fa-solid fa-arrow-left mr-1"></i> ย้อนกลับ</button>
         </div>
         <div id="printAreaV124" class="bg-white w-[297mm] min-h-[210mm] shadow-2xl relative p-10 font-sans text-gray-800 mx-auto mt-8 border border-gray-300">
             <div class="text-right mb-2 text-sm font-bold text-gray-600">แผนงานโครงการ (S-Curve) ตาม ว124</div>
@@ -640,8 +648,8 @@
             <h3 class="text-xl font-bold mb-2">ยืนยันการลบข้อมูล</h3>
             <p class="text-sm text-gray-600 mb-6">คุณแน่ใจหรือไม่ว่าต้องการลบโครงการนี้?</p>
             <div class="flex justify-center gap-3">
-                <button type="button" onclick="window.closeDeleteModal()" class="px-5 py-2 bg-gray-100 rounded-lg font-bold">ยกเลิก</button>
-                <button type="button" onclick="window.executeDeleteProject()" class="px-5 py-2 text-white bg-red-600 rounded-lg font-bold">ยืนยันการลบ</button>
+                <button type="button" onclick="window.closeDeleteModal()" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg font-bold"><i class="fa-solid fa-arrow-left mr-1"></i> ย้อนกลับ</button>
+                <button type="button" onclick="window.executeDeleteProject()" class="px-5 py-2 text-white bg-red-600 hover:bg-red-700 transition-colors rounded-lg font-bold">ยืนยันการลบ</button>
             </div>
         </div>
     </div>
@@ -685,7 +693,7 @@
     <div id="tableReportModal" class="fixed inset-0 bg-gray-500 bg-opacity-80 z-[4000] hidden justify-center items-start overflow-y-auto py-8">
         <div class="absolute top-4 right-6 p-2 flex gap-3 no-print z-50 bg-white rounded-lg shadow-lg border border-gray-200">
             <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-print"></i> พิมพ์ PDF (แนวนอน)</button>
-            <button onclick="window.closeTableReport()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-times"></i> ปิด</button>
+            <button onclick="window.closeTableReport()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded shadow font-bold transition-colors"><i class="fa-solid fa-arrow-left mr-1"></i> ย้อนกลับ</button>
         </div>
         <div id="printAreaTable" class="bg-white w-[297mm] min-h-[210mm] shadow-2xl relative p-10 font-sans text-gray-800 mx-auto mt-8 border border-gray-300">
             <div class="text-center mb-6">
@@ -723,7 +731,7 @@
             <div id="dashboardModalHeader" class="bg-gradient-to-r from-purple-800 to-indigo-700 text-white px-6 py-4 flex justify-between items-center font-bold shadow-md z-10 cursor-move">
                 <h2 class="text-xl flex items-center gap-3"><i class="fa-solid fa-chart-pie text-2xl"></i> ภาพรวมและการเฝ้าระวังโครงการ (Executive Dashboard)</h2>
                 <div class="flex gap-2">
-                    <button type="button" onclick="window.closeDashboardModal()" class="hover:text-purple-200 transition-colors ml-2"><i class="fa-solid fa-times text-2xl"></i></button>
+                    <button type="button" onclick="window.closeDashboardModal()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-colors ml-2 flex items-center"><i class="fa-solid fa-arrow-left mr-2"></i> ย้อนกลับ</button>
                 </div>
             </div>
             <div class="flex-1 overflow-y-auto p-5 md:p-6 custom-scrollbar bg-slate-50">
@@ -757,6 +765,8 @@
                     <div class="lg:col-span-2 bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbContractorChartTitle" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-users-gear text-amber-500 mr-2"></i> 5 อันดับผู้รับจ้าง</h3><div class="relative h-60 w-full flex-1 flex justify-center items-center"><canvas id="dbContractorChart"></canvas></div></div>
                     
                     <div class="lg:col-span-4 bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbChart4Title" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-list-check text-emerald-600 mr-2"></i> สถานะการดำเนินงาน แยกตามประเภทงบ</h3><div class="relative h-[400px] w-full flex-1"><canvas id="dbBudgetTypeChart"></canvas></div></div>
+                    
+                    <div class="lg:col-span-4 bg-white p-4 rounded-xl shadow-sm border flex flex-col"><h3 id="dbProcurementChartTitle" class="text-md font-bold mb-3 border-b pb-2"><i class="fa-solid fa-calendar-check text-indigo-500 mr-2"></i> สรุปจำนวนโครงการ แยกตามเดือนที่สิ้นสุดแผนจัดหาพัสดุ</h3><div class="relative h-[300px] w-full flex-1"><canvas id="dbProcurementChart"></canvas></div></div>
                 </div>
 
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-red-200 flex flex-col">
@@ -796,7 +806,7 @@
                 <h2 class="text-xl flex items-center gap-3"><i class="fa-solid fa-table-list text-2xl"></i> ตารางสรุปสถานะการดำเนินโครงการเชิงลึก (Matrix View)</h2>
                 <div class="flex gap-2">
                     <button type="button" onclick="window.printStatusSummary()" class="bg-white text-blue-800 px-4 py-1.5 rounded-lg text-sm font-bold shadow hover:bg-gray-100 transition-all"><i class="fa-solid fa-print mr-1"></i> พิมพ์ / PDF</button>
-                    <button type="button" onclick="window.closeStatusSummaryModal()" class="hover:text-blue-200 transition-colors ml-2"><i class="fa-solid fa-times text-2xl"></i></button>
+                    <button type="button" onclick="window.closeStatusSummaryModal()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-colors ml-2 flex items-center"><i class="fa-solid fa-arrow-left mr-2"></i> ย้อนกลับ</button>
                 </div>
             </div>
             <div class="flex-1 overflow-y-auto p-4 custom-scrollbar bg-slate-50" id="printAreaStatusSummary">
@@ -830,7 +840,7 @@
                 <h2 class="text-xl flex items-center gap-3"><i class="fa-solid fa-file-lines text-2xl"></i> สรุปโครงการแยกตามอำเภอและสถานะ</h2>
                 <div class="flex gap-2">
                     <button type="button" onclick="window.printKanbanSummary()" class="bg-white text-blue-800 px-4 py-1.5 rounded-lg text-sm font-bold shadow hover:bg-gray-100 transition-all"><i class="fa-solid fa-print mr-1"></i> พิมพ์ / PDF</button>
-                    <button type="button" onclick="window.closeKanbanSummaryModal()" class="hover:text-blue-200 transition-colors ml-2"><i class="fa-solid fa-times text-2xl"></i></button>
+                    <button type="button" onclick="window.closeKanbanSummaryModal()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-colors ml-2 flex items-center"><i class="fa-solid fa-arrow-left mr-2"></i> ย้อนกลับ</button>
                 </div>
             </div>
             <div class="flex-1 p-10 font-sans text-gray-800 bg-white" id="printAreaKanbanSummary">
@@ -885,7 +895,7 @@
                 </div>
             </div>
             <div class="p-4 border-t flex justify-end gap-3 bg-white">
-                <button type="button" onclick="window.closeWeeklyReportInput()" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-sm">ยกเลิก</button>
+                <button type="button" onclick="window.closeWeeklyReportInput()" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg font-bold text-sm"><i class="fa-solid fa-arrow-left mr-1"></i> ย้อนกลับ</button>
                 <button type="button" onclick="window.generateWeeklyReportPDF()" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-sm shadow-sm"><i class="fa-solid fa-file-pdf mr-1"></i> สร้างแบบฟอร์ม</button>
             </div>
         </div>
@@ -895,7 +905,7 @@
     <div id="weeklyReportPrintModal" class="fixed inset-0 bg-gray-500 bg-opacity-80 z-[4500] hidden justify-center items-start overflow-y-auto py-8">
         <div class="fixed top-4 right-6 p-2 flex gap-3 no-print z-50 bg-white rounded-lg shadow-lg border border-gray-200">
             <button onclick="window.print()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-print"></i> พิมพ์ PDF</button>
-            <button onclick="document.getElementById('weeklyReportPrintModal').classList.replace('flex','hidden'); window.clearPrintingClasses();" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded shadow font-bold"><i class="fa-solid fa-times"></i> ปิด</button>
+            <button onclick="document.getElementById('weeklyReportPrintModal').classList.replace('flex','hidden'); window.clearPrintingClasses();" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded shadow font-bold transition-colors"><i class="fa-solid fa-arrow-left mr-1"></i> ย้อนกลับ</button>
         </div>
         
         <div id="printAreaWeekly" class="bg-white w-[210mm] min-h-[297mm] shadow-2xl relative px-16 py-20 font-sans text-black mx-auto mt-8 border border-gray-300 text-[15pt] leading-relaxed">
@@ -984,7 +994,7 @@
             let userRole = 'viewer', editingProjectId = null, projectToDeleteId = null, progressProjectId = null;
             let segmentCounter = 0, activeSegmentsData = {}, currentDrawingSegId = null, isDrawingMode = false;
             let tempPoints = [], tempDrawLayer = null, dynamicDrawLayer = null, isStreetViewMode = false, activeImages = [];
-            let sCurveChartInstance = null, dbBudgetChartInstance = null, dbOverallPieChartInstance = null, dbBudgetTypeChartInstance = null, dbDistrictStatusChartInstance = null, dbContractorChartInstance = null, dbStuckBudgetChartInstance = null;
+            let sCurveChartInstance = null, dbBudgetChartInstance = null, dbOverallPieChartInstance = null, dbBudgetTypeChartInstance = null, dbDistrictStatusChartInstance = null, dbContractorChartInstance = null, dbStuckBudgetChartInstance = null, dbProcurementChartInstance = null;
             let rptMapInstance = null, rptSCurveChartInstance = null, v124SCurveChartInstance = null, rptOsmLayer = null, rptSatLayer = null, isRptSat = false;
             let currentDashboardProjects = []; 
             let currentWeeklyProject = null;
@@ -1291,6 +1301,22 @@
                             procInfoHtml = `<span class="text-[10px] text-indigo-600 block mt-0.5"><i class="fa-solid fa-bullhorn"></i> ${p.procurementMethod||'-'} (ครั้งที่ ${p.procurementIteration||'-'})</span>`;
                         }
 
+                        let procWarningHtml = '';
+                        const preConstructionStatuses = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ประกาศจัดซื้อจัดจ้าง', 'ทบทวนราคากลาง'];
+                        if (p.procurementEndDate && preConstructionStatuses.includes(p.status || '')) {
+                            const today = new Date();
+                            today.setHours(0,0,0,0);
+                            const procEnd = new Date(p.procurementEndDate);
+                            procEnd.setHours(0,0,0,0);
+                            const diffDays = Math.round((procEnd - today) / (8.64e7));
+                            
+                            if (diffDays < 0) {
+                                procWarningHtml = `<div class="mt-1.5 text-red-600 font-bold text-xs"><i class="fa-solid fa-triangle-exclamation animate-pulse text-sm mr-1"></i> ระยะเวลาตามแผนพัสดุสิ้นสุด ให้ดำเนินการปรับแผนฯ</div>`;
+                            } else if (diffDays <= 15) {
+                                procWarningHtml = `<div class="mt-1.5 text-red-500 font-bold text-xs"><i class="fa-solid fa-clock text-sm mr-1"></i> สิ้นสุดแผนพัสดุใน ${diffDays} วัน</div>`;
+                            }
+                        }
+
                         // ส่วนของการคำนวณวันดำเนินการและวันคงเหลือ
                         let elapsedText = '-';
                         let remainingText = '-';
@@ -1368,7 +1394,7 @@
                                         </div>
                                     </div>
                                     <div class="bg-gray-50 p-2 rounded border border-gray-200 text-[11px]">
-                                        <div class="mb-1.5"><span class="text-gray-500">สถานะ:</span> <b class="text-orange-600">${p.status || '-'}</b>${procInfoHtml}</div>
+                                        <div class="mb-1.5"><span class="text-gray-500">สถานะ:</span> <b class="text-orange-600">${p.status || '-'}</b>${procWarningHtml}${procInfoHtml}</div>
                                         <div class="mb-2">
                                             <div class="flex justify-between items-end mb-0.5">
                                                 <span class="text-gray-500">ผลงานจริง:</span>
@@ -1928,10 +1954,7 @@
                     contractPrice: window.parseNum(getVal('pContractPrice')), 
                     status: sv.includes('งวดที่') ? `ส่งมอบงานงวดที่ ${document.getElementById('pInstallment').value}` : sv, 
                     statusDate: getVal('pStatusDate'),
-                    procurementPlanDate: getVal('pProcurementPlanDate'),
-                    planMonth: getVal('pPlanMonth'),
-                    planYear: getVal('pPlanYear'),
-                    planEndDate: getVal('pPlanEndDate'),
+                    procurementEndDate: getVal('pProcurementEndDate'),
                     procurementMethod: getVal('pProcurementMethod'),
                     procurementIteration: getVal('pProcurementIteration'),
                     contractStartDate: getVal('pContractStartDate'),
@@ -1985,11 +2008,7 @@
                 setVal('pInstallment', ins);
                 setVal('pStatusDate', p.statusDate || '');
                 
-                setVal('pProcurementPlanDate', p.procurementPlanDate || '');
-                setVal('pPlanMonth', p.planMonth || '');
-                setVal('pPlanYear', p.planYear || '');
-                setVal('pPlanEndDate', p.planEndDate || '');
-
+                setVal('pProcurementEndDate', p.procurementEndDate || '');
                 setVal('pProcurementMethod', p.procurementMethod || '');
                 setVal('pProcurementIteration', p.procurementIteration || '');
                 
@@ -2284,6 +2303,22 @@
                     procInfoHtml = `<div class="mt-1 text-[11px] text-indigo-600 font-bold"><i class="fa-solid fa-bullhorn"></i> ${p.procurementMethod||'-'} (ครั้งที่ ${p.procurementIteration||'-'})</div>`;
                 }
 
+                let procWarningHtml = '';
+                const preConstructionStatuses = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ประกาศจัดซื้อจัดจ้าง', 'ทบทวนราคากลาง'];
+                if (p.procurementEndDate && preConstructionStatuses.includes(p.status || '')) {
+                    const today = new Date();
+                    today.setHours(0,0,0,0);
+                    const procEnd = new Date(p.procurementEndDate);
+                    procEnd.setHours(0,0,0,0);
+                    const diffDays = Math.round((procEnd - today) / (8.64e7));
+                    
+                    if (diffDays < 0) {
+                        procWarningHtml = `<div class="mt-2 text-sm text-red-700 font-bold bg-red-50 px-3 py-2 rounded-lg border border-red-200 shadow-sm"><i class="fa-solid fa-triangle-exclamation animate-pulse text-base mr-1"></i> ระยะเวลาตามแผนพัสดุสิ้นสุด ให้ดำเนินการปรับแผนฯ</div>`;
+                    } else if (diffDays <= 15) {
+                        procWarningHtml = `<div class="mt-2 text-sm text-red-600 font-bold bg-red-50 px-3 py-2 rounded-lg border border-red-100 shadow-sm"><i class="fa-solid fa-clock text-base mr-1"></i> สิ้นสุดแผนพัสดุใน ${diffDays} วัน</div>`;
+                    }
+                }
+
                 let supsHtml = (p.supervisors && p.supervisors.length > 0) ? p.supervisors.map(s => `<div class="bg-yellow-50 p-2 rounded border border-yellow-200 mb-1"><div class="font-bold text-yellow-800 text-xs">${s.name}</div><div class="text-[10px] text-yellow-600">${s.position}</div></div>`).join('') : '<p class="text-xs text-gray-400">-</p>';
                 let comsHtml = (p.committees && p.committees.length > 0) ? p.committees.map(c => `<div class="bg-purple-50 p-2 rounded border border-purple-200 mb-1"><div class="font-bold text-purple-800 text-xs">${c.name}</div><div class="text-[10px] text-purple-600">${c.position || '-'}</div></div>`).join('') : '<p class="text-xs text-gray-400">-</p>';
                 let imgsHtml = (p.images && p.images.length > 0) ? p.images.map(img => `<img src="${img}" onclick="window.openImageModal('${img}')" class="h-24 w-24 object-cover rounded-lg border shadow-sm cursor-pointer hover:opacity-80 transition-all">`).join('') : '<p class="text-xs text-gray-400">-</p>';
@@ -2324,16 +2359,17 @@
 
                         <div class="bg-white p-4 rounded-xl border shadow-sm">
                             <h3 class="font-bold text-blue-800 border-b pb-2 mb-3 text-sm"><i class="fa-solid fa-bars-progress mr-1"></i> สถานะการดำเนินงาน</h3>
-                            <div class="mb-3 border-b border-gray-100 pb-3">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-gray-500 text-[11px]">แผนการจัดหาพัสดุ:</span>
-                                    <span class="font-bold text-blue-700 text-xs bg-blue-50 px-2 py-0.5 rounded border border-blue-100"><i class="fa-regular fa-calendar mr-1"></i>${p.procurementPlanDate ? new Date(p.procurementPlanDate).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : 'ไม่ได้ระบุ'}</span>
-                                </div>
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-gray-500 text-[11px]">เป้าหมายแผนจัดหาพัสดุ:</span>
-                                    <span class="font-bold text-blue-700 text-xs bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${p.planMonth || p.planYear ? (p.planMonth||'') + ' ' + (p.planYear||'') : 'ไม่ได้ระบุ'}</span>
-                                </div>
-                                <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-100">
+                            <div class="mb-3">
+                                <span class="text-gray-500 text-xs block mb-1">สถานะปัจจุบัน</span>
+                                <span class="inline-block px-3 py-1 rounded-full text-[11px] font-bold border" style="color: ${window.getProjectStatusColor(p.status)}; border-color: ${window.getProjectStatusColor(p.status)}; background: ${window.getProjectStatusColor(p.status)}15">${p.status||'-'}</span>
+                                ${procWarningHtml}
+                                ${procInfoHtml}
+                                <div class="text-[10px] text-gray-400 mt-1">อัปเดตเมื่อ: ${p.statusDate ? new Date(p.statusDate).toLocaleDateString('th-TH') : '-'}</div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-end mb-1">
+                                    <span class="text-gray-500 text-[11px]">ผลงานจริงหน้าไซต์งาน</span>
+                                    <span class="font-bold text-emerald-600 text-sm">${ca.toFixed(2)}%</span>
                                 </div>
                                 <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden border border-gray-200">
                                     <div class="bg-emerald-500 h-2.5 rounded-full" style="width: ${ca}%"></div>
@@ -2389,21 +2425,21 @@
                 }
                 let navBtnAction = navUrl ? `<a href="${navUrl}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center"><i class="fa-solid fa-route mr-1"></i> นำทาง</a>` : '';
 
-                let actions = `<button type="button" onclick="window.closeViewModal()" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition-colors text-xs md:text-sm">ปิดหน้าต่าง</button><div class="flex flex-wrap gap-2">`;
+                let actions = `<button type="button" onclick="window.closeViewModal()" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition-colors text-xs md:text-sm"><i class="fa-solid fa-arrow-left mr-1"></i> ย้อนกลับ</button><div class="flex flex-wrap gap-2">`;
                 if(navBtnAction) actions += navBtnAction;
                 
                 if (userRole === 'admin') {
                     actions += `
-                        <button type="button" onclick="window.closeViewModal(); window.openProgressModal('${p.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"><i class="fa-solid fa-bars-progress mr-1"></i> อัปเดตผลงาน</button>
-                        <button type="button" onclick="window.closeViewModal(); window.editProject('${p.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"><i class="fa-solid fa-pen-to-square mr-1"></i> แก้ไข</button>
-                        <button type="button" onclick="window.closeViewModal(); window.openReport('${p.id}')" class="bg-teal-600 hover:bg-teal-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
-                        <button type="button" onclick="window.closeViewModal(); window.openReportV124('${p.id}')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"><i class="fa-solid fa-file-invoice mr-1"></i> ว124</button>
-                        <button type="button" onclick="window.closeViewModal(); window.confirmDeleteProject('${p.id}')" class="bg-red-600 hover:bg-red-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"><i class="fa-solid fa-trash mr-1"></i> ลบ</button>
+                        <button type="button" onclick="window.closeViewModal(); currentActionOriginId = '${p.id}'; window.openProgressModal('${p.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"><i class="fa-solid fa-bars-progress mr-1"></i> อัปเดตผลงาน</button>
+                        <button type="button" onclick="window.closeViewModal(); window.editProject('${p.id}', true)" class="bg-blue-600 hover:bg-blue-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"><i class="fa-solid fa-pen-to-square mr-1"></i> แก้ไข</button>
+                        <button type="button" onclick="window.closeViewModal(); currentActionOriginId = '${p.id}'; window.openReport('${p.id}')" class="bg-teal-600 hover:bg-teal-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
+                        <button type="button" onclick="window.closeViewModal(); currentActionOriginId = '${p.id}'; window.openReportV124('${p.id}')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"><i class="fa-solid fa-file-invoice mr-1"></i> ว124</button>
+                        <button type="button" onclick="window.closeViewModal(); window.confirmDeleteProject('${p.id}', true)" class="bg-red-600 hover:bg-red-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"><i class="fa-solid fa-trash mr-1"></i> ลบ</button>
                     `;
                 } else {
                     actions += `
-                        <button type="button" onclick="window.closeViewModal(); window.openReport('${p.id}')" class="flex-1 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white py-2 rounded-lg text-[10px] font-black transition-colors flex items-center justify-center shadow-sm" title="PDF"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
-                        <button type="button" onclick="window.closeViewModal(); window.openReportV124('${p.id}')" class="flex-1 bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white py-2 rounded-lg text-[10px] font-black transition-colors flex items-center justify-center shadow-sm" title="ว124"><i class="fa-solid fa-file-invoice mr-1"></i> ว124</button>
+                        <button type="button" onclick="window.closeViewModal(); currentActionOriginId = '${p.id}'; window.openReport('${p.id}')" class="flex-1 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white py-2 rounded-lg text-[10px] font-black transition-colors flex items-center justify-center shadow-sm" title="PDF"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
+                        <button type="button" onclick="window.closeViewModal(); currentActionOriginId = '${p.id}'; window.openReportV124('${p.id}')" class="flex-1 bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white py-2 rounded-lg text-[10px] font-black transition-colors flex items-center justify-center shadow-sm" title="ว124"><i class="fa-solid fa-file-invoice mr-1"></i> ว124</button>
                     `;
                 }
                 actions += `</div>`;
@@ -2427,8 +2463,18 @@
                 const p = safeProjects.find(x => x.id == id); 
                 if(!p) return;
                 
+                const districtProjects = safeProjects.filter(pj => pj.district === p.district).sort((a,b) => (a.name||'').localeCompare(b.name||''));
+                const currentIndex = districtProjects.findIndex(pj => pj.id.toString() === id.toString());
+                const prevProj = currentIndex > 0 ? districtProjects[currentIndex - 1] : null;
+                const nextProj = currentIndex < districtProjects.length - 1 ? districtProjects[currentIndex + 1] : null;
+                
+                let navHtml = `<div class="flex gap-1.5 ml-4">`;
+                if(prevProj) navHtml += `<button type="button" onclick="window.openProgressModal('${prevProj.id}')" class="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 w-7 h-7 rounded flex items-center justify-center transition-colors shadow-sm border border-emerald-200" title="ก่อนหน้า"><i class="fa-solid fa-chevron-left text-[11px]"></i></button>`;
+                if(nextProj) navHtml += `<button type="button" onclick="window.openProgressModal('${nextProj.id}')" class="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 w-7 h-7 rounded flex items-center justify-center transition-colors shadow-sm border border-emerald-200" title="ถัดไป"><i class="fa-solid fa-chevron-right text-[11px]"></i></button>`;
+                navHtml += `</div>`;
+
                 const pName = document.getElementById('progProjectName');
-                if(pName) pName.innerText = p.name; 
+                if(pName) pName.innerHTML = `<div class="flex items-center justify-between w-full pr-2"><span>${p.name}</span> ${navHtml}</div>`; 
                 
                 const con = document.getElementById('progressActivitiesContainer');
                 if(con) {
@@ -2478,9 +2524,8 @@
                 // ปรับแก้: ถ้ามีผลงานจริงเกิดขึ้นแล้วแม้จะยังไม่ถึงแผน ให้เริ่มกราฟตั้งแต่วันนี้
                 if(acts.some(a=>parseFloat(a.actual)>0) && td < md) md = new Date(td.getFullYear(), td.getMonth(), 1);
                 
-                // เอาการบังคับยืดกราฟตามวันสัญญาออก เพื่อให้กราฟอิงตามกิจกรรม (Activity) จริงๆ
-                // if(p.contractStartDate){let ps=new Date(p.contractStartDate); if(ps<md)md=ps;} 
-                // if(p.contractEndDate){let pe=new Date(p.contractEndDate); if(pe>mx)mx=pe;}
+                if(p.contractStartDate){let ps=new Date(p.contractStartDate); if(ps<md)md=ps;} 
+                if(p.contractEndDate){let pe=new Date(p.contractEndDate); if(pe>mx)mx=pe;}
                 
                 let lbs=[], lbV=[], bds=[], cr=new Date(md.getFullYear(),md.getMonth(),1), ed=new Date(mx.getFullYear(),mx.getMonth(),1), cnt=1; 
                 const mn=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
@@ -2842,27 +2887,7 @@
                 if(ab) {
                     ab.innerHTML='กรุณาระบุวันที่และผลงาน...';
                     let ca=0; if(p.activities) p.activities.forEach(a=>ca+=(parseFloat(a.actual)||0));
-                    if(p.contractStartDate&&p.contractEndDate){ 
-                        const cs=new Date(p.contractStartDate), ce=new Date(p.contractEndDate), td=new Date(); 
-                        if(ce>cs&&td>=cs){ 
-                            const tc=(ce-cs)/(8.64e7)+1, pc=(td-cs)/(8.64e7)+1, tr=pc/tc; 
-                            let wh='สถานะปกติ'; 
-                            if(tr>=1.0){if(ca<85)wh=`<span class="text-red-600 font-bold">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.4</span>`;} 
-                            else if(tr>=0.75){if(ca<65)wh=`<span class="text-red-600 font-bold">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.3</span>`;} 
-                            else if(tr>=0.50){if(ca<25)wh=`<span class="text-red-600 font-bold">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.1</span>`; else if(ca<50)wh=`<span class="text-yellow-600 font-bold">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.1</span>`;} 
-                            
-                            let extraText = '';
-                            let validActs = (p.activities||[]).filter(a=>a.endDate);
-                            if(validActs.length > 0) {
-                                let maxActEnd = new Date(Math.max(...validActs.map(a=>new Date(a.endDate))));
-                                let diffDays = Math.round((ce - maxActEnd) / (1000 * 60 * 60 * 24));
-                                if(diffDays > 0) extraText = `<div class="mt-2 pt-2 border-t border-gray-200 text-xs text-emerald-700 font-bold"><i class="fa-regular fa-calendar-check"></i> แผนงานจบก่อนสัญญา ${diffDays} วัน</div>`;
-                                else if(diffDays < 0) extraText = `<div class="mt-2 pt-2 border-t border-gray-200 text-xs text-red-700 font-bold"><i class="fa-regular fa-calendar-xmark"></i> แผนงานเกินสัญญา ${Math.abs(diffDays)} วัน</div>`;
-                                else extraText = `<div class="mt-2 pt-2 border-t border-gray-200 text-xs text-blue-700 font-bold"><i class="fa-regular fa-calendar-check"></i> แผนงานเสร็จพอดีสัญญา</div>`;
-                            }
-                            ab.innerHTML = wh + extraText; 
-                        } 
-                    }
+                    if(p.contractStartDate&&p.contractEndDate){ const cs=new Date(p.contractStartDate), ce=new Date(p.contractEndDate), td=new Date(); if(ce>cs&&td>=cs){ const tc=(ce-cs)/(8.64e7)+1, pc=(td-cs)/(8.64e7)+1, tr=pc/tc; let wh='สถานะปกติ'; if(tr>=1.0){if(ca<85)wh=`<span class="text-red-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.4</span>`;} else if(tr>=0.75){if(ca<65)wh=`<span class="text-red-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.3</span>`;} else if(tr>=0.50){if(ca<25)wh=`<span class="text-red-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.1</span>`; else if(ca<50)wh=`<span class="text-yellow-600">เข้าเงื่อนไขบอกเลิกสัญญา ตามข้อ 2.2.1</span>`;} ab.innerHTML=wh; } }
                 }
                 
                 setTimeout(()=>{ 
@@ -2877,8 +2902,7 @@
                                     {type: 'line', label:'แผนสะสม(%)', data:sd.planned, borderColor:'#2563eb', backgroundColor: '#2563eb', borderWidth:3, tension:0.4, yAxisID: 'y'},
                                     {type: 'line', label:'จริงสะสม(%)', data:sd.actual, borderColor:'#ef4444', backgroundColor: '#ef4444', borderWidth:3, tension:0.4, yAxisID: 'y'},
                                     {type: 'bar', label:'แผนรายเดือน(%)', data:sd.plannedMonthly, backgroundColor:'rgba(59, 130, 246, 0.4)', yAxisID: 'y1'},
-                                    {type: 'bar', label:'จริงรายเดือน(%)', data:sd.actualMonthly, backgroundColor:'rgba(239, 68, 68, 0.4)', yAxisID: 'y1'},
-                                    {type: 'bar', label:'เส้นตายสัญญา', data:sd.contractMarker, backgroundColor:'rgba(220, 38, 38, 0.8)', maxBarThickness: 6, yAxisID: 'y'}
+                                    {type: 'bar', label:'จริงรายเดือน(%)', data:sd.actualMonthly, backgroundColor:'rgba(239, 68, 68, 0.4)', yAxisID: 'y1'}
                                 ]
                             },
                             options:{
@@ -2937,9 +2961,7 @@
                         'งบประมาณ (บาท)': p.budget || 0,
                         'ราคากลาง (บาท)': p.medianPrice || 0,
                         'ราคาตามสัญญา (บาท)': p.contractPrice || 0,
-                        'แผนการจัดหาพัสดุ': p.procurementPlanDate ? new Date(p.procurementPlanDate).toLocaleDateString('th-TH') : '-',
                         'เป้าหมายแผนจัดหาพัสดุ': (p.planMonth || '') + ' ' + (p.planYear || ''),
-                        'แผนสิ้นสุดโครงการ': p.planEndDate ? new Date(p.planEndDate).toLocaleDateString('th-TH') : '-',
                         'วันเริ่มต้นสัญญา': p.contractStartDate ? new Date(p.contractStartDate).toLocaleDateString('th-TH') : '-',
                         'วันสิ้นสุดสัญญา': p.contractEndDate ? new Date(p.contractEndDate).toLocaleDateString('th-TH') : '-',
                         'สถานะ': fullStatus,
@@ -3106,6 +3128,12 @@
                     dataToExport.sort((a, b) => (a.contractor || '').localeCompare(b.contractor || ''));
                 } else if (chartType === 'budgetType') {
                     dataToExport.sort((a, b) => (a.budgetType || '').localeCompare(b.budgetType || ''));
+                } else if (chartType === 'procurement') {
+                    dataToExport.sort((a, b) => {
+                        const da = a.procurementEndDate ? new Date(a.procurementEndDate) : new Date(8640000000000000);
+                        const db = b.procurementEndDate ? new Date(b.procurementEndDate) : new Date(8640000000000000);
+                        return da - db;
+                    });
                 }
 
                 const d = dataToExport.map((p, i) => {
@@ -3118,9 +3146,7 @@
                         'ชื่อโครงการ': p.name || '-',
                         'อำเภอ': p.district || '-',
                         'ประเภทงบประมาณ': p.budgetType || '-',
-                        'แผนการจัดหาพัสดุ': p.procurementPlanDate ? new Date(p.procurementPlanDate).toLocaleDateString('th-TH') : '-',
                         'เป้าหมายแผนจัดหาพัสดุ': (p.planMonth || '') + ' ' + (p.planYear || ''),
-                        'แผนสิ้นสุดโครงการ': p.planEndDate ? new Date(p.planEndDate).toLocaleDateString('th-TH') : '-',
                         'สถานะการดำเนินงาน': p.status || '-',
                         'ความก้าวหน้า (%)': ca.toFixed(2) + '%',
                         'งบประมาณ (บาท)': p.budget || 0,
@@ -3389,6 +3415,68 @@
                     });
                 }
 
+                const ctxProc = document.getElementById('dbProcurementChart');
+                if(ctxProc) {
+                    if(dbProcurementChartInstance) dbProcurementChartInstance.destroy();
+                    
+                    const procStats = {};
+                    const preConstructionStatuses = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ประกาศจัดซื้อจัดจ้าง', 'ทบทวนราคากลาง'];
+
+                    fp.forEach(p => {
+                        const dist = p.district || 'ไม่ระบุ';
+                        if (!procStats[dist]) procStats[dist] = { onTrack: 0, delayed: 0, noPlan: 0 };
+
+                        if (preConstructionStatuses.includes(p.status || '')) {
+                            if (p.procurementEndDate) {
+                                const today = new Date(); today.setHours(0,0,0,0);
+                                const procEnd = new Date(p.procurementEndDate); procEnd.setHours(0,0,0,0);
+                                if (today > procEnd) {
+                                    procStats[dist].delayed++;
+                                } else {
+                                    procStats[dist].onTrack++;
+                                }
+                            } else {
+                                procStats[dist].noPlan++;
+                            }
+                        } else {
+                            // ผ่านขั้นตอนพัสดุไปแล้ว (ได้ตัวผู้รับจ้าง/ก่อสร้างแล้ว) นับว่าสำเร็จตามแผน
+                            procStats[dist].onTrack++;
+                        }
+                    });
+
+                    const labels = Object.keys(procStats).sort();
+                    const dataOnTrack = labels.map(l => procStats[l].onTrack);
+                    const dataDelayed = labels.map(l => procStats[l].delayed);
+                    const dataNoPlan = labels.map(l => procStats[l].noPlan);
+                    
+                    const cProcTitle = document.getElementById('dbProcurementChartTitle');
+                    if (cProcTitle) cProcTitle.innerHTML = `<i class="fa-solid fa-scale-balanced text-indigo-500 mr-2"></i> เปรียบเทียบสถานะแผนจัดหาพัสดุ (เป็นไปตามแผน vs ล่าช้า) ${expBtn('procurement')}`;
+
+                    dbProcurementChartInstance = new Chart(ctxProc.getContext('2d'), {
+                        type: 'bar',
+                        data: { 
+                            labels: labels, 
+                            datasets: [
+                                { label: 'เป็นไปตามแผน / ผ่านพัสดุแล้ว', data: dataOnTrack, backgroundColor: '#10b981', borderRadius: 4 },
+                                { label: 'ล่าช้ากว่าแผนพัสดุ', data: dataDelayed, backgroundColor: '#ef4444', borderRadius: 4 },
+                                { label: 'ยังไม่ระบุแผนพัสดุ', data: dataNoPlan, backgroundColor: '#cbd5e1', borderRadius: 4 }
+                            ] 
+                        },
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: false, 
+                            plugins: { 
+                                legend: { position: 'bottom', labels: { font: { family: "'Sarabun', sans-serif", size: 12 } } },
+                                tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + context.raw + ' โครงการ'; } } }
+                            }, 
+                            scales: { 
+                                x: { stacked: true, ticks: { font: { family: "'Sarabun', sans-serif", size: 11 } } }, 
+                                y: { stacked: true, beginAtZero: true, title: { display: true, text: 'จำนวนโครงการ (แห่ง)', font: {weight: 'bold', family: "'Sarabun', sans-serif"} }, ticks: { stepSize: 1, font: { family: "'Sarabun', sans-serif" } } } 
+                            } 
+                        }
+                    });
+                }
+
                 const wBody = document.getElementById('dbWatchlistBody');
                 if(wBody) {
                     let wl = []; const today = new Date();
@@ -3410,41 +3498,6 @@
                     });
                     wBody.innerHTML = wl.sort((a,b) => a.diff - b.diff).slice(0,10).map(p => `<tr class="border-b hover:bg-red-50 transition-all"><td class="p-4 font-bold text-slate-800">${p.name}</td><td class="p-4 text-center text-blue-600 font-bold">${p.cp.toFixed(2)}%</td><td class="p-4 text-center text-emerald-600 font-bold">${p.ca.toFixed(2)}%</td><td class="p-4 text-center"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-xl font-bold border border-red-200 shadow-sm">-${Math.abs(p.diff).toFixed(2)}%</span></td><td class="p-4 text-center"><button type="button" onclick="window.closeDashboardModal(); window.viewProject('${p.id}')" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-bold shadow-sm hover:bg-indigo-700 transition-all">ดูข้อมูล</button></td></tr>`).join('');
                     if (wl.length === 0) { wBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500 font-bold">ไม่มีโครงการที่ล่าช้าผิดปกติ</td></tr>'; }
-                }
-
-                // โครงการที่พบปัญหา/อุปสรรค
-                const issuesBody = document.getElementById('dbIssuesListBody');
-                if(issuesBody) {
-                    let issuesList = fp.filter(p => p.problem && p.problem.trim() !== '');
-                    
-                    if (issuesList.length === 0) {
-                        issuesBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500 font-bold">ยังไม่มีโครงการที่รายงานปัญหาหรืออุปสรรคเข้ามา</td></tr>';
-                    } else {
-                        // เรียงตามวันที่อัปเดตล่าสุด
-                        issuesList.sort((a,b) => {
-                            let d1 = a.statusDate ? new Date(a.statusDate) : new Date(0);
-                            let d2 = b.statusDate ? new Date(b.statusDate) : new Date(0);
-                            return d2 - d1;
-                        });
-                        
-                        issuesBody.innerHTML = issuesList.map((p, i) => {
-                            let stColor = window.getProjectStatusColor(p.status);
-                            let stHtml = `<span class="text-[10px] px-2 py-1 rounded-full border font-bold" style="color: ${stColor}; border-color: ${stColor}; background: ${stColor}15">${p.status || '-'}</span>`;
-                            
-                            return `
-                            <tr class="border-b hover:bg-orange-50/50 transition-all">
-                                <td class="p-3 text-center text-gray-500 align-top">${i+1}</td>
-                                <td class="p-3 font-bold text-slate-800 whitespace-normal min-w-[200px] leading-tight align-top">${p.name}</td>
-                                <td class="p-3 text-center text-gray-600 font-bold align-top">${p.district || '-'}</td>
-                                <td class="p-3 text-center whitespace-normal min-w-[120px] leading-tight align-top">${stHtml}</td>
-                                <td class="p-3 text-red-600 font-bold whitespace-normal min-w-[250px] leading-tight align-top bg-red-50/30 border-l border-red-100"><i class="fa-solid fa-caret-right mr-1"></i> ${p.problem}</td>
-                                <td class="p-3 text-center align-top">
-                                    <button type="button" onclick="window.closeDashboardModal(); window.viewProject('${p.id}')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-sm hover:bg-indigo-700 transition-all">ดูข้อมูล</button>
-                                </td>
-                            </tr>
-                            `;
-                        }).join('');
-                    }
                 }
 
                 // ติดตามสถานะโครงการ (แยกตาม อำเภอ -> ปีงบประมาณ)
@@ -3585,364 +3638,6 @@
                     }
                     kanbanContainer.innerHTML = kbHtml;
                 }
-            };
-
-            window.renderActivitySection = function() {
-                const sumBody = document.getElementById('activitySummaryBody');
-                const tlFeed = document.getElementById('activityTimelineFeed');
-                if(!sumBody || !tlFeed) return;
-
-                const logs = window.activityLogs || [];
-                
-                if(logs.length === 0) {
-                    tlFeed.innerHTML = '<div class="text-center py-4 text-gray-400 text-xs">ยังไม่มีประวัติความเคลื่อนไหว</div>';
-                    sumBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">ยังไม่มีประวัติความเคลื่อนไหว</td></tr>';
-                    return;
-                }
-
-                let tlHtml = '';
-                logs.slice(0, 50).forEach(log => {
-                    const d = new Date(log.timestamp);
-                    let timeStr = d.toLocaleDateString('th-TH', {day:'2-digit', month:'short'}) + ' ' + d.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})+'น.';
-                    
-                    let icon = '', colorClass = '', bgClass = '';
-                    if(log.action === 'เพิ่มโครงการใหม่') { icon = '<i class="fa-solid fa-plus"></i>'; colorClass = 'text-emerald-600'; bgClass = 'bg-emerald-100'; }
-                    else if(log.action === 'ลบโครงการ') { icon = '<i class="fa-solid fa-trash"></i>'; colorClass = 'text-red-600'; bgClass = 'bg-red-100'; }
-                    else { icon = '<i class="fa-solid fa-pen"></i>'; colorClass = 'text-blue-600'; bgClass = 'bg-blue-100'; }
-
-                    tlHtml += `
-                        <div class="flex gap-3 text-[11px] border-b border-gray-200 py-2.5 hover:bg-white transition-colors px-2 rounded">
-                            <div class="w-16 text-gray-500 shrink-0 font-medium whitespace-nowrap">${timeStr}</div>
-                            <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${bgClass} ${colorClass} shadow-sm border border-white">${icon}</div>
-                            <div class="flex-1 leading-tight">
-                                <span class="font-bold ${colorClass}">${log.action}</span>: 
-                                <span class="text-gray-800 font-medium">${log.projectName}</span>
-                                <span class="text-[9px] text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded ml-1 font-bold whitespace-nowrap border border-gray-300 shadow-inner">อ.${log.district}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                tlFeed.innerHTML = tlHtml;
-
-                const thirtyDaysAgo = new Date();
-                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                
-                const stats = {};
-                const allDistricts = ["เมืองพิษณุโลก", "นครไทย", "ชาติตระการ", "บางระกำ", "บางกระทุ่ม", "พรหมพิราม", "วัดโบสถ์", "วังทอง", "เนินมะปราง"];
-                allDistricts.forEach(d => stats[d] = { add: 0, edit: 0, del: 0, total: 0 });
-
-                logs.forEach(log => {
-                    if(new Date(log.timestamp) >= thirtyDaysAgo) {
-                        const d = log.district || 'อื่นๆ';
-                        if(!stats[d]) stats[d] = { add: 0, edit: 0, del: 0, total: 0 };
-                        
-                        if(log.action === 'เพิ่มโครงการใหม่') stats[d].add++;
-                        else if(log.action === 'ลบโครงการ') stats[d].del++;
-                        else stats[d].edit++; 
-                        
-                        stats[d].total++;
-                    }
-                });
-
-                const sortedDistricts = Object.keys(stats).sort((a,b) => {
-                    if(stats[b].total !== stats[a].total) return stats[b].total - stats[a].total;
-                    return a.localeCompare(b, 'th');
-                });
-
-                let sumHtml = '';
-                sortedDistricts.forEach(d => {
-                    if(stats[d].total > 0 || allDistricts.includes(d)) {
-                        sumHtml += `
-                            <tr class="border-b hover:bg-gray-50 transition-colors">
-                                <td class="p-2 font-bold text-gray-700">${d}</td>
-                                <td class="p-2 text-center font-bold text-emerald-600 bg-emerald-50/30">${stats[d].add || '-'}</td>
-                                <td class="p-2 text-center font-bold text-blue-600 bg-blue-50/30">${stats[d].edit || '-'}</td>
-                                <td class="p-2 text-center font-bold text-red-600 bg-red-50/30">${stats[d].del || '-'}</td>
-                            </tr>
-                        `;
-                    }
-                });
-                sumBody.innerHTML = sumHtml;
-            };
-
-            window.openStatusSummaryModal = function() {
-                const fd = document.getElementById('dbFilterDistrict')?.value||'all', fc = document.getElementById('dbFilterContractor')?.value||'all', fy = document.getElementById('dbFilterYear')?.value||'all', ft = document.getElementById('dbFilterBudgetType')?.value||'all';
-                const fp = window.projects.filter(p => (fd==='all'||p.district===fd) && (fc==='all'||p.contractor===fc) && (fy==='all'||p.year===fy) && (ft==='all'||p.budgetType===ft));
-                fp.sort((a,b) => (a.district||'').localeCompare(b.district||''));
-                
-                const tbody = document.getElementById('statusSummaryBody'); if(!tbody) return; tbody.innerHTML = '';
-                if(fp.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="p-6 text-center text-gray-500 font-bold text-sm">ไม่พบข้อมูลโครงการตามเงื่อนไขที่เลือก</td></tr>'; } 
-                else {
-                    fp.forEach((p, index) => {
-                        let ca = 0; if(p.activities) p.activities.forEach(a => ca += (parseFloat(a.actual)||0));
-                        let s1 = '<span class="text-gray-200">-</span>', s2 = '<span class="text-gray-200">-</span>', s3 = '<span class="text-gray-200">-</span>', s4 = '<span class="text-gray-200">-</span>';
-                        let st = p.status || '';
-                        let stepHtml = (text, colorClass) => `<div class="px-2 py-1.5 rounded text-[10px] font-bold ${colorClass} shadow-sm inline-block w-full text-center whitespace-normal leading-tight">${text}</div>`;
-                        if (st.includes('แล้วเสร็จ')) { s4 = stepHtml(st, 'bg-emerald-100 text-emerald-800 border border-emerald-200'); } 
-                        else if (st.includes('ก่อสร้าง') || st.includes('งวด')) { s3 = stepHtml(st, 'bg-orange-100 text-orange-800 border border-orange-200'); } 
-                        else if (st === 'ประกาศจัดซื้อจัดจ้าง') { let extra = (p.procurementMethod || '') + (p.procurementIteration ? ` (ครั้งที่ ${p.procurementIteration})` : ''); s2 = stepHtml(st + (extra ? `<br><span class="font-normal text-[9px] mt-0.5 block">${extra}</span>` : ''), 'bg-indigo-100 text-indigo-800 border border-indigo-200'); } 
-                        else { s1 = stepHtml(st, 'bg-blue-100 text-blue-800 border border-blue-200'); }
-                        let bgClass = index % 2 === 0 ? 'bg-white' : 'bg-slate-50';
-                        let contractorText = p.contractor ? `<div class="text-[9px] text-gray-500 font-normal mt-1"><i class="fa-solid fa-helmet-safety text-amber-600"></i> ${p.contractor}</div>` : '';
-                        tbody.innerHTML += `<tr class="${bgClass} border-b border-gray-100 hover:bg-yellow-50 transition-colors"><td class="p-2 border-r text-center align-top">${index + 1}</td><td class="p-2 border-r font-bold text-gray-700 align-top">${p.district || '-'}</td><td class="p-2 border-r text-center align-top">${p.year || '-'}</td><td class="p-2 border-r text-gray-600 align-top">${p.budgetType || '-'}</td><td class="p-2 border-r font-bold text-blue-900 whitespace-normal min-w-[200px] leading-tight align-top">${p.name || '-'}${contractorText}</td><td class="p-2 border-r align-middle">${s1}</td><td class="p-2 border-r align-middle">${s2}</td><td class="p-2 border-r align-middle">${s3}</td><td class="p-2 border-r align-middle">${s4}</td><td class="p-2 text-center align-middle"><span class="font-bold ${ca >= 100 ? 'text-emerald-600' : 'text-blue-600'}">${ca.toFixed(2)}%</span></td></tr>`;
-                    });
-                }
-                
-                window.clearPrintingClasses();
-                if (document.body.classList) document.body.classList.add('printing-status-summary');
-                
-                const m = document.getElementById('statusSummaryModal');
-                if(m) { m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => m.style.opacity = '1', 10); }
-            };
-
-            window.closeStatusSummaryModal = function() {
-                window.clearPrintingClasses();
-                const m = document.getElementById('statusSummaryModal');
-                if(m) { m.style.opacity = '0'; setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
-            };
-
-            window.printStatusSummary = function() {
-                let printHeader = document.getElementById('printHeaderStatusSummary');
-                if (!printHeader) {
-                    printHeader = document.createElement('div'); printHeader.id = 'printHeaderStatusSummary'; printHeader.className = 'hidden print:block text-center mb-4 border-b-2 border-blue-800 pb-3';
-                    printHeader.innerHTML = `<h1 class="text-xl font-bold text-blue-900 mb-1">ตารางสรุปสถานะการดำเนินโครงการก่อสร้าง</h1><p class="text-sm text-gray-600 font-bold">กองช่าง อบจ.พิษณุโลก (อัปเดตข้อมูล ณ วันที่ ${new Date().toLocaleDateString('th-TH')})</p>`;
-                    const area = document.getElementById('printAreaStatusSummary'); if (area) area.prepend(printHeader);
-                }
-                window.print();
-            };
-
-            // ==========================================
-            // ชุดโค้ดใหม่: ฟังก์ชันสำหรับพิมพ์สรุปแยกตามสถานะ
-            // ==========================================
-            window.openKanbanSummaryModal = function() {
-                window.renderKanbanSummary();
-                window.clearPrintingClasses();
-                if (document.body.classList) document.body.classList.add('printing-kanban-summary');
-                const m = document.getElementById('kanbanSummaryModal');
-                if(m) { m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => m.style.opacity = '1', 10); }
-            };
-
-            window.closeKanbanSummaryModal = function() {
-                window.clearPrintingClasses();
-                const m = document.getElementById('kanbanSummaryModal');
-                if(m) { m.style.opacity = '0'; setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
-            };
-
-            window.printKanbanSummary = function() {
-                // เอา Timeout ออก เพื่อให้เรียกคำสั่ง Print โดยตรง (เบราว์เซอร์จะได้ไม่บล็อก)
-                window.print();
-            };
-
-            window.renderKanbanSummary = function() {
-                const tbody = document.getElementById('kanbanSummaryBody');
-                if(!tbody) return;
-
-                const fd = document.getElementById('dbFilterDistrict')?.value || 'all';
-                const fy = document.getElementById('dbFilterYear')?.value || 'all';
-                
-                let distText = fd === 'all' ? 'ทุกอำเภอ' : fd;
-                let yearText = fy === 'all' ? 'ทุกปีงบประมาณ' : fy;
-                
-                const ftext = `ข้อมูลอัปเดต ณ วันที่ ${new Date().toLocaleDateString('th-TH')} | อำเภอ: ${distText} | ปีงบประมาณ: ${yearText}`;
-                const fTextEl = document.getElementById('kanbanSummaryFilterText');
-                if (fTextEl) fTextEl.innerText = ftext;
-
-                const projectsToRender = currentDashboardProjects && currentDashboardProjects.length > 0 ? currentDashboardProjects : (window.projects || []);
-
-                if (projectsToRender.length === 0) {
-                    tbody.innerHTML = '<div class="text-center text-gray-500 py-10 font-bold border border-dashed rounded-lg bg-gray-50 text-sm">ไม่มีข้อมูลโครงการตามเงื่อนไขตัวกรองใน Dashboard</div>';
-                    return;
-                }
-
-                // จัดกลุ่มตาม อำเภอ -> สถานะ
-                const distGroups = {};
-                projectsToRender.forEach(p => {
-                    const dist = p.district || 'ไม่ระบุอำเภอ';
-                    if (!distGroups[dist]) {
-                        distGroups[dist] = {
-                            1: { title: 'เตรียมการ / จัดทำราคากลาง', projects: [], budget: 0, color: 'blue', bg: 'bg-blue-50', text: 'text-blue-700' },
-                            2: { title: 'จัดซื้อจัดจ้าง', projects: [], budget: 0, color: 'indigo', bg: 'bg-indigo-50', text: 'text-indigo-700' },
-                            3: { title: 'ดำเนินการก่อสร้าง', projects: [], budget: 0, color: 'orange', bg: 'bg-orange-50', text: 'text-orange-700' },
-                            4: { title: 'ดำเนินการแล้วเสร็จ', projects: [], budget: 0, color: 'emerald', bg: 'bg-emerald-50', text: 'text-emerald-700' },
-                            totalBudget: 0,
-                            totalCount: 0
-                        };
-                    }
-                    
-                    const st = p.status || '';
-                    let cIdx = 1;
-                    if (st.includes('แล้วเสร็จ') || st.includes('ส่งมอบงานงวดสุดท้าย')) cIdx = 4;
-                    else if (st.includes('ก่อสร้าง') || st.includes('งวดที่')) cIdx = 3;
-                    else if (st === 'ประกาศจัดซื้อจัดจ้าง' || st.includes('ประกาศผู้ชนะ')) cIdx = 2;
-                    
-                    distGroups[dist][cIdx].projects.push(p);
-                    distGroups[dist][cIdx].budget += (p.budget || 0);
-                    
-                    distGroups[dist].totalBudget += (p.budget || 0);
-                    distGroups[dist].totalCount++;
-                });
-
-                let html = '';
-                const sortedDistricts = Object.keys(distGroups).sort((a,b) => a.localeCompare(b, 'th'));
-
-                sortedDistricts.forEach(dist => {
-                    const group = distGroups[dist];
-                    
-                    html += `
-                        <div class="mb-8 page-break-inside-avoid">
-                            <div class="flex justify-between items-end mb-2 border-b-2 border-slate-700 pb-2">
-                                <h3 class="font-bold text-lg text-slate-800"><i class="fa-solid fa-location-dot text-red-500 mr-2"></i> อำเภอ${dist}</h3>
-                                <span class="text-sm font-bold text-slate-600">รวม ${group.totalCount} โครงการ | งบประมาณ ฿${group.totalBudget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
-                            </div>
-                            <table class="w-full text-[13px] border-collapse border border-gray-300 shadow-sm">
-                                <thead>
-                                    <tr class="bg-slate-100 text-slate-700">
-                                        <th class="border border-gray-300 p-2 w-1/4 text-center">สถานะการดำเนินงาน</th>
-                                        <th class="border border-gray-300 p-2 w-16 text-center">จำนวน</th>
-                                        <th class="border border-gray-300 p-2 text-left">รายชื่อโครงการ</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                    `;
-                    
-                    for (let i = 1; i <= 4; i++) {
-                        const cat = group[i];
-                        if (cat.projects.length > 0) {
-                            // 1. เรียงลำดับตาม ปี พ.ศ. (น้อยไปมาก) แล้วตามด้วยชื่อโครงการ
-                            cat.projects.sort((a,b) => {
-                                const yearA = parseInt(a.year) || 0;
-                                const yearB = parseInt(b.year) || 0;
-                                if (yearA !== yearB) {
-                                    return yearA - yearB;
-                                }
-                                return (a.name||'').localeCompare(b.name||'');
-                            });
-                            
-                            const projectListHtml = cat.projects.map(p => {
-                                let extra = '';
-                                if(i === 2 && p.procurementMethod) extra = ` <span class="text-[10px] text-gray-500">(${p.procurementMethod})</span>`;
-                                
-                                // ปรับปรุง: หมวดกำลังก่อสร้าง โชว์ตามจริง | หมวดแล้วเสร็จ โชว์ 100% | หมวดอื่น ไม่โชว์ %
-                                if(i === 3) {
-                                    let ca = 0; if(p.activities) p.activities.forEach(a => ca += (parseFloat(a.actual)||0));
-                                    extra = ` <span class="text-[11px] text-emerald-600 font-bold">(ผลงาน ${ca.toFixed(2)}%)</span>`;
-                                } else if (i === 4) {
-                                    extra = ` <span class="text-[11px] text-emerald-600 font-bold">(ผลงาน 100%)</span>`;
-                                }
-                                
-                                let budgetInfo = ` <span class="text-[11px] text-gray-500 font-normal">[${p.budgetType || '-'} ปี ${p.year || '-'}]</span>`;
-                                
-                                // เพิ่มการแสดงสถานะจริงของโครงการ
-                                let actualStatusHtml = ` <span class="text-[11.5px] font-bold ${cat.text} ml-1"><i class="fa-solid fa-arrow-right-long text-gray-400 mx-1"></i> สถานะ: ${p.status || '-'}</span>`;
-                                
-                                // 2. เพิ่มการแสดงหมายเหตุ (ปัญหาอุปสรรค) ด้วยตัวอักษรสีแดง
-                                let problemHtml = '';
-                                if (p.problem && p.problem.trim() !== '') {
-                                    problemHtml = `<div class="text-[11px] text-red-600 font-normal mt-0.5 pl-2 border-l-2 border-red-300"><i class="fa-solid fa-triangle-exclamation"></i> หมายเหตุ: ${p.problem}</div>`;
-                                }
-                                
-                                return `<li class="mb-2 leading-snug">${p.name||'-'}${budgetInfo}${actualStatusHtml}${extra}${problemHtml}</li>`;
-                            }).join('');
-
-                            html += `
-                                <tr>
-                                    <td class="border border-gray-300 p-3 font-bold ${cat.text} ${cat.bg} text-center align-top">${cat.title}</td>
-                                    <td class="border border-gray-300 p-3 text-center font-bold text-lg align-top">${cat.projects.length}</td>
-                                    <td class="border border-gray-300 p-3 align-top">
-                                        <ul class="list-disc pl-5 m-0 text-gray-800">
-                                            ${projectListHtml}
-                                        </ul>
-                                    </td>
-                                </tr>
-                            `;
-                        }
-                    }
-                    
-                    // เพิ่มแถวสรุปข้อมูลแบบละเอียดท้ายตารางของแต่ละอำเภอ
-                    html += `
-                                    <tr class="bg-blue-50/80 border-t-2 border-blue-300 print:bg-blue-50">
-                                        <td colspan="3" class="p-4">
-                                            <div class="font-bold text-blue-900 mb-3 border-b border-blue-200 pb-1 flex justify-between items-end">
-                                                <span><i class="fa-solid fa-chart-pie mr-1"></i> สรุปรายละเอียด อำเภอ${dist}</span>
-                                                <span class="text-xs">รวม ${group.totalCount} โครงการ | ฿${group.totalBudget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
-                                            </div>
-                                            <div class="grid grid-cols-4 gap-3 text-center text-xs">
-                                                <div class="bg-white p-2 rounded-lg border border-blue-200 shadow-sm flex flex-col justify-center">
-                                                    <div class="font-bold text-blue-700 mb-1">1. เตรียมการ</div>
-                                                    <div class="text-lg font-black text-gray-800">${group[1].projects.length} <span class="text-[10px] font-normal text-gray-500">แห่ง</span></div>
-                                                    <div class="text-[10px] font-bold text-blue-600 mt-1 bg-blue-50 py-0.5 rounded">฿${group[1].budget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
-                                                </div>
-                                                <div class="bg-white p-2 rounded-lg border border-indigo-200 shadow-sm flex flex-col justify-center">
-                                                    <div class="font-bold text-indigo-700 mb-1">2. จัดซื้อจัดจ้าง</div>
-                                                    <div class="text-lg font-black text-gray-800">${group[2].projects.length} <span class="text-[10px] font-normal text-gray-500">แห่ง</span></div>
-                                                    <div class="text-[10px] font-bold text-indigo-600 mt-1 bg-indigo-50 py-0.5 rounded">฿${group[2].budget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
-                                                </div>
-                                                <div class="bg-white p-2 rounded-lg border border-orange-200 shadow-sm flex flex-col justify-center">
-                                                    <div class="font-bold text-orange-700 mb-1">3. กำลังก่อสร้าง</div>
-                                                    <div class="text-lg font-black text-gray-800">${group[3].projects.length} <span class="text-[10px] font-normal text-gray-500">แห่ง</span></div>
-                                                    <div class="text-[10px] font-bold text-orange-600 mt-1 bg-orange-50 py-0.5 rounded">฿${group[3].budget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
-                                                </div>
-                                                <div class="bg-white p-2 rounded-lg border border-emerald-200 shadow-sm flex flex-col justify-center">
-                                                    <div class="font-bold text-emerald-700 mb-1">4. แล้วเสร็จ</div>
-                                                    <div class="text-lg font-black text-gray-800">${group[4].projects.length} <span class="text-[10px] font-normal text-gray-500">แห่ง</span></div>
-                                                    <div class="text-[10px] font-bold text-emerald-600 mt-1 bg-emerald-50 py-0.5 rounded">฿${group[4].budget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
-                });
-
-                // เพิ่มสรุปภาพรวม (Grand Total) ท้ายรายงาน แบบละเอียด
-                let grandTotal = 0, grandBudget = 0;
-                let gCat = { 1: {count:0, budget:0}, 2: {count:0, budget:0}, 3: {count:0, budget:0}, 4: {count:0, budget:0} };
-
-                sortedDistricts.forEach(dist => {
-                    grandTotal += distGroups[dist].totalCount;
-                    grandBudget += distGroups[dist].totalBudget;
-                    for(let i=1; i<=4; i++) {
-                        gCat[i].count += distGroups[dist][i].projects.length;
-                        gCat[i].budget += distGroups[dist][i].budget;
-                    }
-                });
-
-                html += `
-                    <div class="mt-6 pt-6 border-t-4 border-blue-800 page-break-inside-avoid">
-                        <h3 class="text-lg font-bold text-blue-900 mb-4 text-center"><i class="fa-solid fa-chart-bar mr-2"></i> สรุปภาพรวมทั้งหมด (Grand Total)</h3>
-                        <div class="grid grid-cols-5 gap-4 text-center mb-4">
-                            <div class="bg-gray-100 p-3 rounded-xl border border-gray-300 flex flex-col justify-center shadow-sm">
-                                <div class="text-xs text-gray-600 font-bold mb-1">รวมทั้งหมด</div>
-                                <div class="text-2xl font-black text-gray-800">${grandTotal} <span class="text-[10px] font-normal">แห่ง</span></div>
-                                <div class="text-[10px] font-bold text-gray-600 mt-1 bg-white py-1 rounded border border-gray-200">฿${grandBudget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
-                            </div>
-                            <div class="bg-blue-50 p-3 rounded-xl border border-blue-300 flex flex-col justify-center shadow-sm">
-                                <div class="text-xs text-blue-700 font-bold mb-1">1. เตรียมการ</div>
-                                <div class="text-2xl font-black text-blue-800">${gCat[1].count} <span class="text-[10px] font-normal">แห่ง</span></div>
-                                <div class="text-[10px] font-bold text-blue-700 mt-1 bg-white py-1 rounded border border-blue-100">฿${gCat[1].budget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
-                            </div>
-                            <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-300 flex flex-col justify-center shadow-sm">
-                                <div class="text-xs text-indigo-700 font-bold mb-1">2. จัดซื้อจัดจ้าง</div>
-                                <div class="text-2xl font-black text-indigo-800">${gCat[2].count} <span class="text-[10px] font-normal">แห่ง</span></div>
-                                <div class="text-[10px] font-bold text-indigo-700 mt-1 bg-white py-1 rounded border border-indigo-100">฿${gCat[2].budget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
-                            </div>
-                            <div class="bg-orange-50 p-3 rounded-xl border border-orange-300 flex flex-col justify-center shadow-sm">
-                                <div class="text-xs text-orange-700 font-bold mb-1">3. กำลังก่อสร้าง</div>
-                                <div class="text-2xl font-black text-orange-800">${gCat[3].count} <span class="text-[10px] font-normal">แห่ง</span></div>
-                                <div class="text-[10px] font-bold text-orange-700 mt-1 bg-white py-1 rounded border border-orange-100">฿${gCat[3].budget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
-                            </div>
-                            <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-300 flex flex-col justify-center shadow-sm">
-                                <div class="text-xs text-emerald-700 font-bold mb-1">4. แล้วเสร็จ</div>
-                                <div class="text-2xl font-black text-emerald-800">${gCat[4].count} <span class="text-[10px] font-normal">แห่ง</span></div>
-                                <div class="text-[10px] font-bold text-emerald-700 mt-1 bg-white py-1 rounded border border-emerald-100">฿${gCat[4].budget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                tbody.innerHTML = html;
             };
 
             // ==========================================
@@ -4111,7 +3806,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // นำเข้าคำสั่ง query, orderBy และ limit เพิ่มเติมสำหรับการดึง Log
         import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -4133,18 +3827,17 @@
             if (!auth.currentUser) await signInAnonymously(auth);
             const dataToSave = JSON.parse(JSON.stringify(pData));
             if (dataToSave.segments) dataToSave.segments = dataToSave.segments.map(s => ({ ...s, coordinates: JSON.stringify(s.coordinates) }));
-            try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', pData.id), dataToSave); } catch (e) { console.error(e); }
+            try { 
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', pData.id), dataToSave); 
+            } catch (e) { console.error(e); }
         };
 
         window.deleteProjectFromCloud = async projId => {
             if (!auth.currentUser) return;
-            try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', projId.toString())); } catch (e) {}
-        };
-
-        // ฟังก์ชันใหม่สำหรับส่ง Log ขึ้นคลาวด์
-        window.saveLogToCloud = async (logData) => {
-            if (!auth.currentUser) return;
-            try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'activity_logs', logData.id), logData); } catch (e) { console.error(e); }
+            const p = window.projects.find(pj => pj.id.toString() === projId.toString());
+            try { 
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', projId.toString())); 
+            } catch (e) {}
         };
 
         onAuthStateChanged(auth, user => {
@@ -4152,7 +3845,6 @@
             if (user) {
                 if(loader && loader.classList) loader.classList.remove('hidden');
                 
-                // ดึงข้อมูลโครงการ (Projects)
                 onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'projects'), snap => {
                     const fetched = [];
                     snap.forEach(doc => {
@@ -4163,18 +3855,6 @@
                     if (typeof window.updateProjectsFromCloud === 'function') window.updateProjectsFromCloud(fetched);
                     if(loader && loader.classList) loader.classList.add('hidden');
                 }, err => { if(loader && loader.classList) loader.classList.add('hidden'); });
-
-                // ดึงข้อมูลประวัติ (Logs) แบบ Real-time (จำกัดแค่ 500 รายการล่าสุดเพื่อความเร็ว)
-                onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'activity_logs'), orderBy('timestamp', 'desc'), limit(500)), snap => {
-                    const fetchedLogs = [];
-                    snap.forEach(doc => { fetchedLogs.push({id: doc.id, ...doc.data()}); });
-                    window.activityLogs = fetchedLogs;
-                    
-                    // สั่งอัปเดตกระดานแจ้งเตือนหาก Dashboard เปิดอยู่
-                    if(document.getElementById('dashboardModal') && !document.getElementById('dashboardModal').classList.contains('hidden') && window.renderActivitySection) {
-                        window.renderActivitySection();
-                    }
-                });
 
             } else signInAnonymously(auth).catch(e => { 
                 const authFixModal = document.getElementById('authFixModal');
