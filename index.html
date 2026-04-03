@@ -2922,10 +2922,14 @@
                 if (rm && rm.classList) { rm.classList.remove('hidden'); rm.classList.add('flex'); }
             };
             
-            window.closeReportV124 = function() { 
+            window.closeReportV124 = function(goBack = false) { 
                 window.clearPrintingClasses();
                 const rm = document.getElementById('reportV124Modal'); 
                 if(rm && rm.classList) { rm.classList.add('hidden'); rm.classList.remove('flex'); } 
+                if (goBack && currentActionOriginId) {
+                    window.viewProject(currentActionOriginId);
+                    currentActionOriginId = null;
+                }
             };
 
             window.openDataManagementModal = function() {
@@ -3000,7 +3004,7 @@
                 if(tTitle) tTitle.innerText = distFilter === 'all' ? 'ตารางสรุปรายละเอียดโครงการก่อสร้าง (รวมทุกอำเภอ)' : `ตารางสรุปรายละเอียดโครงการก่อสร้าง (อำเภอ${distFilter})`;
                 
                 if(filteredProjects.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" class="border border-gray-800 p-6 text-center text-gray-500 font-bold text-sm">ไม่มีข้อมูลโครงการในอำเภอที่เลือก</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="9" class="border border-gray-800 p-6 text-center text-gray-500 font-bold text-sm">ไม่มีข้อมูลโครงการในอำเภอที่เลือก</td></tr>';
                 } else {
                     let sortedProjects = [...filteredProjects].sort((a,b) => (a.district || '').localeCompare(b.district || ''));
                     sortedProjects.forEach((p, index) => {
@@ -3016,6 +3020,8 @@
                             tblStatusText += `<br><span class="text-[9px] text-gray-500">${p.procurementMethod||'-'} (ครั้งที่ ${p.procurementIteration||'-'})</span>`;
                         }
 
+                        let procEndStr = p.procurementEndDate ? new Date(p.procurementEndDate).toLocaleDateString('th-TH') : '-';
+
                         tbody.innerHTML += `<tr class="${bg} hover:bg-blue-50">
                             <td class="border border-gray-800 p-2 text-center align-top">${index + 1}</td>
                             <td class="border border-gray-800 p-2 font-bold text-gray-800 align-top">${p.name || '-'}${contractorText}</td>
@@ -3023,6 +3029,7 @@
                             <td class="border border-gray-800 p-2 text-center align-top">${p.budgetType || '-'} <br><span class="text-[10px] text-gray-500">ปี ${p.year||'-'}</span></td>
                             <td class="border border-gray-800 p-2 text-right font-bold text-blue-700 align-top">${(p.budget || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                             <td class="border border-gray-800 p-2 text-right font-bold text-emerald-700 align-top">${(p.contractPrice || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td class="border border-gray-800 p-2 text-center align-top text-red-600 font-bold">${procEndStr}</td>
                             <td class="border border-gray-800 p-2 text-center text-orange-600 font-bold align-top">${tblStatusText}</td>
                             <td class="border border-gray-800 p-2 text-left align-top">${supComHtml}</td>
                         </tr>`;
@@ -3415,66 +3422,37 @@
                     });
                 }
 
-                const ctxProc = document.getElementById('dbProcurementChart');
-                if(ctxProc) {
-                    if(dbProcurementChartInstance) dbProcurementChartInstance.destroy();
-                    
-                    const procStats = {};
+                const delayedProcBody = document.getElementById('dbDelayedProcurementBody');
+                if (delayedProcBody) {
                     const preConstructionStatuses = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ประกาศจัดซื้อจัดจ้าง', 'ทบทวนราคากลาง'];
+                    let delayedProjs = [];
+                    const today = new Date(); today.setHours(0,0,0,0);
 
                     fp.forEach(p => {
-                        const dist = p.district || 'ไม่ระบุ';
-                        if (!procStats[dist]) procStats[dist] = { onTrack: 0, delayed: 0, noPlan: 0 };
-
-                        if (preConstructionStatuses.includes(p.status || '')) {
-                            if (p.procurementEndDate) {
-                                const today = new Date(); today.setHours(0,0,0,0);
-                                const procEnd = new Date(p.procurementEndDate); procEnd.setHours(0,0,0,0);
-                                if (today > procEnd) {
-                                    procStats[dist].delayed++;
-                                } else {
-                                    procStats[dist].onTrack++;
-                                }
-                            } else {
-                                procStats[dist].noPlan++;
+                        if (preConstructionStatuses.includes(p.status || '') && p.procurementEndDate) {
+                            const procEnd = new Date(p.procurementEndDate); procEnd.setHours(0,0,0,0);
+                            const diffDays = Math.round((today - procEnd) / (8.64e7));
+                            if (diffDays > 0) {
+                                delayedProjs.push({...p, diffDays, procEnd});
                             }
-                        } else {
-                            // ผ่านขั้นตอนพัสดุไปแล้ว (ได้ตัวผู้รับจ้าง/ก่อสร้างแล้ว) นับว่าสำเร็จตามแผน
-                            procStats[dist].onTrack++;
                         }
                     });
 
-                    const labels = Object.keys(procStats).sort();
-                    const dataOnTrack = labels.map(l => procStats[l].onTrack);
-                    const dataDelayed = labels.map(l => procStats[l].delayed);
-                    const dataNoPlan = labels.map(l => procStats[l].noPlan);
-                    
-                    const cProcTitle = document.getElementById('dbProcurementChartTitle');
-                    if (cProcTitle) cProcTitle.innerHTML = `<i class="fa-solid fa-scale-balanced text-indigo-500 mr-2"></i> เปรียบเทียบสถานะแผนจัดหาพัสดุ (เป็นไปตามแผน vs ล่าช้า) ${expBtn('procurement')}`;
+                    delayedProjs.sort((a,b) => b.diffDays - a.diffDays);
 
-                    dbProcurementChartInstance = new Chart(ctxProc.getContext('2d'), {
-                        type: 'bar',
-                        data: { 
-                            labels: labels, 
-                            datasets: [
-                                { label: 'เป็นไปตามแผน / ผ่านพัสดุแล้ว', data: dataOnTrack, backgroundColor: '#10b981', borderRadius: 4 },
-                                { label: 'ล่าช้ากว่าแผนพัสดุ', data: dataDelayed, backgroundColor: '#ef4444', borderRadius: 4 },
-                                { label: 'ยังไม่ระบุแผนพัสดุ', data: dataNoPlan, backgroundColor: '#cbd5e1', borderRadius: 4 }
-                            ] 
-                        },
-                        options: { 
-                            responsive: true, 
-                            maintainAspectRatio: false, 
-                            plugins: { 
-                                legend: { position: 'bottom', labels: { font: { family: "'Sarabun', sans-serif", size: 12 } } },
-                                tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + context.raw + ' โครงการ'; } } }
-                            }, 
-                            scales: { 
-                                x: { stacked: true, ticks: { font: { family: "'Sarabun', sans-serif", size: 11 } } }, 
-                                y: { stacked: true, beginAtZero: true, title: { display: true, text: 'จำนวนโครงการ (แห่ง)', font: {weight: 'bold', family: "'Sarabun', sans-serif"} }, ticks: { stepSize: 1, font: { family: "'Sarabun', sans-serif" } } } 
-                            } 
-                        }
-                    });
+                    if (delayedProjs.length === 0) {
+                        delayedProcBody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500 font-bold bg-white"><i class="fa-solid fa-circle-check text-emerald-500 mr-2"></i>เยี่ยมมาก! ไม่มีโครงการที่จัดหาพัสดุล่าช้า</td></tr>';
+                    } else {
+                        delayedProcBody.innerHTML = delayedProjs.map(p => `
+                            <tr class="border-b hover:bg-red-50 transition-all bg-white">
+                                <td class="p-3 font-bold text-slate-800 whitespace-normal min-w-[200px] leading-tight align-top">${p.name}</td>
+                                <td class="p-3 text-center text-gray-600 font-bold align-top">${p.district || '-'}</td>
+                                <td class="p-3 text-center align-top font-bold text-orange-600">${p.procEnd.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' })}</td>
+                                <td class="p-3 text-center align-top"><span class="bg-red-100 text-red-700 px-2 py-1 rounded font-bold shadow-sm border border-red-200">เลยกำหนด ${p.diffDays} วัน</span></td>
+                                <td class="p-3 text-center align-top"><button type="button" onclick="window.closeDashboardModal(); window.viewProject('${p.id}', 'dashboard')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-sm hover:bg-indigo-700 transition-all">ดูข้อมูล</button></td>
+                            </tr>
+                        `).join('');
+                    }
                 }
 
                 const wBody = document.getElementById('dbWatchlistBody');
@@ -3564,10 +3542,21 @@
 
                                     let dateStr = p.statusDate ? new Date(p.statusDate).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' }) : '-';
 
+                                    let procWarningIcon = '';
+                                    const preConstructionStatuses = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ประกาศจัดซื้อจัดจ้าง', 'ทบทวนราคากลาง'];
+                                    if (p.procurementEndDate && preConstructionStatuses.includes(st)) {
+                                        const today = new Date(); today.setHours(0,0,0,0);
+                                        const procEnd = new Date(p.procurementEndDate); procEnd.setHours(0,0,0,0);
+                                        if (today > procEnd) {
+                                            procWarningIcon = `<span class="inline-block bg-red-100 text-red-600 text-[8px] px-1.5 py-0.5 rounded ml-1 border border-red-200 align-text-top leading-none">ล่าช้าแผนพัสดุ</span>`;
+                                        }
+                                    }
+                                    let procEndRow = p.procurementEndDate ? `<div class="flex justify-between items-start gap-1 mt-0.5 pt-1 border-t border-gray-50"><span class="whitespace-nowrap"><i class="fa-solid fa-calendar-check text-red-400 w-3"></i> แผนพัสดุ:</span><span class="font-bold text-right leading-tight text-red-600">${new Date(p.procurementEndDate).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' })}</span></div>` : '';
+
                                     const card = `
                                         <div onclick="window.viewProject('${p.id}', 'dashboard')" class="group bg-white p-2.5 rounded-lg border ${borderClass} shadow-sm hover:shadow-md cursor-pointer transition-all duration-300 hover:border-blue-400 flex flex-col gap-1.5 min-h-[60px] mb-2 relative">
                                             <!-- โชว์ชื่อเต็มเมื่อเอาเมาส์ชี้ เพิ่ม pointer-events-none เพื่อให้คลิกทะลุได้ -->
-                                            <div class="text-[11px] font-bold text-gray-800 leading-tight line-clamp-2 group-hover:line-clamp-none transition-all duration-300 pointer-events-none">${p.name}</div>
+                                            <div class="text-[11px] font-bold text-gray-800 leading-tight line-clamp-2 group-hover:line-clamp-none transition-all duration-300 pointer-events-none">${p.name}${procWarningIcon}</div>
                                             
                                             <!-- ส่วนรายละเอียดและข้อความให้คลิก (ใช้ pointer-events-none ทั้งแผง) -->
                                             <div class="hidden group-hover:flex flex-col gap-1 text-[10px] text-gray-600 border-t border-gray-100 pt-1.5 mt-0.5 pointer-events-none">
@@ -3575,6 +3564,7 @@
                                                 <div class="flex justify-between items-center"><span><i class="fa-solid fa-sack-dollar text-gray-400 w-3"></i> งบฯ:</span><span class="font-bold text-blue-700">฿${(p.budget||0).toLocaleString('en-US', {minimumFractionDigits: 2})}</span></div>
                                                 <div class="flex justify-between items-center"><span><i class="fa-solid fa-bars-progress text-gray-400 w-3"></i> ผลงาน:</span><span class="font-bold text-emerald-600">${ca.toFixed(2)}%</span></div>
                                                 <div class="flex justify-between items-start gap-1 mt-0.5"><span class="whitespace-nowrap"><i class="fa-solid fa-helmet-safety text-gray-400 w-3"></i> รับจ้าง:</span><span class="font-bold text-right leading-tight">${p.contractor || '-'}</span></div>
+                                                ${procEndRow}
                                                 
                                                 <!-- ปุ่มจำลองให้ดูเหมือนปุ่ม แต่จริงๆ แล้วคลิกที่กล่องหลัก -->
                                                 <div class="w-full mt-1.5 py-1.5 text-center bg-blue-100 text-blue-700 rounded font-bold shadow-sm border border-blue-200 group-hover:bg-blue-600 group-hover:text-white transition-colors">
@@ -3638,6 +3628,137 @@
                     }
                     kanbanContainer.innerHTML = kbHtml;
                 }
+            };
+
+            window.openStatusSummaryModal = function() {
+                const tbody = document.getElementById('statusSummaryBody');
+                if(!tbody) return;
+                tbody.innerHTML = '';
+                
+                let pjs = currentDashboardProjects && currentDashboardProjects.length > 0 ? currentDashboardProjects : (window.projects || []);
+                
+                if(pjs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-center text-gray-500 font-bold">ไม่มีข้อมูลโครงการ</td></tr>';
+                } else {
+                    let html = '';
+                    let sortedPjs = [...pjs].sort((a,b) => (a.district||'').localeCompare(b.district||'') || (a.year||'').localeCompare(b.year||''));
+                    
+                    sortedPjs.forEach((p, i) => {
+                        let s = p.status || '';
+                        let ca = 0; if(p.activities) p.activities.forEach(a => ca += (parseFloat(a.actual)||0));
+                        
+                        let c1='', c2='', c3='', c4='';
+                        let stBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold border shadow-sm truncate max-w-full block" style="color: ${window.getProjectStatusColor(s)}; border-color: ${window.getProjectStatusColor(s)}; background: ${window.getProjectStatusColor(s)}15" title="${s}">${s}</span>`;
+                        
+                        if (s.includes('แล้วเสร็จ') || s.includes('สุดท้าย')) c4 = stBadge;
+                        else if (s.includes('ก่อสร้าง') || s.includes('งวดที่')) c3 = stBadge;
+                        else if (s === 'ประกาศจัดซื้อจัดจ้าง' || s.includes('ผู้ชนะ')) c2 = stBadge;
+                        else c1 = stBadge;
+
+                        let procEndStr = p.procurementEndDate ? `<div class="text-[9px] text-red-600 mt-1 font-normal"><i class="fa-solid fa-calendar-check"></i> แผนพัสดุสิ้นสุด: ${new Date(p.procurementEndDate).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' })}</div>` : '';
+
+                        html += `<tr class="border-b hover:bg-blue-50 transition-colors">
+                            <td class="p-2 border-r text-center">${i+1}</td>
+                            <td class="p-2 border-r">${p.district||'-'}</td>
+                            <td class="p-2 border-r text-center">${p.year||'-'}</td>
+                            <td class="p-2 border-r text-[10px]">${p.budgetType||'-'}</td>
+                            <td class="p-2 border-r font-bold text-gray-800 whitespace-normal min-w-[200px] leading-tight">${p.name}${procEndStr}</td>
+                            <td class="p-2 border-r text-center align-top w-[120px]">${c1}</td>
+                            <td class="p-2 border-r text-center align-top w-[120px]">${c2}</td>
+                            <td class="p-2 border-r text-center align-top w-[120px]">${c3}</td>
+                            <td class="p-2 border-r text-center align-top w-[120px]">${c4}</td>
+                            <td class="p-2 text-center font-bold text-emerald-600 w-[80px]">${ca.toFixed(2)}%</td>
+                        </tr>`;
+                    });
+                    tbody.innerHTML = html;
+                }
+
+                const m = document.getElementById('statusSummaryModal');
+                if(m) { m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => m.style.opacity = '1', 10); }
+            };
+
+            window.closeStatusSummaryModal = function() {
+                const m = document.getElementById('statusSummaryModal');
+                if(m) { m.style.opacity = '0'; setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
+                window.clearPrintingClasses();
+            };
+
+            window.printStatusSummary = function() {
+                window.clearPrintingClasses();
+                if(document.body.classList) document.body.classList.add('printing-status-summary');
+                setTimeout(() => { window.print(); window.clearPrintingClasses(); }, 300);
+            };
+
+            window.openKanbanSummaryModal = function() {
+                const kBody = document.getElementById('kanbanSummaryBody');
+                const kText = document.getElementById('kanbanSummaryFilterText');
+                if(!kBody) return;
+
+                let pjs = currentDashboardProjects && currentDashboardProjects.length > 0 ? currentDashboardProjects : (window.projects || []);
+                
+                const fdEl = document.getElementById('dbFilterDistrict');
+                const fyEl = document.getElementById('dbFilterYear');
+                const distText = (fdEl && fdEl.value !== 'all') ? `อำเภอ${fdEl.value}` : 'ทุกอำเภอ';
+                const yearText = (fyEl && fyEl.value !== 'all') ? `ปีงบประมาณ ${fyEl.value}` : 'ทุกปีงบประมาณ';
+                if(kText) kText.innerText = `ข้อมูล: ${distText} | ${yearText} (จำนวน ${pjs.length} โครงการ)`;
+
+                if(pjs.length === 0) {
+                    kBody.innerHTML = '<div class="text-center text-gray-500 py-10 font-bold border-2 border-dashed rounded-lg">ไม่มีข้อมูลสำหรับพิมพ์</div>';
+                } else {
+                    const kbGroups = {};
+                    pjs.forEach(p => {
+                        const dist = p.district || 'ไม่ระบุอำเภอ';
+                        const yr = p.year || 'ไม่ระบุปี';
+                        if (!kbGroups[dist]) kbGroups[dist] = {};
+                        if (!kbGroups[dist][yr]) kbGroups[dist][yr] = [];
+                        kbGroups[dist][yr].push(p);
+                    });
+
+                    let html = '';
+                    Object.keys(kbGroups).sort().forEach(dist => {
+                        html += `<div class="mb-6 page-break-inside-avoid"><h2 class="text-lg font-bold text-blue-900 border-b-2 border-blue-800 mb-3 pb-1"><i class="fa-solid fa-location-dot mr-2"></i> อำเภอ${dist}</h2>`;
+                        Object.keys(kbGroups[dist]).sort().forEach(yr => {
+                            html += `<div class="mb-4 pl-4"><h3 class="text-md font-bold text-teal-800 mb-2"><i class="fa-regular fa-calendar-days mr-1"></i> ปีงบประมาณ ${yr}</h3>`;
+                            
+                            let c1=[], c2=[], c3=[], c4=[];
+                            kbGroups[dist][yr].forEach(p => {
+                                let st = p.status || '';
+                                let ca = 0; if(p.activities) p.activities.forEach(a => ca += (parseFloat(a.actual)||0));
+                                let procEndStr = p.procurementEndDate ? ` | แผนพัสดุ: ${new Date(p.procurementEndDate).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' })}` : '';
+                                let itemHtml = `<div class="text-[11pt] mb-1.5 flex gap-2 border-b border-gray-100 pb-1"><span class="text-blue-600 font-bold min-w-[12px]">•</span> <span class="flex-1 leading-tight">${p.name} <br><span class="text-gray-500 text-[9pt]">(ผลงาน: ${ca.toFixed(2)}%${procEndStr})</span></span></div>`;
+                                
+                                if (st.includes('แล้วเสร็จ') || st.includes('สุดท้าย')) c4.push(itemHtml);
+                                else if (st.includes('ก่อสร้าง') || st.includes('งวดที่')) c3.push(itemHtml);
+                                else if (st === 'ประกาศจัดซื้อจัดจ้าง' || st.includes('ผู้ชนะ')) c2.push(itemHtml);
+                                else c1.push(itemHtml);
+                            });
+
+                            html += `<div class="grid grid-cols-4 gap-4">`;
+                            html += `<div class="bg-gray-50 p-2 rounded border border-gray-200"><div class="font-bold text-slate-800 border-b border-slate-300 pb-1 mb-2 text-[10pt] text-center">1. เตรียมการ (${c1.length})</div>${c1.join('')||'<div class="text-[9pt] text-gray-400 italic text-center">-</div>'}</div>`;
+                            html += `<div class="bg-indigo-50 p-2 rounded border border-indigo-200"><div class="font-bold text-indigo-800 border-b border-indigo-300 pb-1 mb-2 text-[10pt] text-center">2. จัดซื้อจัดจ้าง (${c2.length})</div>${c2.join('')||'<div class="text-[9pt] text-gray-400 italic text-center">-</div>'}</div>`;
+                            html += `<div class="bg-orange-50 p-2 rounded border border-orange-200"><div class="font-bold text-orange-800 border-b border-orange-300 pb-1 mb-2 text-[10pt] text-center">3. กำลังก่อสร้าง (${c3.length})</div>${c3.join('')||'<div class="text-[9pt] text-gray-400 italic text-center">-</div>'}</div>`;
+                            html += `<div class="bg-emerald-50 p-2 rounded border border-emerald-200"><div class="font-bold text-emerald-800 border-b border-emerald-300 pb-1 mb-2 text-[10pt] text-center">4. แล้วเสร็จ (${c4.length})</div>${c4.join('')||'<div class="text-[9pt] text-gray-400 italic text-center">-</div>'}</div>`;
+                            html += `</div></div>`;
+                        });
+                        html += `</div>`;
+                    });
+                    kBody.innerHTML = html;
+                }
+
+                const m = document.getElementById('kanbanSummaryModal');
+                if(m) { m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => m.style.opacity = '1', 10); }
+            };
+
+            window.closeKanbanSummaryModal = function() {
+                const m = document.getElementById('kanbanSummaryModal');
+                if(m) { m.style.opacity = '0'; setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
+                window.clearPrintingClasses();
+            };
+
+            window.printKanbanSummary = function() {
+                window.clearPrintingClasses();
+                if(document.body.classList) document.body.classList.add('printing-kanban-summary');
+                setTimeout(() => { window.print(); window.clearPrintingClasses(); }, 300);
             };
 
             // ==========================================
