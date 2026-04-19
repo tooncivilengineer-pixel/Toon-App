@@ -410,6 +410,18 @@
                             </div>
                         </div>
 
+                        <!-- ส่วนข้อมูลสัญญาจ้าง (แสดงเฉพาะเมื่อดำเนินการก่อสร้าง) -->
+                        <div id="actualContractInfoSection" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100 hidden">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1">สัญญาจ้างเลขที่</label>
+                                <input type="text" id="pContractNo" class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm font-bold text-blue-700 outline-none" placeholder="เช่น 1/2567">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1">ลงวันที่ (เซ็นสัญญา)</label>
+                                <input type="date" id="pContractSignDate" class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm font-bold text-gray-700 outline-none">
+                            </div>
+                        </div>
+
                         <div id="contractDatesSection" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100">
                             <div><label class="block text-[10px] font-bold text-gray-500 mb-1">วันเริ่มต้นสัญญา</label><input type="date" id="pContractStartDate" class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm font-bold text-gray-700 outline-none"></div>
                             <div><label class="block text-[10px] font-bold text-gray-500 mb-1">วันสิ้นสุดสัญญา</label><input type="date" id="pContractEndDate" class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm font-bold text-gray-700 outline-none"></div>
@@ -593,6 +605,8 @@
                 <div><span class="font-bold text-gray-600">เอกสารอ้างอิง:</span> <span id="rptRef" class="font-bold"></span></div>
                 <div><span class="font-bold text-gray-600">ราคากลาง (บาท):</span> <span id="rptMedianPrice" class="font-bold text-blue-700"></span></div>
                 <div><span class="font-bold text-gray-600">ราคาตามสัญญา (บาท):</span> <span id="rptContractPrice" class="font-bold text-green-700"></span></div>
+                <div><span class="font-bold text-gray-600">สัญญาจ้างเลขที่:</span> <span id="rptContractNoDisplay" class="font-bold text-blue-700"></span></div>
+                <div><span class="font-bold text-gray-600">ลงวันที่ (เซ็นสัญญา):</span> <span id="rptContractSignDateDisplay" class="font-bold text-gray-800"></span></div>
                 <div><span class="font-bold text-gray-600">วันเริ่มต้นสัญญา:</span> <span id="rptContractStartDate" class="font-bold"></span></div>
                 <div><span class="font-bold text-gray-600">วันสิ้นสุดสัญญา:</span> <span id="rptContractEndDate" class="font-bold"></span></div>
                 <div class="col-span-2"><span class="font-bold text-gray-600">สถานะ:</span> <span id="rptStatus" class="font-bold text-orange-600"></span></div>
@@ -624,10 +638,10 @@
             <div class="text-right mb-2 text-sm font-bold text-gray-600">แผนงานโครงการ (S-Curve) ตาม ว124</div>
             <div class="text-center mb-6"><h1 class="text-xl font-bold text-gray-800 mb-4 underline">แผนงานโครงการ</h1></div>
             <div class="grid grid-cols-2 gap-y-2 mb-4 text-sm font-bold">
-                <div><span class="w-24 inline-block text-gray-600">โครงการ :</span> <span id="v124ProjectName" class="text-blue-800"></span></div>
-                <div><span class="w-24 inline-block text-gray-600">สัญญาเลขที่ :</span> <span id="v124ContractNo" class="border-b border-dotted w-48 inline-block"></span></div>
-                <div><span class="w-24 inline-block text-gray-600">ผู้รับจ้าง :</span> <span id="v124Contractor" class="border-b border-dotted w-64 inline-block text-gray-800"></span></div>
-                <div><span class="w-24 inline-block text-gray-600">ระยะเวลา :</span> <span id="v124Duration" class="text-gray-800"></span></div>
+                <div class="col-span-2"><span class="w-24 inline-block text-gray-600">โครงการ :</span> <span id="v124ProjectName" class="text-blue-800"></span></div>
+                <div class="col-span-2 md:col-span-1"><span class="w-24 inline-block text-gray-600">สัญญาเลขที่ :</span> <span id="v124ContractNo" class="border-b border-dotted w-32 inline-block text-center"></span> <span class="text-gray-600 ml-2">ลงวันที่ :</span> <span id="v124ContractSignDate" class="border-b border-dotted w-40 inline-block text-center"></span></div>
+                <div class="col-span-2 md:col-span-1"><span class="w-24 inline-block text-gray-600">ผู้รับจ้าง :</span> <span id="v124Contractor" class="border-b border-dotted w-64 inline-block text-gray-800"></span></div>
+                <div class="col-span-2"><span class="w-24 inline-block text-gray-600">ระยะเวลา :</span> <span id="v124Duration" class="text-gray-800"></span></div>
             </div>
             <div id="v124TableContainer" class="w-full mb-6"></div>
             <div class="w-full h-64 mb-6">
@@ -1516,6 +1530,7 @@
                 const c2 = document.getElementById('pInstallment'); 
                 const c3 = document.getElementById('committeeSection'); 
                 const procSec = document.getElementById('procurementSection');
+                const activeContractSec = document.getElementById('actualContractInfoSection');
                 
                 if (s.includes('งวดที่')) { c2.classList.remove('hidden'); c2.required = true; } 
                 else { c2.classList.add('hidden'); c2.required = false; c2.value = ''; } 
@@ -1523,9 +1538,11 @@
                 if (['ดำเนินการก่อสร้าง', 'ส่งมอบงานงวดที่', 'ส่งมอบงานงวดสุดท้าย', 'แล้วเสร็จ'].includes(s)) { 
                     if(c1) c1.classList.remove('hidden'); 
                     if(c3) c3.classList.remove('hidden'); 
+                    if(activeContractSec) activeContractSec.classList.remove('hidden');
                 } else { 
                     if(c1) c1.classList.add('hidden'); 
                     if(c3) c3.classList.add('hidden'); 
+                    if(activeContractSec) activeContractSec.classList.add('hidden');
                 } 
 
                 if (s === 'ประกาศจัดซื้อจัดจ้าง') {
@@ -1962,6 +1979,8 @@
                     procurementEndDate: getVal('pProcurementEndDate'),
                     procurementMethod: getVal('pProcurementMethod'),
                     procurementIteration: getVal('pProcurementIteration'),
+                    contractNo: getVal('pContractNo'),
+                    contractSignDate: getVal('pContractSignDate'),
                     contractStartDate: getVal('pContractStartDate'),
                     contractEndDate: getVal('pContractEndDate'),
                     contractor: getVal('pContractor'),
@@ -2017,6 +2036,8 @@
                 setVal('pProcurementMethod', p.procurementMethod || '');
                 setVal('pProcurementIteration', p.procurementIteration || '');
                 
+                setVal('pContractNo', p.contractNo || '');
+                setVal('pContractSignDate', p.contractSignDate || '');
                 setVal('pContractStartDate', p.contractStartDate || '');
                 setVal('pContractEndDate', p.contractEndDate || '');
                 setVal('pContractor', p.contractor || '');
@@ -2754,6 +2775,8 @@
                 setText('rptBudget', (p.budget||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})); 
                 setText('rptMedianPrice', (p.medianPrice||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})); 
                 setText('rptContractPrice', (p.contractPrice||0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})); 
+                setText('rptContractNoDisplay', p.contractNo || '-');
+                setText('rptContractSignDateDisplay', p.contractSignDate ? new Date(p.contractSignDate).toLocaleDateString('th-TH') : '-');
                 setText('rptContractStartDate', p.contractStartDate ? new Date(p.contractStartDate).toLocaleDateString('th-TH') : '-'); 
                 setText('rptContractEndDate', p.contractEndDate ? new Date(p.contractEndDate).toLocaleDateString('th-TH') : '-'); 
                 setText('rptRef', `เล่ม ${p.volume||'-'} / หน้า ${p.page||'-'}`); 
@@ -2854,6 +2877,14 @@
                 const elProj = document.getElementById('v124ProjectName'); if(elProj) elProj.innerText=p.name||'-'; 
                 let dur='-';
                 
+                let cNo = p.contractNo ? p.contractNo : '';
+                if (!cNo && p.contractor && p.contractStartDate) cNo = `จ........................../${new Date(p.contractStartDate).getFullYear()+543}`;
+                const elContractNo = document.getElementById('v124ContractNo'); if(elContractNo) elContractNo.innerText = cNo;
+
+                let cSignDate = p.contractSignDate ? new Date(p.contractSignDate).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+                if (!cSignDate) cSignDate = '................................................';
+                const elSignDate = document.getElementById('v124ContractSignDate'); if(elSignDate) elSignDate.innerText = cSignDate;
+
                 const elCont = document.getElementById('v124Contractor'); if(elCont) elCont.innerText=p.contractor||'-';
 
                 const elSup = document.getElementById('v124Supervisors');
@@ -3783,8 +3814,9 @@
                 document.getElementById('wrAccumulatedDisplay').innerText = ca.toFixed(2) + '%';
                 
                 document.getElementById('wrDocDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('wrContractNo').value = '';
-                if(p.contractStartDate) document.getElementById('wrContractDate').value = p.contractStartDate;
+                document.getElementById('wrContractNo').value = p.contractNo || '';
+                if(p.contractSignDate) document.getElementById('wrContractDate').value = p.contractSignDate;
+                else if(p.contractStartDate) document.getElementById('wrContractDate').value = p.contractStartDate;
                 
                 document.getElementById('wrPrevValLabel').innerText = ca.toFixed(2) + '%';
                 document.getElementById('wrThisWeekVal').value = '';
