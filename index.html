@@ -214,6 +214,11 @@
             <button onclick="window.open('https://tooncivilengineer-pixel.github.io/Toon-cost/', '_blank')" class="bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold py-1.5 px-2.5 border border-cyan-700 rounded shadow-sm flex items-center gap-1.5 transition-all mt-1">
                 <i class="fa-solid fa-calculator w-3 text-center"></i><span>โปรแกรมประเมินราคา (Toon-Cost)</span>
             </button>
+
+            <!-- ปุ่มใหม่สำหรับเปิดโปรแกรมประสานแผนพัฒนาท้องถิ่น -->
+            <button onclick="window.open('https://tooncivilengineer-pixel.github.io/PPAO-PLANNING/', '_blank')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-1.5 px-2.5 border border-rose-700 rounded shadow-sm flex items-center gap-1.5 transition-all mt-1">
+                <i class="fa-solid fa-diagram-project w-3 text-center"></i><span>ระบบบริหารโครงการประสานแผนพัฒนาท้องถิ่น</span>
+            </button>
             
             <div class="bg-white p-2.5 rounded-lg shadow-md border border-gray-200 mt-2 transition-all hover:shadow-lg">
                 <label class="block text-[10px] font-bold text-gray-500 mb-1"><i class="fa-solid fa-filter text-blue-500 mr-1"></i> กรองแผนที่ตามอำเภอ:</label>
@@ -3231,11 +3236,19 @@
                 const tProj = document.getElementById('dbTotalProjects'); if(tProj) tProj.innerText = fp.length.toLocaleString(); 
                 const tBudg = document.getElementById('dbTotalBudget'); if(tBudg) tBudg.innerText = fp.reduce((s,p) => s + (p.budget||0), 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 
-                let c = 0; 
-                fp.forEach(p => { if(p.status && (p.status.includes('เสร็จ') || p.status.includes('สุดท้าย'))) c++; }); 
+                let completedCount = 0;
+                let ongoingCount = 0;
+                fp.forEach(p => { 
+                    const s = p.status || '';
+                    if (s.includes('แล้วเสร็จ') || s.includes('สุดท้าย')) {
+                        completedCount++;
+                    } else if (s === 'ดำเนินการก่อสร้าง' || s.includes('งวดที่') || s === 'ประกาศจัดซื้อจัดจ้าง' || s.includes('ผู้ชนะ')) {
+                        ongoingCount++;
+                    }
+                }); 
                 
-                const tComp = document.getElementById('dbCompleted'); if(tComp) tComp.innerText = c.toLocaleString(); 
-                const tInp = document.getElementById('dbInProgress'); if(tInp) tInp.innerText = (fp.length - c).toLocaleString();
+                const tComp = document.getElementById('dbCompleted'); if(tComp) tComp.innerText = completedCount.toLocaleString(); 
+                const tInp = document.getElementById('dbInProgress'); if(tInp) tInp.innerText = ongoingCount.toLocaleString();
                 
                 const distText = fd === 'all' ? 'ทุกอำเภอ' : `อำเภอ${fd}`;
                 const expBtn = (type) => `<button onclick="window.exportDashboardData('${type}')" class="float-right text-gray-400 hover:text-green-600 transition-colors px-2 no-print" title="ดาวน์โหลดข้อมูลกราฟนี้เป็น Excel"><i class="fa-solid fa-file-excel"></i></button>`;
@@ -3336,7 +3349,7 @@
                             dtd[d].total++;
                             if (s.includes('แล้วเสร็จ') || s.includes('งวดสุดท้าย')) {
                                 dtd[d].completed++;
-                            } else if (s.includes('ก่อสร้าง') || s.includes('งวดที่')) {
+                            } else if (s === 'ดำเนินการก่อสร้าง' || s.includes('งวดที่')) {
                                 dtd[d].ongoing++;
                             } else {
                                 dtd[d].pending++; 
@@ -3345,7 +3358,7 @@
                             if(!dtd['อื่นๆ']) dtd['อื่นๆ'] = { completed: 0, ongoing: 0, pending: 0, total: 0 };
                             dtd['อื่นๆ'].total++;
                             if (s.includes('แล้วเสร็จ') || s.includes('งวดสุดท้าย')) dtd['อื่นๆ'].completed++;
-                            else if (s.includes('ก่อสร้าง') || s.includes('งวดที่')) dtd['อื่นๆ'].ongoing++;
+                            else if (s === 'ดำเนินการก่อสร้าง' || s.includes('งวดที่')) dtd['อื่นๆ'].ongoing++;
                             else dtd['อื่นๆ'].pending++;
                         }
                     });
@@ -3561,7 +3574,7 @@
                                     
                                     // แจ้งเตือนสีแดงหากล่าช้า
                                     let borderClass = 'border-gray-200';
-                                    if (st.includes('ก่อสร้าง') || st.includes('งวดที่')) {
+                                    if (st === 'ดำเนินการก่อสร้าง' || st.includes('งวดที่')) {
                                         let cp = 0;
                                         const today = new Date();
                                         if(p.activities){ 
@@ -3605,7 +3618,7 @@
                                     `;
                                     
                                     if (st.includes('แล้วเสร็จ') || st.includes('ส่งมอบงานงวดสุดท้าย')) { h4 += card; c4++; }
-                                    else if (st.includes('ก่อสร้าง') || st.includes('งวดที่')) { h3 += card; c3++; }
+                                    else if (st === 'ดำเนินการก่อสร้าง' || st.includes('งวดที่')) { h3 += card; c3++; }
                                     else if (st === 'ประกาศจัดซื้อจัดจ้าง' || st.includes('ประกาศผู้ชนะ')) { h2 += card; c2++; }
                                     else { h1 += card; c1++; }
                                 });
@@ -3675,7 +3688,7 @@
                         let stBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold border shadow-sm truncate max-w-full block" style="color: ${window.getProjectStatusColor(s)}; border-color: ${window.getProjectStatusColor(s)}; background: ${window.getProjectStatusColor(s)}15" title="${s}">${s}</span>`;
                         
                         if (s.includes('แล้วเสร็จ') || s.includes('สุดท้าย')) c4 = stBadge;
-                        else if (s.includes('ก่อสร้าง') || s.includes('งวดที่')) c3 = stBadge;
+                        else if (s === 'ดำเนินการก่อสร้าง' || s.includes('งวดที่')) c3 = stBadge;
                         else if (s === 'ประกาศจัดซื้อจัดจ้าง' || s.includes('ผู้ชนะ')) c2 = stBadge;
                         else c1 = stBadge;
 
@@ -3752,7 +3765,7 @@
                                 let itemHtml = `<div class="text-[11pt] mb-1.5 flex gap-2 border-b border-gray-100 pb-1"><span class="text-blue-600 font-bold min-w-[12px]">•</span> <span class="flex-1 leading-tight">${p.name} <br><span class="text-gray-500 text-[9pt]">(ผลงาน: ${ca.toFixed(2)}%${procEndStr})</span></span></div>`;
                                 
                                 if (st.includes('แล้วเสร็จ') || st.includes('สุดท้าย')) c4.push(itemHtml);
-                                else if (st.includes('ก่อสร้าง') || st.includes('งวดที่')) c3.push(itemHtml);
+                                else if (st === 'ดำเนินการก่อสร้าง' || st.includes('งวดที่')) c3.push(itemHtml);
                                 else if (st === 'ประกาศจัดซื้อจัดจ้าง' || st.includes('ผู้ชนะ')) c2.push(itemHtml);
                                 else c1.push(itemHtml);
                             });
