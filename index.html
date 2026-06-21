@@ -232,7 +232,34 @@
                 <i class="fa-solid fa-diagram-project w-3 text-center"></i><span>ระบบบริหารโครงการประสานแผนพัฒนาท้องถิ่น</span>
             </button>
             
-            <div class="bg-white p-2.5 rounded-lg shadow-md border border-gray-200 mt-2 transition-all hover:shadow-lg">
+            <button onclick="window.open('https://tooncivilengineer-pixel.github.io/Toon-App1/', '_blank')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1.5 px-2.5 border border-red-700 rounded shadow-sm flex items-center gap-1.5 transition-all mt-1">
+                <i class="fa-solid fa-road w-3 text-center"></i><span>ระบบบริหารทางหลวงท้องถิ่น</span>
+            </button>
+
+            <details class="group mt-1 w-full relative">
+                <summary class="list-none bg-blue-900 hover:bg-blue-950 text-white text-xs font-bold py-1.5 px-2.5 border border-blue-950 rounded shadow-sm flex justify-between items-center cursor-pointer transition-all">
+                    <div class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-compass-drafting w-3 text-center"></i><span>ระบบช่วยงานทางวิศวกรรม</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300 group-open:rotate-180"></i>
+                </summary>
+                <div class="flex flex-col gap-1.5 pl-3 mt-1.5 mb-1 border-l-2 border-gray-300 ml-2">
+                    <button onclick="window.open('https://tooncivilengineer-pixel.github.io/Toon-cost/', '_blank')" class="text-left bg-white hover:bg-cyan-50 text-gray-700 hover:text-cyan-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-cyan-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-calculator text-cyan-600 w-3 text-center"></i><span class="leading-tight flex-1">โปรแกรมประเมินราคา (Toon-Cost)</span>
+                    </button>
+                    <button onclick="window.open('#', '_blank')" class="text-left bg-white hover:bg-blue-50 text-gray-700 hover:text-blue-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-blue-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-calculator text-blue-600 w-3 text-center"></i><span class="leading-tight flex-1">โปรแกรมคำนวณค่า K</span>
+                    </button>
+                    <button onclick="window.open('https://tooncivilengineer-pixel.github.io/stock/', '_blank')" class="text-left bg-white hover:bg-emerald-50 text-gray-700 hover:text-emerald-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-emerald-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-clipboard-check text-emerald-600 w-3 text-center"></i><span class="leading-tight flex-1">โปรแกรมตรวจสอบปริมาณงานทำรายงานช่าง</span>
+                    </button>
+                    <button onclick="window.open('#', '_blank')" class="text-left bg-white hover:bg-orange-50 text-gray-700 hover:text-orange-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-orange-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-map-location-dot text-orange-500 w-3 text-center"></i><span class="leading-tight flex-1">โปรแกรมแปลงไฟล์ KML</span>
+                    </button>
+                </div>
+            </details>
+            
+            <div class="bg-white p-2.5 rounded-lg shadow-md border border-gray-200 mt-2 transition-all hover:shadow-lg w-full shrink-0 mb-4">
                 <label class="block text-[10px] font-bold text-gray-500 mb-1"><i class="fa-solid fa-filter text-blue-500 mr-1"></i> กรองแผนที่ตามอำเภอ:</label>
                 <select id="mainMapDistrictFilter" onchange="window.renderMarkers()" class="w-full text-xs border border-gray-300 rounded p-1.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-bold text-blue-800 bg-blue-50">
                     <option value="all">แสดงทุกอำเภอ</option><option value="เมืองพิษณุโลก">เมืองพิษณุโลก</option><option value="นครไทย">นครไทย</option><option value="ชาติตระการ">ชาติตระการ</option><option value="บางระกำ">บางระกำ</option><option value="บางกระทุ่ม">บางกระทุ่ม</option><option value="พรหมพิราม">พรหมพิราม</option><option value="วัดโบสถ์">วัดโบสถ์</option><option value="วังทอง">วังทอง</option><option value="เนินมะปราง">เนินมะปราง</option>
@@ -2656,7 +2683,7 @@
                 return {labels:lbs, labelsV124:lbV, plannedOriginal:pAOrig, plannedRevised:pARev, actual:aA, plannedMonthlyOriginal:pmOrig, plannedMonthlyRevised:pmRev, actualMonthly:am, activityMatrix:mat, monthBounds:bds, hasRevised:hasRevised};
             };
             
-            window.buildChartDatasets = function(sd, actualColor = '#10b981') {
+            window.buildChartDatasets = function(sd, actualColor = '#ef4444') {
                 let ds = [];
                 if (sd.hasRevised) {
                     ds.push({type: 'line', label:'แผนเดิมสะสม(%)', data:sd.plannedOriginal, borderColor:'#16a34a', backgroundColor: 'transparent', borderWidth:2.5, tension:0.4, yAxisID: 'y', pointRadius: 0});
@@ -2790,14 +2817,14 @@
             html += '</div>';
             container.innerHTML = html;
         };
-
-        window.renderProjectAnalysis = function(id) {
+            window.renderProjectAnalysis = function(id) {
                 const safeProjects = window.projects || [];
                 const p = safeProjects.find(pj=>pj.id.toString()===id.toString()); if(!p)return; 
-                const ae=document.getElementById('analysisEmpty'); if(ae && ae.classList)ae.classList.add('hidden'); 
-                const ac=document.getElementById('analysisContent'); if(ac && ac.classList) { ac.classList.remove('hidden'); ac.classList.add('flex'); }
                 
-                const sd=window.generateSCurveData(p); 
+                const ae = document.getElementById('analysisEmpty'); if(ae) ae.classList.add('hidden'); 
+                const ac = document.getElementById('analysisContent'); if(ac) { ac.classList.remove('hidden'); ac.classList.add('flex'); }
+                
+                const sd = window.generateSCurveData(p); 
                 if(sCurveChartInstance)sCurveChartInstance.destroy(); 
                 const cv1=document.getElementById('sCurveChart'); 
                 if(cv1) {
@@ -2805,7 +2832,7 @@
                         type:'line',
                         data:{
                             labels:sd.labels,
-                            datasets: window.buildChartDatasets(sd, '#10b981')
+                            datasets: window.buildChartDatasets(sd, '#ef4444')
                         },
                         options:{
                             responsive:true, maintainAspectRatio:false,
