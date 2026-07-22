@@ -314,6 +314,7 @@
                             <div class="flex justify-between items-end mb-1">
                                 <label class="block text-sm font-bold text-blue-800">1. ชื่อโครงการ</label>
                                 <div class="flex gap-2">
+                                    <button type="button" onclick="window.openPlanImportModal()" class="text-[10px] bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg font-bold hover:bg-purple-200 border border-purple-200 shadow-sm transition-colors"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> ดึงจากระบบประสานแผน</button>
                                     <button type="button" onclick="window.downloadActivityTemplate()" class="text-[10px] bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-200 border border-emerald-200 shadow-sm transition-colors"><i class="fa-solid fa-file-excel mr-1"></i> โหลดแบบฟอร์มแผนงาน</button>
                                     <button type="button" onclick="document.getElementById('activityExcelUpload').click()" class="text-[10px] bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-200 border border-blue-200 shadow-sm transition-colors"><i class="fa-solid fa-upload mr-1"></i> อัปโหลดแผนงาน (Excel)</button>
                                     <input type="file" id="activityExcelUpload" accept=".xlsx, .xls" class="hidden" onchange="window.handleActivityUpload(this)">
@@ -725,6 +726,20 @@
                     <div class="text-xs text-gray-500 mt-4 border-t border-gray-200 pt-2 w-full text-center">คณะกรรมการตรวจรับพัสดุ / ผู้ควบคุมงาน</div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Plan Import Modal -->
+    <div id="planImportModal" class="fixed inset-0 bg-black/60 z-[3000] hidden justify-center items-center p-4 backdrop-blur-sm no-print">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden relative">
+            <div class="bg-purple-700 text-white px-6 py-4 flex justify-between items-center font-bold">
+                <h2 class="text-lg"><i class="fa-solid fa-cloud-arrow-down mr-2"></i> ดึงข้อมูลจากระบบประสานแผนฯ</h2>
+                <button type="button" onclick="window.closePlanImportModal()" class="hover:text-purple-200"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+            <div class="p-4 bg-slate-100 border-b border-slate-200">
+                <input type="text" id="planSearchInput" onkeyup="window.renderPlanList()" class="w-full px-4 py-2 rounded-xl border border-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none font-bold text-sm shadow-sm" placeholder="🔍 ค้นหาชื่อโครงการ หรือ อำเภอ...">
+            </div>
+            <div class="p-4 overflow-y-auto flex-1 bg-slate-50 custom-scrollbar" id="planListContainer"></div>
         </div>
     </div>
 
@@ -1800,7 +1815,10 @@
                                 <input type="number" step="any" class="lng2-input w-full border border-gray-300 rounded p-1.5 text-[10px] outline-none focus:border-blue-400" onchange="window.manualCoordUpdate('${id}','line')" placeholder="Lng2">
                             </div>
                         </div>
-                        <button type="button" onclick="window.startDrawing('${id}')" class="mt-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 w-full rounded text-[10px] font-bold">วาดเส้นบนแผนที่</button>
+                        <div class="flex gap-1.5 mt-2">
+                            <button type="button" onclick="window.startDrawing('${id}')" class="bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 px-2 py-1.5 w-1/2 rounded text-[10px] font-bold">วาดเส้นบนแผนที่</button>
+                            <button type="button" onclick="window.calculateOSRMRoute('${id}')" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 px-2 py-1.5 w-1/2 rounded text-[10px] font-bold flex justify-center items-center gap-1"><i class="fa-solid fa-route"></i> ลากตามถนน</button>
+                        </div>
                     `; 
                 }
                 const container = document.getElementById('segmentsContainer');
@@ -1857,6 +1875,54 @@
                 if(tempDrawLayer) map.removeLayer(tempDrawLayer); 
                 if(dynamicDrawLayer) map.removeLayer(dynamicDrawLayer); 
                 currentDrawingSegId = null; 
+            };
+
+            window.calculateOSRMRoute = async function(segId) {
+                const r = document.querySelector(`[data-seg-id="${segId}"]`);
+                if (!r) return;
+                
+                const lat1 = parseFloat(r.querySelector('.lat1-input').value);
+                const lng1 = parseFloat(r.querySelector('.lng1-input').value);
+                const lat2 = parseFloat(r.querySelector('.lat2-input').value);
+                const lng2 = parseFloat(r.querySelector('.lng2-input').value);
+                
+                if (isNaN(lat1) || isNaN(lng1) || isNaN(lat2) || isNaN(lng2)) {
+                    if(window.customAlert) window.customAlert("กรุณาระบุพิกัดจุดเริ่มต้นและจุดสิ้นสุดให้ครบถ้วนก่อนครับ");
+                    return;
+                }
+
+                if(window.customAlert) window.customAlert("กำลังคำนวณเส้นทาง... กรุณารอสักครู่");
+
+                try {
+                    const url = `https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};${lng2},${lat2}?overview=full&geometries=geojson`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    if (data.code === "Ok" && data.routes.length > 0) {
+                        const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                        
+                        // บันทึกข้อมูลพิกัดที่ได้ลงใน State
+                        if (activeSegmentsData[segId]) {
+                            activeSegmentsData[segId].coordinates = coords;
+                        } else {
+                            activeSegmentsData[segId] = { coordinates: coords };
+                        }
+                        
+                        // วาดเส้นพรีวิวให้ดูชั่วคราวบนแผนที่
+                        if (tempDrawLayer) map.removeLayer(tempDrawLayer);
+                        if (dynamicDrawLayer) map.removeLayer(dynamicDrawLayer);
+                        tempDrawLayer = L.polyline(coords, {color: '#ef4444', weight: 4}).addTo(map);
+                        map.fitBounds(tempDrawLayer.getBounds(), {padding: [30, 30]});
+                        
+                        const sysModal = document.getElementById('sysAlertModal');
+                        if (sysModal) { sysModal.classList.add('hidden'); sysModal.classList.remove('flex'); }
+                    } else {
+                        if(window.customAlert) window.customAlert("ไม่สามารถหาเส้นทางถนนระหว่าง 2 จุดนี้ได้ครับ");
+                    }
+                } catch (error) {
+                    console.error("OSRM Error:", error);
+                    if(window.customAlert) window.customAlert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์คำนวณเส้นทาง");
+                }
             };
 
             window.undoLastPoint = function() { 
@@ -4338,28 +4404,228 @@
                 if(pModal) { pModal.classList.remove('hidden'); pModal.classList.add('flex'); }
             };
 
-            window.onload = function() { 
-                window.initMap(); 
-                window.makeDraggable('projectModalContent', 'projectModalHeader'); 
-                window.makeDraggable('searchModalContent', 'searchModalHeader'); 
-                window.makeDraggable('progressModalContent', 'progressModalHeader'); 
-                window.makeDraggable('analysisModalContent', 'analysisModalHeader'); 
-                window.makeDraggable('dataManagementModalContent', 'dataManagementModalHeader'); 
-                window.makeDraggable('dashboardModalContent', 'dashboardModalHeader');
-                window.makeDraggable('viewModalContent', 'viewModalHeader');
-                window.makeDraggable('statusSummaryModalContent', 'statusSummaryModalHeader');
-                window.makeDraggable('weeklyReportInputContent', 'weeklyReportInputHeader');
-                window.makeDraggable('kanbanSummaryModalContent', 'kanbanSummaryModalHeader');
+            window.planProjects = [];
+
+            window.openPlanImportModal = async function() {
+                const m = document.getElementById('planImportModal');
+                if(m) { m.classList.remove('hidden'); m.classList.add('flex'); }
+                
+                if(window.planProjects.length === 0 && window.fetchPlanProjectsFromCloud) {
+                    document.getElementById('planListContainer').innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-spinner fa-spin text-3xl text-purple-500 mb-3"></i><p class="font-bold text-gray-500 text-sm">กำลังโหลดข้อมูลจากฐานข้อมูล...</p></div>';
+                    await window.fetchPlanProjectsFromCloud();
+                }
+                window.renderPlanList();
             };
 
-        })();
-    </script>
+            window.closePlanImportModal = function() {
+                const m = document.getElementById('planImportModal');
+                if(m) { m.classList.add('hidden'); m.classList.remove('flex'); }
+            };
 
-    <!-- Firebase Script -->
+            window.renderPlanList = function() {
+                const q = (document.getElementById('planSearchInput').value || '').toLowerCase();
+                const container = document.getElementById('planListContainer');
+                if(!container) return;
+                
+                if (!window.planProjects || window.planProjects.length === 0) {
+                    container.innerHTML = '<div class="text-center py-8 text-gray-500 text-sm font-bold">ไม่พบข้อมูลโครงการในฐานข้อมูลเลย (0 รายการ)</div>';
+                    return;
+                }
+
+                const filtered = window.planProjects.filter(p => {
+                    const n = (p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || 'ไม่ระบุชื่อ').toLowerCase();
+                    const d = (p.district || p.amphoe || '').toLowerCase();
+                    // ลองค้นหาปีจาก seqNo หรือ projectDetails ถ้ามี
+                    let y = (p.year || '').toString().toLowerCase();
+                    if(!y && p.seqNo) y = p.seqNo.toString().toLowerCase();
+                    
+                    return n.includes(q) || d.includes(q) || y.includes(q);
+                });
+
+                if(filtered.length === 0) {
+                    container.innerHTML = '<div class="text-center py-8 text-gray-500 text-sm font-bold">ไม่พบข้อมูลที่ค้นหา</div>';
+                    return;
+                }
+
+                container.innerHTML = filtered.map(p => {
+                    const name = p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || 'ไม่ระบุชื่อโครงการ';
+                    const district = p.district || p.amphoe || '-';
+                    // พยายามดึงปี ถ้าไม่มีใน year ให้ลองดู seqNo
+                    let year = p.year || '-';
+                    if (year === '-' && p.seqNo && p.seqNo.toString().includes('/')) {
+                        year = p.seqNo.split('/')[1]; // สมมติว่า seqNo เป็น 01/2567
+                    }
+                    
+                    const budget = p.budget || 0;
+
+                    return `
+                    <div class="bg-white p-3 border border-gray-200 rounded-xl shadow-sm hover:border-purple-400 hover:shadow-md mb-3 flex justify-between items-center gap-3 transition-all">
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold text-sm text-gray-800 truncate" title="${name}">${name}</div>
+                            <div class="text-[11px] text-gray-500 mt-1 flex gap-3">
+                                <span><i class="fa-solid fa-location-dot text-red-500"></i> อ.${district}</span>
+                                <span class="bg-gray-100 px-1.5 rounded">ปี ${year}</span>
+                                <span class="text-blue-600 font-bold">฿${parseFloat(budget.toString().replace(/,/g,'')||0).toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="window.importPlanData('${p.id}')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0 shadow-sm transition-colors">
+                            <i class="fa-solid fa-download mr-1"></i> เลือก
+                        </button>
+                    </div>
+                    `
+                }).join('');
+            };
+
+            window.importPlanData = function(id) {
+                try {
+                    const p = window.planProjects.find(x => x.id === id);
+                    if(!p) return;
+
+                    console.log("Data to import: ", p); // แอบดูข้อมูลหลังบ้าน
+
+                    const setVal = (eId, val) => { const el = document.getElementById(eId); if (el) el.value = val; };
+                    
+                    // 1. ดึงข้อความทั่วไป
+                    const name = p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || '';
+                    const district = p.district || p.amphoe || '';
+                    
+                    let year = p.year || '';
+                    if (!year && p.seqNo && p.seqNo.toString().includes('/')) {
+                        year = p.seqNo.split('/')[1];
+                    }
+
+                    let rawBudget = p.budget || 0;
+                    if(typeof rawBudget === 'string') rawBudget = rawBudget.replace(/,/g, '');
+                    const budget = parseFloat(rawBudget) || 0;
+
+                    setVal('pName', name);
+                    setVal('pYear', year);
+                    
+                    const dSel = document.getElementById('pDistrict');
+                    if(dSel && district) {
+                        let cleanDist = district.replace('อำเภอ', '').trim();
+                        const opt = Array.from(dSel.options).find(o => o.value.includes(cleanDist));
+                        if(opt) { dSel.value = opt.value; window.updateSupervisorDropdowns(); }
+                    }
+
+                    const bInput = document.getElementById('pBudget');
+                    if(bInput && budget > 0) {
+                        bInput.value = budget.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        window.calculateActivityRows();
+                    }
+
+                    // 2. จัดการพิกัดแผนที่ (GIS)
+                    let geomType = 'point'; // ค่าเริ่มต้น
+                    let coordsToImport = [];
+
+                    // ถ้ามี GeoJSON (มักจะเป็นเส้น)
+                    if (p.geoJSONStr) {
+                        try {
+                            const geoObj = JSON.parse(p.geoJSONStr);
+                            if (geoObj.type === "Feature" && geoObj.geometry && geoObj.geometry.type === "LineString") {
+                                geomType = 'line';
+                                // GeoJSON มักจะเก็บ [lng, lat] เราต้องสลับเป็น [lat, lng] ให้ Leaflet
+                                coordsToImport = geoObj.geometry.coordinates.map(c => [c[1], c[0]]);
+                            } else if (geoObj.type === "LineString") {
+                                geomType = 'line';
+                                coordsToImport = geoObj.coordinates.map(c => [c[1], c[0]]);
+                            }
+                        } catch(e) { console.warn("Parse GeoJSON error:", e); }
+                    } 
+                    // ถ้าไม่มี GeoJSON ลองดู coordinates (อาจจะเป็นจุด หรือ Array ของเส้น)
+                    else if (p.coordinates) {
+                        let c = p.coordinates;
+                        if (typeof c === 'string') {
+                            try { c = JSON.parse(c); } catch(e){}
+                        }
+                        
+                        if (Array.isArray(c) && c.length >= 2) {
+                            // เช็คว่าเป็น [lat, lng] แบบจุดเดียว หรือ [[lat,lng], [lat,lng]] แบบเส้น
+                            if (typeof c[0] === 'number') {
+                                geomType = 'point';
+                                coordsToImport = [c[0], c[1]];
+                            } else if (Array.isArray(c[0])) {
+                                geomType = 'line';
+                                coordsToImport = c;
+                            }
+                        }
+                    }
+                    // ลองเช็คจากรูปแบบเก่าเผื่อไว้
+                    else if (p.lat1 && p.lng1 && p.lat2 && p.lng2) {
+                         geomType = 'line';
+                         coordsToImport = [[parseFloat(p.lat1), parseFloat(p.lng1)], [parseFloat(p.lat2), parseFloat(p.lng2)]];
+                    } else if (p.lat && p.lng) {
+                         geomType = 'point';
+                         coordsToImport = [parseFloat(p.lat), parseFloat(p.lng)];
+                    }
+
+                    // 3. นำพิกัดมากรอกลงแบบฟอร์ม
+                    if (coordsToImport.length > 0) {
+                        // กด Radio Button
+                        const gtRadio = document.querySelector(`input[name="pGeomType"][value="${geomType}"]`);
+                        if(gtRadio) {
+                            gtRadio.checked = true;
+                            window.toggleGeomTypeSilent();
+                        }
+
+                        // เคลียร์ Segment เก่า
+                        const segC = document.getElementById('segmentsContainer');
+                        if(segC) segC.innerHTML = ''; 
+                        activeSegmentsData = {}; 
+                        segmentCounter = 0;
+
+                        // วาดพิกัดใหม่
+                        if (geomType === 'point') {
+                            window.addSegmentRow('จุดที่ตั้งโครงการ (จากแผนฯ)');
+                            const cId = `seg_${segmentCounter}`;
+                            activeSegmentsData[cId] = {coordinates: coordsToImport};
+                            setTimeout(() => {
+                                const r = document.querySelector(`[data-seg-id="${cId}"]`);
+                                if(r) {
+                                    r.querySelector('.lat-input').value = coordsToImport[0];
+                                    r.querySelector('.lng-input').value = coordsToImport[1];
+                                }
+                            }, 50);
+                        } else if (geomType === 'line') {
+                            window.addSegmentRow('ช่วงที่ 1 (จากแผนฯ)');
+                            const cId = `seg_${segmentCounter}`;
+                            activeSegmentsData[cId] = {coordinates: coordsToImport};
+                            setTimeout(() => {
+                                const r = document.querySelector(`[data-seg-id="${cId}"]`);
+                                if(r && coordsToImport.length >= 2) {
+                                    const first = coordsToImport[0];
+                                    const last = coordsToImport[coordsToImport.length - 1];
+                                    r.querySelector('.lat1-input').value = first[0];
+                                    r.querySelector('.lng1-input').value = first[1];
+                                    r.querySelector('.lat2-input').value = last[0];
+                                    r.querySelector('.lng2-input').value = last[1];
+                                }
+                            }, 50);
+                        }
+                    }
+
+                    window.closePlanImportModal();
+                    if(window.customAlert) window.customAlert("ดึงข้อมูลสำเร็จ! กรุณาตรวจสอบความถูกต้องก่อนกดบันทึก");
+
+            } catch (error) {
+                console.error("Import Error:", error);
+                if(window.customAlert) window.customAlert("ดึงข้อมูลพลาด: " + error.message);
+            }
+        };
+
+        window.onload = function() { 
+            window.initMap();
+            window.makeDraggable('kanbanSummaryModalContent', 'kanbanSummaryModalHeader');
+        };
+
+    })();
+</script>
+
+<!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // กำหนดค่าฐานข้อมูลตัวเดิมของ อบจ.
         const firebaseConfig = {
@@ -4406,9 +4672,34 @@
             }
         };
 
+        window.fetchPlanProjectsFromCloud = async () => {
+            if (!auth.currentUser) {
+                if(window.customAlert) window.customAlert("ระบบกำลังเชื่อมต่อฐานข้อมูล กรุณารอสักครู่ประมาณ 2-3 วินาที แล้วกดปุ่มดึงข้อมูลใหม่อีกครั้งครับ");
+                return;
+            }
+            try {
+                const querySnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'proposals'));
+                const fetched = [];
+                querySnapshot.forEach(doc => {
+                    fetched.push({ id: doc.id, ...doc.data() });
+                });
+                window.planProjects = fetched;
+                
+                console.log("Fetched Data from Proposals: ", fetched); // พิมพ์ข้อมูลลง Console ให้ตรวจสอบได้
+                
+                if (fetched.length === 0) {
+                    if(window.customAlert) window.customAlert("ดึงข้อมูลสำเร็จ แต่ไม่พบโครงการในโฟลเดอร์ proposals (0 รายการ) ลองตรวจสอบในระบบประสานแผนว่ามีข้อมูลบันทึกอยู่หรือไม่ครับ");
+                }
+            } catch (e) {
+                console.error("ดึงข้อมูลประสานแผนพลาด:", e);
+                if(window.customAlert) window.customAlert("ไม่สามารถดึงข้อมูลได้: " + e.message);
+            }
+        };
+
         // ตรวจจับและเชื่อมต่อการดึงข้อมูลทันที
         onAuthStateChanged(auth, user => {
             const loader = document.getElementById('cloudLoader');
+            
             if (user) {
                 if(loader && loader.classList) loader.classList.remove('hidden');
                 
