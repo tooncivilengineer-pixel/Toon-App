@@ -247,8 +247,16 @@
                     <button onclick="window.open('https://tooncivilengineer-pixel.github.io/Toon-cost/', '_blank')" class="text-left bg-white hover:bg-cyan-50 text-gray-700 hover:text-cyan-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-cyan-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
                         <i class="fa-solid fa-calculator text-cyan-600 w-3 text-center"></i><span class="leading-tight flex-1">โปรแกรมประเมินราคา (Toon-Cost)</span>
                     </button>
+                    <!-- ปุ่มโปรแกรมคำนวณค่า K (Toon-K) -->
+                    <button onclick="window.open('https://tooncivilengineer-pixel.github.io/K/', '_blank')" class="text-left bg-white hover:bg-indigo-50 text-gray-700 hover:text-indigo-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-indigo-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-file-invoice-dollar text-indigo-600 w-3 text-center"></i><span class="leading-tight flex-1">โปรแกรมคำนวณค่า K (Toon-K)</span>
+                    </button>
+                    <!-- ปุ่มตรวจสอบพื้นที่ -->
+                    <button onclick="window.open('https://map.forest.go.th/', '_blank')" class="text-left bg-white hover:bg-amber-50 text-gray-700 hover:text-amber-900 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-amber-400 rounded shadow-sm flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-draw-polygon text-amber-500 w-3 text-center"></i><span class="leading-tight flex-1">ตรวจสอบพื้นที่ (Check Area)</span>
+                    </button>
                     <a href="https://cucem-k.bb.go.th/" target="_blank" rel="noopener noreferrer" class="text-left bg-white hover:bg-blue-50 text-gray-700 hover:text-blue-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-blue-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
-                        <i class="fa-solid fa-calculator text-blue-600 w-3 text-center"></i><span class="leading-tight flex-1">โปรแกรมคำนวณค่า K</span>
+                        <i class="fa-solid fa-calculator text-blue-600 w-3 text-center"></i><span class="leading-tight flex-1">โปรแกรมคำนวณค่า K (สำนักงบประมาณ)</span>
                     </a>
                     <button onclick="window.open('https://tooncivilengineer-pixel.github.io/stock/', '_blank')" class="text-left bg-white hover:bg-emerald-50 text-gray-700 hover:text-emerald-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-emerald-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
                         <i class="fa-solid fa-clipboard-check text-emerald-600 w-3 text-center"></i><span class="leading-tight flex-1">โปรแกรมตรวจสอบปริมาณงานทำรายงานช่าง</span>
@@ -260,7 +268,7 @@
                         <i class="fa-solid fa-car-side text-rose-500 w-3 text-center"></i><span class="leading-tight flex-1">ระบบคำนวณการเดินทางไปราชการ</span>
                     </a>
                     <a href="https://tooncivilengineer-pixel.github.io/kml1/" target="_blank" rel="noopener noreferrer" class="text-left bg-white hover:bg-orange-50 text-gray-700 hover:text-orange-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-orange-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
-                        <i class="fa-solid fa-map-location-dot text-orange-500 w-3 text-center"></i><span class="leading-tight flex-1">โปรแกรมแปลงไฟล์ KML ---&gt; DXF</span>
+                        <i class="fa-solid fa-map-location-dot text-orange-500 w-3 text-center"></i><span class="leading-tight flex-1">โปรแกรมแปลงไฟล์ KML ---> DXF</span>
                     </a>
                 </div>
             </details>
@@ -269,11 +277,19 @@
                 <i class="fa-solid fa-database w-3 text-center"></i><span>ฐานข้อมูลราคากลาง</span>
             </a>
 
-            <div class="bg-white p-2.5 rounded-lg shadow-md border border-gray-200 mt-2 transition-all hover:shadow-lg w-full shrink-0 mb-4">
-                <label class="block text-[10px] font-bold text-gray-500 mb-1"><i class="fa-solid fa-filter text-blue-500 mr-1"></i> กรองแผนที่ตามอำเภอ:</label>
-                <select id="mainMapDistrictFilter" onchange="window.renderMarkers()" class="w-full text-xs border border-gray-300 rounded p-1.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-bold text-blue-800 bg-blue-50">
-                    <option value="all">แสดงทุกอำเภอ</option><option value="เมืองพิษณุโลก">เมืองพิษณุโลก</option><option value="นครไทย">นครไทย</option><option value="ชาติตระการ">ชาติตระการ</option><option value="บางระกำ">บางระกำ</option><option value="บางกระทุ่ม">บางกระทุ่ม</option><option value="พรหมพิราม">พรหมพิราม</option><option value="วัดโบสถ์">วัดโบสถ์</option><option value="วังทอง">วังทอง</option><option value="เนินมะปราง">เนินมะปราง</option>
-                </select>
+            <div class="bg-white p-2.5 rounded-lg shadow-md border border-gray-200 mt-2 transition-all hover:shadow-lg w-full shrink-0 mb-4 space-y-2">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 mb-1"><i class="fa-solid fa-filter text-blue-500 mr-1"></i> กรองแผนที่ตามอำเภอ:</label>
+                    <select id="mainMapDistrictFilter" onchange="window.renderMarkers()" class="w-full text-xs border border-gray-300 rounded p-1.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-bold text-blue-800 bg-blue-50">
+                        <option value="all">แสดงทุกอำเภอ</option><option value="เมืองพิษณุโลก">เมืองพิษณุโลก</option><option value="นครไทย">นครไทย</option><option value="ชาติตระการ">ชาติตระการ</option><option value="บางระกำ">บางระกำ</option><option value="บางกระทุ่ม">บางกระทุ่ม</option><option value="พรหมพิราม">พรหมพิราม</option><option value="วัดโบสถ์">วัดโบสถ์</option><option value="วังทอง">วังทอง</option><option value="เนินมะปราง">เนินมะปราง</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 mb-1"><i class="fa-solid fa-calendar-days text-blue-500 mr-1"></i> กรองตามปีงบประมาณ:</label>
+                    <select id="mainMapYearFilter" onchange="window.renderMarkers()" class="w-full text-xs border border-gray-300 rounded p-1.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-bold text-blue-800 bg-blue-50">
+                        <option value="all">แสดงทุกปีงบประมาณ</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -786,6 +802,18 @@
                         <div class="relative flex justify-center text-xs"><span class="px-2 bg-white text-gray-400">หรือ</span></div>
                     </div>
                     <button onclick="window.exportToExcel()" class="w-full bg-green-600 text-white text-sm py-3 px-4 rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm"><i class="fa-solid fa-file-excel mr-2"></i> ดาวน์โหลดข้อมูล Excel (Raw Data)</button>
+
+                    <div class="mt-2 pt-4 border-t border-gray-200">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3"><i class="fa-solid fa-hard-drive text-slate-500 mr-2"></i> ระบบสำรองและกู้คืนข้อมูล (Backup & Restore)</h3>
+                        <div class="flex gap-3">
+                            <button onclick="window.backupData()" class="flex-1 bg-slate-700 hover:bg-slate-800 text-white text-[11px] py-2.5 px-2 rounded-lg shadow-sm font-bold transition-colors"><i class="fa-solid fa-download mr-1"></i> โหลดไฟล์ Backup</button>
+                            <button onclick="document.getElementById('restoreFileInput').click()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-[11px] py-2.5 px-2 rounded-lg shadow-sm font-bold transition-colors"><i class="fa-solid fa-upload mr-1"></i> กู้คืนข้อมูล (Restore)</button>
+                            <input type="file" id="restoreFileInput" accept=".json" class="hidden" onchange="window.restoreData(this)">
+                        </div>
+                        <p class="text-[10px] text-gray-500 mt-2 leading-tight">
+                            <span class="text-amber-600 font-bold">* คำเตือน:</span> การกู้คืนข้อมูล จะทำการเขียนทับข้อมูลโปรเจกต์เดิมที่มี ID ตรงกันในระบบด้วยข้อมูลจากไฟล์ JSON ทันที
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1298,15 +1326,38 @@
                     window.selectRole('admin'); 
                 } else {
                     const loginError = document.getElementById('loginError');
-                    if (loginError && loginError.classList) loginError.classList.remove('hidden');
-                }
-            };
+                if (loginError && loginError.classList) loginError.classList.remove('hidden');
+            }
+        };
 
-            window.updateProjectsFromCloud = function(data) {
-                window.projects = data || []; 
-                window.renderMarkers();
-                
-                const sm = document.getElementById('searchModal');
+        window.populateMainMapFilters = function() {
+            const yf = document.getElementById('mainMapYearFilter');
+            if (!yf) return;
+            
+            const currentVal = yf.value;
+            const years = new Set();
+            const safeProjects = window.projects || [];
+            
+            safeProjects.forEach(p => {
+                if (p.year && p.year.trim() !== '') years.add(p.year.trim());
+            });
+            
+            yf.innerHTML = '<option value="all">แสดงทุกปีงบประมาณ</option>';
+            [...years].sort((a,b) => b - a).forEach(y => {
+                yf.innerHTML += `<option value="${y}">ปี พ.ศ. ${y}</option>`;
+            });
+            
+            if (years.has(currentVal)) {
+                yf.value = currentVal;
+            }
+        };
+
+        window.updateProjectsFromCloud = function(data) {
+            window.projects = data || []; 
+            window.populateMainMapFilters();
+            window.renderMarkers();
+            
+            const sm = document.getElementById('searchModal');
                 if(sm && sm.classList && !sm.classList.contains('hidden')) window.renderSearchList();
                 
                 const dm = document.getElementById('dashboardModal');
@@ -1446,10 +1497,14 @@
                 const mfEl = document.getElementById('mainMapDistrictFilter');
                 const mf = mfEl ? mfEl.value : 'all';
                 
+                const yfEl = document.getElementById('mainMapYearFilter');
+                const yf = yfEl ? yfEl.value : 'all';
+                
                 const safeProjects = window.projects || [];
                 
                 safeProjects.forEach(p => {
                     if (mf !== 'all' && p.district !== mf) return;
+                    if (yf !== 'all' && p.year !== yf) return;
                     
                     if (p.segments && p.segments.length > 0) {
                         const c = window.getProjectStatusColor(p.status);
@@ -3486,6 +3541,64 @@
                 XLSX.writeFile(wb, fileName); 
             }; 
 
+            window.backupData = function() {
+                const safeProjects = window.projects || [];
+                if (safeProjects.length === 0) {
+                    if(window.customAlert) window.customAlert("ไม่มีข้อมูลโครงการให้สำรองในขณะนี้ครับ");
+                    return;
+                }
+                
+                // แปลงข้อมูลเป็น JSON String
+                const dataStr = JSON.stringify(safeProjects, null, 2);
+                const blob = new Blob([dataStr], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                
+                // สร้างลิงก์จำลองเพื่อโหลดไฟล์
+                const a = document.createElement('a');
+                a.href = url;
+                const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+                a.download = `PPAO_Database_Backup_${dateStr}.json`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // คืนค่าหน่วยความจำ
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            window.restoreData = function(input) {
+                if (!input.files || input.files.length === 0) return;
+                const file = input.files[0];
+                
+                if(window.customAlert) window.customAlert("กำลังประมวลผลไฟล์และเริ่มกู้คืนข้อมูล กรุณารอสักครู่ (ห้ามปิดหน้าต่างนี้)...");
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (!Array.isArray(data)) {
+                            throw new Error("รูปแบบไฟล์ไม่ถูกต้อง (ต้องเป็น Array ของโครงการ)");
+                        }
+                        
+                        // ส่งข้อมูลไปยัง Firebase Module
+                        if (window.restoreMultipleProjectsToCloud) {
+                            window.restoreMultipleProjectsToCloud(data).then(() => {
+                                window.closeDataManagementModal();
+                            });
+                        } else {
+                            throw new Error("ระบบเชื่อมต่อฐานข้อมูลบนคลาวด์ยังไม่พร้อมทำงาน");
+                        }
+                    } catch (err) {
+                        console.error("Restore Error:", err);
+                        if(window.customAlert) window.customAlert("เกิดข้อผิดพลาดในการกู้คืนข้อมูล: " + err.message);
+                    }
+                };
+                reader.readAsText(file);
+                
+                // เคลียร์ค่า input ให้เลือกไฟล์เดิมซ้ำได้ในอนาคต
+                input.value = '';
+            };
+
             window.openTableReport = function() { 
                 window.closeDataManagementModal();
                 
@@ -4669,6 +4782,50 @@
                 if(window.customAlert) window.customAlert('ลบข้อมูลโครงการเรียบร้อยแล้ว');
             } catch (e) {
                 console.error(e);
+            }
+        };
+
+        // ฟังก์ชันสำหรับรับไฟล์ Backup และเขียนลง Firestore (Batch / Loop)
+        window.restoreMultipleProjectsToCloud = async (projectsArray) => {
+            if (!auth.currentUser) await signInAnonymously(auth);
+            
+            const loader = document.getElementById('cloudLoader');
+            if(loader && loader.classList) {
+                document.getElementById('cloudLoaderText').innerText = 'กำลังกู้คืนข้อมูล...';
+                loader.classList.remove('hidden');
+            }
+            
+            try {
+                let count = 0;
+                for (const pData of projectsArray) {
+                    if (!pData || !pData.id) continue;
+                    
+                    const dataToSave = JSON.parse(JSON.stringify(pData));
+                    
+                    // ป้องกันบั๊ก Array พิกัด ต้องแปลงเป็น String
+                    if (dataToSave.segments) {
+                        dataToSave.segments = dataToSave.segments.map(s => {
+                            if (typeof s.coordinates !== 'string') {
+                                return { ...s, coordinates: JSON.stringify(s.coordinates) };
+                            }
+                            return s;
+                        });
+                    }
+                    
+                    // สั่งเขียนทับข้อมูลทีละโปรเจกต์
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', pData.id), dataToSave);
+                    count++;
+                }
+                
+                if(window.customAlert) window.customAlert(`กู้คืนข้อมูลเสร็จสมบูรณ์! ทั้งหมด ${count} โครงการ`);
+            } catch (e) {
+                console.error("Restore Error: ", e);
+                if(window.customAlert) window.customAlert('เกิดข้อผิดพลาดระหว่างการกู้คืน: ' + e.message);
+            } finally {
+                if(loader && loader.classList) {
+                    document.getElementById('cloudLoaderText').innerText = 'ซิงค์ข้อมูลจากคลาวด์...';
+                    loader.classList.add('hidden');
+                }
             }
         };
 
