@@ -275,6 +275,9 @@
                     <a href="https://tooncivilengineer-pixel.github.io/kml1/" target="_blank" rel="noopener noreferrer" class="text-left bg-white hover:bg-orange-50 text-gray-700 hover:text-orange-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-orange-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
                         <i class="fa-solid fa-map-location-dot text-orange-500 w-3 text-center"></i><span class="leading-tight flex-1">โปรแกรมแปลงไฟล์ KML ---> DXF</span>
                     </a>
+                    <a href="https://tooncivilengineer-pixel.github.io/convert84/" target="_blank" rel="noopener noreferrer" class="text-left bg-white hover:bg-violet-50 text-gray-700 hover:text-violet-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-violet-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-earth-asia text-violet-500 w-3 text-center"></i><span class="leading-tight flex-1">ระบบแปลงค่าพิกัด WGS 1984</span>
+                    </a>
                 </div>
             </details>
             
@@ -4551,10 +4554,10 @@
                 }
 
                 const filtered = window.planProjects.filter(p => {
-                    const n = (p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || 'ไม่ระบุชื่อ').toLowerCase();
-                    const d = (p.district || p.amphoe || '').toLowerCase();
-                    // ลองค้นหาปีจาก seqNo หรือ projectDetails ถ้ามี
-                    let y = (p.year || '').toString().toLowerCase();
+                    const n = (p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || p.title || p.project_name || 'ไม่ระบุชื่อ').toLowerCase();
+                    const d = (p.district || p.amphoe || p.location || '').toLowerCase();
+                    // ลองค้นหาปีจาก seqNo, year, budget_year
+                    let y = (p.year || p.budget_year || '').toString().toLowerCase();
                     if(!y && p.seqNo) y = p.seqNo.toString().toLowerCase();
                     
                     return n.includes(q) || d.includes(q) || y.includes(q);
@@ -4566,15 +4569,18 @@
                 }
 
                 container.innerHTML = filtered.map(p => {
-                    const name = p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || 'ไม่ระบุชื่อโครงการ';
-                    const district = p.district || p.amphoe || '-';
-                    // พยายามดึงปี ถ้าไม่มีใน year ให้ลองดู seqNo
-                    let year = p.year || '-';
+                    const name = p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || p.title || p.project_name || 'ไม่ระบุชื่อโครงการ';
+                    const district = p.district || p.amphoe || p.location || '-';
+                    // พยายามดึงปี
+                    let year = p.year || p.budget_year || '-';
                     if (year === '-' && p.seqNo && p.seqNo.toString().includes('/')) {
-                        year = p.seqNo.split('/')[1]; // สมมติว่า seqNo เป็น 01/2567
+                        year = p.seqNo.split('/')[1]; 
                     }
                     
-                    const budget = p.budget || 0;
+                    // พยายามดึงงบประมาณและจัดการให้อยู่ในรูปแบบตัวเลข
+                    let rawBudget = p.budget || p.amount || p.project_budget || 0;
+                    if(typeof rawBudget === 'string') rawBudget = rawBudget.replace(/,/g, '').replace(/บาท/g, '').trim();
+                    const budget = parseFloat(rawBudget) || 0;
 
                     return `
                     <div class="bg-white p-3 border border-gray-200 rounded-xl shadow-sm hover:border-purple-400 hover:shadow-md mb-3 flex justify-between items-center gap-3 transition-all">
@@ -4583,7 +4589,7 @@
                             <div class="text-[11px] text-gray-500 mt-1 flex gap-3">
                                 <span><i class="fa-solid fa-location-dot text-red-500"></i> อ.${district}</span>
                                 <span class="bg-gray-100 px-1.5 rounded">ปี ${year}</span>
-                                <span class="text-blue-600 font-bold">฿${parseFloat(budget.toString().replace(/,/g,'')||0).toLocaleString()}</span>
+                                <span class="text-blue-600 font-bold">฿${budget.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                             </div>
                         </div>
                         <button type="button" onclick="window.importPlanData('${p.id}')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0 shadow-sm transition-colors">
@@ -4604,16 +4610,16 @@
                     const setVal = (eId, val) => { const el = document.getElementById(eId); if (el) el.value = val; };
                     
                     // 1. ดึงข้อความทั่วไป
-                    const name = p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || '';
-                    const district = p.district || p.amphoe || '';
+                    const name = p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || p.title || p.project_name || '';
+                    const district = p.district || p.amphoe || p.location || '';
                     
-                    let year = p.year || '';
+                    let year = p.year || p.budget_year || '';
                     if (!year && p.seqNo && p.seqNo.toString().includes('/')) {
                         year = p.seqNo.split('/')[1];
                     }
 
-                    let rawBudget = p.budget || 0;
-                    if(typeof rawBudget === 'string') rawBudget = rawBudget.replace(/,/g, '');
+                    let rawBudget = p.budget || p.amount || p.project_budget || 0;
+                    if(typeof rawBudget === 'string') rawBudget = rawBudget.replace(/,/g, '').replace(/บาท/g, '').trim();
                     const budget = parseFloat(rawBudget) || 0;
 
                     setVal('pName', name);
