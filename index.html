@@ -448,6 +448,7 @@
                                     <option value="ส่งมอบงานงวดที่">ส่งมอบงานงวดที่ (ระบุตัวเลข)</option>
                                     <option value="ส่งมอบงานงวดสุดท้าย">ส่งมอบงานงวดสุดท้าย</option>
                                     <option value="แล้วเสร็จ">แล้วเสร็จ</option>
+                                    <option value="ยกเลิกโครงการ">ยกเลิกโครงการ</option>
                                 </select>
                                 <input type="number" id="pInstallment" placeholder="ระบุงวดที่..." class="hidden w-24 md:w-32 px-3 py-2 border border-gray-300 rounded-md font-bold text-gray-700 outline-none" min="1">
                             </div>
@@ -1188,6 +1189,7 @@
 
             window.getProjectStatusColor = function(status, fallback) {
                 if(!status) return fallback || '#3b82f6';
+                if(status === 'ยกเลิกโครงการ') return '#4b5563'; // สีเทาเข้ม
                 if(status === 'แล้วเสร็จ' || status === 'ส่งมอบงานงวดสุดท้าย') return '#10b981';
                 if(status === 'ดำเนินการก่อสร้าง' || status.includes('ส่งมอบงานงวดที่')) return '#ef4444';
                 if(status === 'ประกาศจัดซื้อจัดจ้าง') return '#8b5cf6';
@@ -1196,6 +1198,7 @@
 
             window.getDashboardStatusColor = function(st) {
                 if(typeof st !== 'string') return '#A78BFA';
+                if(st === 'ยกเลิกโครงการ') return '#4b5563'; // สีเทาเข้ม
                 if(st.includes('แบบรูป')) return '#94A3B8'; 
                 if(st.includes('egp')) return '#38BDF8'; 
                 if(st.includes('อนุมัติ')) return '#60A5FA'; 
@@ -3990,7 +3993,7 @@
                         const b = parseFloat(p.contractPrice || p.budget) || 0; 
                         sBudget[s] = (sBudget[s] || 0) + b;
                     });
-                    const statusOrder = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ประกาศจัดซื้อจัดจ้าง', 'ทบทวนราคากลาง', 'ดำเนินการก่อสร้าง', 'ส่งมอบงานงวดที่', 'ส่งมอบงานงวดสุดท้าย', 'แล้วเสร็จ'];
+                    const statusOrder = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ประกาศจัดซื้อจัดจ้าง', 'ทบทวนราคากลาง', 'ดำเนินการก่อสร้าง', 'ส่งมอบงานงวดที่', 'ส่งมอบงานงวดสุดท้าย', 'แล้วเสร็จ', 'ยกเลิกโครงการ'];
                     const labels = Object.keys(sBudget).sort((a,b) => {
                         let ia = statusOrder.indexOf(a); if(ia===-1 && a.includes('ส่งมอบงาน')) ia = 6.5;
                         let ib = statusOrder.indexOf(b); if(ib===-1 && b.includes('ส่งมอบงาน')) ib = 6.5;
@@ -4039,7 +4042,7 @@
                     const btd={}, sSet=new Set(); 
                     fp.forEach(p => { const t = p.budgetType||'ไม่ระบุงบ'; const s = p.status||'ไม่ระบุสถานะ'; if(!btd[t]) btd[t]={}; btd[t][s] = (btd[t][s]||0) + 1; sSet.add(s); });
                     const btL = Object.keys(btd);
-                    const statusOrder = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ประกาศจัดซื้อจัดจ้าง', 'ทบทวนราคากลาง', 'ดำเนินการก่อสร้าง', 'ส่งมอบงานงวดสุดท้าย', 'แล้วเสร็จ'];
+                    const statusOrder = ['จัดทำแบบรูปรายการก่อสร้าง', 'จัดทำราคากลางในระบบ egp', 'ส่งอนุมัติราคากลาง', 'ประกาศจัดซื้อจัดจ้าง', 'ทบทวนราคากลาง', 'ดำเนินการก่อสร้าง', 'ส่งมอบงานงวดสุดท้าย', 'แล้วเสร็จ', 'ยกเลิกโครงการ'];
                     const dsA = Array.from(sSet).sort((a,b) => {
                         let ia = statusOrder.indexOf(a); if(ia===-1 && a.includes('ส่งมอบงาน')) ia = 5.5;
                         let ib = statusOrder.indexOf(b); if(ib===-1 && b.includes('ส่งมอบงาน')) ib = 5.5;
