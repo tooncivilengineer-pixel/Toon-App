@@ -4530,6 +4530,93 @@
 
             window.planProjects = [];
 
+            // --- ฟังก์ชันใหม่: ตัวกวาดหาข้อมูลจากระบบประสานแผน ---
+            window.extractPlanData = function(p) {
+                let name = p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || p.title || p.project_name || p['ชื่อโครงการ'] || p['โครงการ'] || 'ไม่ระบุชื่อโครงการ';
+                let district = p.district || p.amphoe || p.location || p['อำเภอ'] || p['สถานที่ดำเนินการ'] || '-';
+                let year = '';
+                let rawBudget = 0;
+                let status = p.status || p.suitabilityStatus || p.analysisStatus || p.approvalStatus || p.suitability || p.projectStatus || p.วิเคราะห์ความเหมาะสม || p['วิเคราะห์ความเหมาะสม'] || p['สถานะ'] || '';
+
+                if (p.seqNo && p.seqNo.toString().includes('/')) {
+                    year = p.seqNo.split('/')[1];
+                }
+
+                // --- NEW LOGIC: Extract Budget from multi-year fields (e.g., "งบประมาณที่เสนอขอ") ---
+                // We scan all keys to find budget values associated with years (2566-2580)
+                let maxYearFound = 0;
+                let budgetForMaxYear = 0;
+
+                for (let key in p) {
+                    let val = p[key];
+                    if (val === null || val === undefined || val === '') continue;
+
+                    // 1. Look for explicit year keys like "budget2570", "year2570", "2570"
+                    let yearMatch = key.match(/(?:25)\d{2}/); // Matches 25xx
+                    if (yearMatch) {
+                        let y = parseInt(yearMatch[0]);
+                        let numVal = parseFloat(String(val).replace(/[^0-9.-]+/g, ""));
+                        if (!isNaN(numVal) && numVal > 0) {
+                            if (y > maxYearFound) {
+                                maxYearFound = y;
+                                budgetForMaxYear = numVal;
+                            }
+                        }
+                    }
+                    
+                    // 2. Look inside nested objects if they exist (e.g., budgets: { "2568": 1000000, "2570": 2153000 })
+                    if (typeof val === 'object' && !Array.isArray(val)) {
+                         for(let subKey in val) {
+                             let subYearMatch = subKey.match(/(?:25)\d{2}/);
+                             if (subYearMatch) {
+                                 let y = parseInt(subYearMatch[0]);
+                                 let numVal = parseFloat(String(val[subKey]).replace(/[^0-9.-]+/g, ""));
+                                 if (!isNaN(numVal) && numVal > 0) {
+                                     if (y > maxYearFound) {
+                                         maxYearFound = y;
+                                         budgetForMaxYear = numVal;
+                                     }
+                                 }
+                             }
+                         }
+                    }
+                }
+
+                // If we found a valid budget from the multi-year check, use it
+                if (maxYearFound > 0 && budgetForMaxYear > 0) {
+                    year = maxYearFound.toString();
+                    rawBudget = budgetForMaxYear;
+                } else {
+                    // --- Fallback to original generic scan if multi-year logic fails ---
+                    for (let key in p) {
+                        let k = key.toLowerCase();
+                        let val = p[key];
+                        if (val === null || val === undefined || typeof val === 'object') continue;
+                        
+                        if (!year && (k.includes('ปี') || k.includes('year'))) {
+                             let vStr = String(val).trim();
+                             if (vStr.match(/^25\d{2}$/)) year = vStr;
+                        }
+                        
+                        if (rawBudget === 0 && (k.includes('งบ') || k.includes('budget') || k.includes('amount') || k.includes('cost') || k.includes('เงิน') || k.includes('ราคา') || k.includes('วงเงิน'))) {
+                            if(typeof val === 'number') {
+                                rawBudget = val;
+                            } else if (typeof val === 'string') {
+                                let clean = val.replace(/[^0-9.-]+/g,"");
+                                if(clean && !isNaN(clean)) {
+                                    let num = parseFloat(clean);
+                                    if (num > 100) rawBudget = num;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if(!year) year = '-';
+                
+                return { name, district, year, budget: rawBudget, status };
+            };
+
             window.openPlanImportModal = async function() {
                 const m = document.getElementById('planImportModal');
                 if(m) { m.classList.remove('hidden'); m.classList.add('flex'); }
@@ -4557,13 +4644,8 @@
                 }
 
                 const filtered = window.planProjects.filter(p => {
-                    const n = (p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || p.title || p.project_name || 'ไม่ระบุชื่อ').toLowerCase();
-                    const d = (p.district || p.amphoe || p.location || '').toLowerCase();
-                    // ลองค้นหาปีจาก seqNo, year, budget_year
-                    let y = (p.year || p.budget_year || '').toString().toLowerCase();
-                    if(!y && p.seqNo) y = p.seqNo.toString().toLowerCase();
-                    
-                    return n.includes(q) || d.includes(q) || y.includes(q);
+                    const ext = window.extractPlanData(p);
+                    return ext.name.toLowerCase().includes(q) || ext.district.toLowerCase().includes(q) || ext.year.includes(q);
                 });
 
                 if(filtered.length === 0) {
@@ -4572,32 +4654,34 @@
                 }
 
                 container.innerHTML = filtered.map(p => {
-                    const name = p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || p.title || p.project_name || 'ไม่ระบุชื่อโครงการ';
-                    const district = p.district || p.amphoe || p.location || '-';
-                    // พยายามดึงปี
-                    let year = p.year || p.budget_year || '-';
-                    if (year === '-' && p.seqNo && p.seqNo.toString().includes('/')) {
-                        year = p.seqNo.split('/')[1]; 
+                    const ext = window.extractPlanData(p);
+                    const isSuitable = ext.status === 'เหมาะสม';
+
+                    let actionHtml = '';
+                    if (isSuitable) {
+                        actionHtml = `
+                        <button type="button" onclick="window.importPlanData('${p.id}')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0 shadow-sm transition-colors">
+                            <i class="fa-solid fa-download mr-1"></i> เลือก
+                        </button>`;
+                    } else {
+                        actionHtml = `
+                        <div class="text-red-600 font-black text-[10px] shrink-0 text-center bg-red-50 px-3 py-1.5 rounded-lg border border-red-200 leading-tight shadow-sm">
+                            <i class="fa-solid fa-ban text-sm mb-0.5"></i><br>โครงการนี้อยู่ในระหว่าง<br>ตรวจสอบรายละเอียด
+                        </div>`;
                     }
-                    
-                    // พยายามดึงงบประมาณและจัดการให้อยู่ในรูปแบบตัวเลข
-                    let rawBudget = p.budget || p.amount || p.project_budget || 0;
-                    if(typeof rawBudget === 'string') rawBudget = rawBudget.replace(/,/g, '').replace(/บาท/g, '').trim();
-                    const budget = parseFloat(rawBudget) || 0;
 
                     return `
                     <div class="bg-white p-3 border border-gray-200 rounded-xl shadow-sm hover:border-purple-400 hover:shadow-md mb-3 flex justify-between items-center gap-3 transition-all">
                         <div class="flex-1 min-w-0">
-                            <div class="font-bold text-sm text-gray-800 truncate" title="${name}">${name}</div>
-                            <div class="text-[11px] text-gray-500 mt-1 flex gap-3">
-                                <span><i class="fa-solid fa-location-dot text-red-500"></i> อ.${district}</span>
-                                <span class="bg-gray-100 px-1.5 rounded">ปี ${year}</span>
-                                <span class="text-blue-600 font-bold">฿${budget.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            <div class="font-bold text-sm text-gray-800 truncate" title="${ext.name}">${ext.name}</div>
+                            <div class="text-[11px] text-gray-500 mt-1.5 flex flex-wrap gap-x-3 gap-y-1.5 items-center">
+                                <span><i class="fa-solid fa-location-dot text-red-500"></i> อ.${ext.district}</span>
+                                <span class="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">ปี ${ext.year}</span>
+                                <span class="text-blue-600 font-bold">฿${ext.budget.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                                ${isSuitable ? `<span class="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200"><i class="fa-solid fa-check-circle"></i> เหมาะสม</span>` : `<span class="text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200"><i class="fa-solid fa-clock"></i> ${ext.status || 'รอพิจารณา'}</span>`}
                             </div>
                         </div>
-                        <button type="button" onclick="window.importPlanData('${p.id}')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0 shadow-sm transition-colors">
-                            <i class="fa-solid fa-download mr-1"></i> เลือก
-                        </button>
+                        ${actionHtml}
                     </div>
                     `
                 }).join('');
@@ -4608,36 +4692,30 @@
                     const p = window.planProjects.find(x => x.id === id);
                     if(!p) return;
 
-                    console.log("Data to import: ", p); // แอบดูข้อมูลหลังบ้าน
+                    const ext = window.extractPlanData(p);
+
+                    if (ext.status !== 'เหมาะสม') {
+                        if(window.customAlert) window.customAlert("ไม่อนุญาตให้ดึงข้อมูล: โครงการนี้ยังอยู่ในระหว่างตรวจสอบรายละเอียด (สถานะไม่เหมาะสม)");
+                        return;
+                    }
+
+                    console.log("Data to import: ", ext);
 
                     const setVal = (eId, val) => { const el = document.getElementById(eId); if (el) el.value = val; };
                     
-                    // 1. ดึงข้อความทั่วไป
-                    const name = p.projectNameNew || p.projectNameOld || p.projectDetails || p.name || p.projectName || p.title || p.project_name || '';
-                    const district = p.district || p.amphoe || p.location || '';
-                    
-                    let year = p.year || p.budget_year || '';
-                    if (!year && p.seqNo && p.seqNo.toString().includes('/')) {
-                        year = p.seqNo.split('/')[1];
-                    }
-
-                    let rawBudget = p.budget || p.amount || p.project_budget || 0;
-                    if(typeof rawBudget === 'string') rawBudget = rawBudget.replace(/,/g, '').replace(/บาท/g, '').trim();
-                    const budget = parseFloat(rawBudget) || 0;
-
-                    setVal('pName', name);
-                    setVal('pYear', year);
+                    setVal('pName', ext.name !== 'ไม่ระบุชื่อโครงการ' ? ext.name : '');
+                    setVal('pYear', ext.year !== '-' ? ext.year : '');
                     
                     const dSel = document.getElementById('pDistrict');
-                    if(dSel && district) {
-                        let cleanDist = district.replace('อำเภอ', '').trim();
+                    if(dSel && ext.district && ext.district !== '-') {
+                        let cleanDist = ext.district.replace('อำเภอ', '').trim();
                         const opt = Array.from(dSel.options).find(o => o.value.includes(cleanDist));
                         if(opt) { dSel.value = opt.value; window.updateSupervisorDropdowns(); }
                     }
 
                     const bInput = document.getElementById('pBudget');
-                    if(bInput && budget > 0) {
-                        bInput.value = budget.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    if(bInput && ext.budget > 0) {
+                        bInput.value = ext.budget.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                         window.calculateActivityRows();
                     }
 
