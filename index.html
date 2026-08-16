@@ -278,6 +278,23 @@
                     <a href="https://tooncivilengineer-pixel.github.io/convert84/" target="_blank" rel="noopener noreferrer" class="text-left bg-white hover:bg-violet-50 text-gray-700 hover:text-violet-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-violet-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
                         <i class="fa-solid fa-earth-asia text-violet-500 w-3 text-center"></i><span class="leading-tight flex-1">ระบบแปลงค่าพิกัด WGS 1984</span>
                     </a>
+                    
+                    <details class="group/soil mt-1 w-full relative">
+                        <summary class="list-none bg-white hover:bg-amber-50 text-gray-700 hover:text-amber-800 text-[10px] font-bold py-1.5 px-2 border border-gray-300 hover:border-amber-300 rounded shadow-sm flex justify-between items-center cursor-pointer transition-all">
+                            <div class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-flask-vial text-amber-700 w-3 text-center"></i><span class="leading-tight flex-1">ระบบทดสอบดิน (Soil Test)</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-gray-400 transition-transform duration-300 group-open/soil:rotate-180"></i>
+                        </summary>
+                        <div class="flex flex-col gap-1.5 pl-3 mt-1.5 mb-1 border-l-2 border-amber-200 ml-2">
+                            <a href="https://tooncivilengineer-pixel.github.io/compaction-test/" target="_blank" rel="noopener noreferrer" class="text-left bg-white hover:bg-amber-100 text-gray-700 hover:text-amber-900 text-[10px] font-bold py-1 px-2 border border-gray-200 hover:border-amber-400 rounded shadow-sm flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-vial-circle-check text-amber-600 w-3 text-center"></i><span class="leading-tight flex-1">Compaction Test</span>
+                            </a>
+                            <button onclick="window.open('#', '_blank')" class="text-left bg-white hover:bg-amber-100 text-gray-700 hover:text-amber-900 text-[10px] font-bold py-1 px-2 border border-gray-200 hover:border-amber-400 rounded shadow-sm flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-tractor text-amber-700 w-3 text-center"></i><span class="leading-tight flex-1">ผลการเจาะสำรวจชั้นดิน</span>
+                            </button>
+                        </div>
+                    </details>
                 </div>
             </details>
             
@@ -301,7 +318,7 @@
             </div>
         </div>
 
-        <div id="coordinateDisplay" class="absolute bottom-4 left-4 z-[500] bg-white bg-opacity-90 px-3 py-2 rounded-lg shadow-sm border border-gray-300 text-[11px] font-mono text-gray-700 pointer-events-none">
+        <div id="coordinateDisplay" class="absolute bottom-4 right-4 z-[500] bg-white bg-opacity-90 px-3 py-2 rounded-lg shadow-sm border border-gray-300 text-[11px] font-mono text-gray-700 pointer-events-none">
             <div><span class="font-bold text-blue-700">WGS84:</span> Lat <span id="coordLat">-</span>, Lng <span id="coordLng">-</span></div>
             <div class="mt-0.5"><span class="font-bold text-orange-600">UTM 47N:</span> <span id="coordUTM">-</span></div>
         </div>
