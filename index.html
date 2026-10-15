@@ -202,7 +202,7 @@
 
         <div id="map" class="h-full w-full z-0 bg-slate-200"></div>
 
-        <div class="absolute top-4 left-4 z-[500] flex flex-col gap-1.5">
+        <div class="absolute top-4 left-4 bottom-48 z-[500] flex flex-col gap-1.5 overflow-y-auto pr-1 max-w-[calc(100vw-2rem)]">
             <button onclick="window.toggleMapType()" class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold py-1.5 px-2.5 border border-gray-300 rounded shadow-sm flex items-center gap-1.5 transition-all">
                 <i id="mapIcon" class="fa-solid fa-satellite text-blue-600 w-3 text-center"></i><span id="mapText">เปิดแผนที่ดาวเทียม</span>
             </button>
@@ -302,7 +302,12 @@
                 <i class="fa-solid fa-database w-3 text-center"></i><span>ฐานข้อมูลราคากลาง</span>
             </a>
 
-            <div class="bg-white p-2.5 rounded-lg shadow-md border border-gray-200 mt-2 transition-all hover:shadow-lg w-full shrink-0 mb-4 space-y-2">
+            <a href="https://tooncivilengineer-pixel.github.io/Road-sheet/" target="_blank" rel="noopener noreferrer" class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold py-1.5 px-2.5 border border-orange-700 rounded shadow-sm flex items-center gap-1.5 transition-all mt-1">
+                <i class="fa-solid fa-road-circle-check w-3 text-center"></i><span>ประมาณราคางานทาง</span>
+            </a>
+        </div>
+
+        <div class="absolute bottom-4 left-4 z-[500] bg-white p-2.5 rounded-lg shadow-md border border-gray-200 transition-all hover:shadow-lg w-[280px] max-w-[calc(100vw-2rem)] shrink-0 space-y-2">
                 <div>
                     <label class="block text-[10px] font-bold text-gray-500 mb-1"><i class="fa-solid fa-filter text-blue-500 mr-1"></i> กรองแผนที่ตามอำเภอ:</label>
                     <select id="mainMapDistrictFilter" onchange="window.renderMarkers()" class="w-full text-xs border border-gray-300 rounded p-1.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-bold text-blue-800 bg-blue-50">
@@ -316,7 +321,6 @@
                     </select>
                 </div>
             </div>
-        </div>
 
         <div id="coordinateDisplay" class="absolute bottom-4 right-4 z-[500] bg-white bg-opacity-90 px-3 py-2 rounded-lg shadow-sm border border-gray-300 text-[11px] font-mono text-gray-700 pointer-events-none">
             <div><span class="font-bold text-blue-700">WGS84:</span> Lat <span id="coordLat">-</span>, Lng <span id="coordLng">-</span></div>
@@ -4677,7 +4681,32 @@
                 
                 if(!year) year = '-';
                 
-                return { name, district, year, budget: rawBudget, status };
+                const workflowStatus = p.workflowStatus || p.coordinationStatus || p.ordinanceStatus || '';
+                return { name, district, year, budget: rawBudget, status, workflowStatus };
+            };
+
+            // ตรวจสิทธิ์นำเข้า: รองรับทั้งผลวิเคราะห์เดิมและสถานะการคัดเลือกจากระบบประสานแผนรุ่นใหม่
+            window.getPlanImportEligibility = function(p, ext) {
+                const workflow = String(ext?.workflowStatus || p?.workflowStatus || p?.coordinationStatus || '').trim();
+                const selectedDestinations = {
+                    'ได้รับคัดเลือกเข้าสู่ข้อบัญญัติ': 'ข้อบัญญัติ',
+                    'ยกระดับเป็นโครงการข้อบัญญัติแล้ว': 'ข้อบัญญัติ',
+                    'โครงการข้อบัญญัติ': 'ข้อบัญญัติ',
+                    'ได้รับคัดเลือกเข้าสู่จ่ายขาดเงินสะสม': 'จ่ายขาดเงินสะสม',
+                    'ได้รับคัดเลือกเข้าสู่โอนตั้งจ่ายรายการใหม่': 'โอนตั้งจ่ายรายการใหม่',
+                    'ได้รับคัดเลือกเข้าสู่โครงการเงินอุดหนุนเฉพาะกิจ': 'เงินอุดหนุนเฉพาะกิจ'
+                };
+                let destination = selectedDestinations[workflow] || '';
+                if(!destination && (p?.projectType === 'ordinance' || p?.ordinanceProjectId)) destination = 'ข้อบัญญัติ';
+                const suitable = String(ext?.status || '').trim() === 'เหมาะสม';
+                const eligible = suitable || !!destination;
+                return {
+                    eligible,
+                    suitable,
+                    destination,
+                    workflow,
+                    label: destination ? `ได้รับคัดเลือกแล้ว — ${destination}` : (suitable ? 'ผ่านการตรวจสอบความเหมาะสม' : (workflow || ext?.status || 'รอพิจารณา'))
+                };
             };
 
             window.openPlanImportModal = async function() {
@@ -4718,10 +4747,11 @@
 
                 container.innerHTML = filtered.map(p => {
                     const ext = window.extractPlanData(p);
-                    const isSuitable = ext.status === 'เหมาะสม';
+                    const eligibility = window.getPlanImportEligibility(p, ext);
+                    const isImportable = eligibility.eligible;
 
                     let actionHtml = '';
-                    if (isSuitable) {
+                    if (isImportable) {
                         actionHtml = `
                         <button type="button" onclick="window.importPlanData('${p.id}')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0 shadow-sm transition-colors">
                             <i class="fa-solid fa-download mr-1"></i> เลือก
@@ -4741,7 +4771,7 @@
                                 <span><i class="fa-solid fa-location-dot text-red-500"></i> อ.${ext.district}</span>
                                 <span class="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">ปี ${ext.year}</span>
                                 <span class="text-blue-600 font-bold">฿${ext.budget.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                                ${isSuitable ? `<span class="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200"><i class="fa-solid fa-check-circle"></i> เหมาะสม</span>` : `<span class="text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200"><i class="fa-solid fa-clock"></i> ${ext.status || 'รอพิจารณา'}</span>`}
+                                ${isImportable ? `<span class="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200"><i class="fa-solid fa-check-circle"></i> ${eligibility.label}</span>` : `<span class="text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200"><i class="fa-solid fa-clock"></i> ${eligibility.label}</span>`}
                             </div>
                         </div>
                         ${actionHtml}
@@ -4757,8 +4787,9 @@
 
                     const ext = window.extractPlanData(p);
 
-                    if (ext.status !== 'เหมาะสม') {
-                        if(window.customAlert) window.customAlert("ไม่อนุญาตให้ดึงข้อมูล: โครงการนี้ยังอยู่ในระหว่างตรวจสอบรายละเอียด (สถานะไม่เหมาะสม)");
+                    const eligibility = window.getPlanImportEligibility(p, ext);
+                    if (!eligibility.eligible) {
+                        if(window.customAlert) window.customAlert(`ไม่อนุญาตให้ดึงข้อมูล: โครงการนี้ยังไม่ผ่านการตรวจสอบหรือยังไม่ได้รับคัดเลือก\n\nสถานะปัจจุบัน: ${eligibility.label}`);
                         return;
                     }
 
