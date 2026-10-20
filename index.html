@@ -360,6 +360,7 @@
                                 <label class="block text-sm font-bold text-blue-800">1. ชื่อโครงการ</label>
                                 <div class="flex gap-2">
                                     <button type="button" onclick="window.openPlanImportModal()" class="text-[10px] bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg font-bold hover:bg-purple-200 border border-purple-200 shadow-sm transition-colors"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> ดึงจากระบบประสานแผน</button>
+                                    <button type="button" onclick="window.openHighwayImportModal()" class="text-[10px] bg-orange-50 text-orange-700 px-3 py-1.5 rounded-lg font-bold hover:bg-orange-200 border border-orange-200 shadow-sm transition-colors"><i class="fa-solid fa-road mr-1"></i> ดึงจากระบบบริหารทางหลวง</button>
                                     <button type="button" onclick="window.downloadActivityTemplate()" class="text-[10px] bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-200 border border-emerald-200 shadow-sm transition-colors"><i class="fa-solid fa-file-excel mr-1"></i> โหลดแบบฟอร์มแผนงาน</button>
                                     <button type="button" onclick="document.getElementById('activityExcelUpload').click()" class="text-[10px] bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-200 border border-blue-200 shadow-sm transition-colors"><i class="fa-solid fa-upload mr-1"></i> อัปโหลดแผนงาน (Excel)</button>
                                     <input type="file" id="activityExcelUpload" accept=".xlsx, .xls" class="hidden" onchange="window.handleActivityUpload(this)">
@@ -786,6 +787,23 @@
                 <input type="text" id="planSearchInput" onkeyup="window.renderPlanList()" class="w-full px-4 py-2 rounded-xl border border-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none font-bold text-sm shadow-sm" placeholder="🔍 ค้นหาชื่อโครงการ หรือ อำเภอ...">
             </div>
             <div class="p-4 overflow-y-auto flex-1 bg-slate-50 custom-scrollbar" id="planListContainer"></div>
+        </div>
+    </div>
+
+    <!-- Highway Management Import Modal -->
+    <div id="highwayImportModal" class="fixed inset-0 bg-black/60 z-[3000] hidden justify-center items-center p-4 backdrop-blur-sm no-print">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden relative">
+            <div class="bg-orange-600 text-white px-6 py-4 flex justify-between items-center font-bold">
+                <div>
+                    <h2 class="text-lg"><i class="fa-solid fa-road mr-2"></i> ดึงข้อมูลจากระบบบริหารทางหลวงท้องถิ่น</h2>
+                    <p class="text-[11px] text-orange-100 mt-1">แสดงเฉพาะรายการที่ได้รับการกำหนดเป็นโครงการแล้ว</p>
+                </div>
+                <button type="button" onclick="window.closeHighwayImportModal()" class="hover:text-orange-200"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+            <div class="p-4 bg-orange-50 border-b border-orange-100">
+                <input type="text" id="highwaySearchInput" onkeyup="window.renderHighwayList()" class="w-full px-4 py-2 rounded-xl border border-orange-100 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none font-bold text-sm shadow-sm" placeholder="🔍 ค้นหาชื่อโครงการ อำเภอ ปีงบประมาณ หรือสถานะ...">
+            </div>
+            <div class="p-4 overflow-y-auto flex-1 bg-slate-50 custom-scrollbar" id="highwayListContainer"></div>
         </div>
     </div>
 
@@ -4962,6 +4980,192 @@
             }
         };
 
+        // ================================================================
+        // ดึงข้อมูลจากระบบบริหารทางหลวงท้องถิ่น
+        // รับเฉพาะรายการที่ถูกกำหนดเป็นโครงการแล้ว (ไม่รวมสายทางแม่/แจ้งเหตุ)
+        // ================================================================
+        window.highwayProjects = [];
+
+        window.openHighwayImportModal = async function() {
+            const modal = document.getElementById('highwayImportModal');
+            if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+            const container = document.getElementById('highwayListContainer');
+            if (container) container.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-spinner fa-spin text-3xl text-orange-500 mb-3"></i><p class="font-bold text-gray-500 text-sm">กำลังดึงโครงการจากระบบบริหารทางหลวง...</p></div>';
+            if (window.fetchHighwayProjectsFromCloud) await window.fetchHighwayProjectsFromCloud();
+            window.renderHighwayList();
+        };
+
+        window.closeHighwayImportModal = function() {
+            const modal = document.getElementById('highwayImportModal');
+            if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+        };
+
+        window.highwayEscapeHtml = function(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+        };
+
+        window.extractHighwayData = function(project) {
+            const budgetTypeMap = {
+                'งบอุดหนุนเฉพาะกิจ': 'เงินอุดหนุน',
+                'เงินอุดหนุนเฉพาะกิจ': 'เงินอุดหนุน'
+            };
+            return {
+                id: String(project.id || ''),
+                name: project.name || project.projectName || 'ไม่ระบุชื่อโครงการ',
+                district: String(project.district || '').replace(/^อำเภอ/, '').trim() || '-',
+                year: String(project.docYear || project.year || '').trim() || '-',
+                volume: project.docVol || '',
+                page: project.docPage || '',
+                budget: Number(project.budget || 0),
+                budgetType: budgetTypeMap[project.budgetType] || project.budgetType || 'ข้อบัญญัติ',
+                status: project.opStatus || 'ไม่ระบุสถานะ'
+            };
+        };
+
+        window.renderHighwayList = function() {
+            const container = document.getElementById('highwayListContainer');
+            if (!container) return;
+            const query = String(document.getElementById('highwaySearchInput')?.value || '').trim().toLowerCase();
+            const projects = (window.highwayProjects || []).filter(project => {
+                const ext = window.extractHighwayData(project);
+                return [ext.name, ext.district, ext.year, ext.status, ext.budgetType].some(value => String(value).toLowerCase().includes(query));
+            });
+
+            if (!projects.length) {
+                container.innerHTML = '<div class="text-center py-10 text-gray-500 text-sm font-bold"><i class="fa-solid fa-road-circle-xmark text-3xl text-gray-300 mb-3 block"></i>ไม่พบโครงการที่ได้รับการคัดเลือกในระบบบริหารทางหลวง</div>';
+                return;
+            }
+
+            container.innerHTML = projects.map(project => {
+                const ext = window.extractHighwayData(project);
+                return `
+                    <div class="bg-white p-3 border border-gray-200 rounded-xl shadow-sm hover:border-orange-400 hover:shadow-md mb-3 flex justify-between items-center gap-3 transition-all">
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold text-sm text-gray-800 leading-snug">${window.highwayEscapeHtml(ext.name)}</div>
+                            <div class="text-[11px] text-gray-500 mt-1.5 flex flex-wrap gap-x-3 gap-y-1.5 items-center">
+                                <span><i class="fa-solid fa-location-dot text-red-500"></i> อ.${window.highwayEscapeHtml(ext.district)}</span>
+                                <span class="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">ปี ${window.highwayEscapeHtml(ext.year)}</span>
+                                <span class="text-blue-600 font-bold">฿${ext.budget.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                                <span class="text-orange-700 font-bold bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200"><i class="fa-solid fa-list-check"></i> ${window.highwayEscapeHtml(ext.status)}</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="window.importHighwayData('${ext.id}')" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0 shadow-sm transition-colors">
+                            <i class="fa-solid fa-download mr-1"></i> เลือก
+                        </button>
+                    </div>`;
+            }).join('');
+        };
+
+        window.importHighwayData = function(id) {
+            try {
+                const project = (window.highwayProjects || []).find(item => String(item.id) === String(id));
+                if (!project) return;
+                const ext = window.extractHighwayData(project);
+                const setValue = (elementId, value) => {
+                    const element = document.getElementById(elementId);
+                    if (element) element.value = value ?? '';
+                };
+
+                setValue('pName', ext.name !== 'ไม่ระบุชื่อโครงการ' ? ext.name : '');
+                setValue('pWorkType', 'งานทาง');
+                setValue('pYear', ext.year !== '-' ? ext.year : '');
+                setValue('pVolume', ext.volume);
+                setValue('pPage', ext.page);
+                setValue('pBudgetType', ext.budgetType);
+                if (ext.budget > 0) {
+                    setValue('pBudget', ext.budget.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                    if (window.calculateActivityRows) window.calculateActivityRows();
+                }
+
+                const districtSelect = document.getElementById('pDistrict');
+                if (districtSelect && ext.district !== '-') {
+                    const option = Array.from(districtSelect.options).find(item => item.value === ext.district || item.value.includes(ext.district));
+                    if (option) {
+                        districtSelect.value = option.value;
+                        if (window.updateSupervisorDropdowns) window.updateSupervisorDropdowns();
+                    }
+                }
+
+                let geometryType = 'point';
+                let coordinates = [];
+                const validPair = pair => Array.isArray(pair) && pair.length >= 2 &&
+                    pair[0] !== null && pair[0] !== undefined && pair[0] !== '' &&
+                    pair[1] !== null && pair[1] !== undefined && pair[1] !== '' &&
+                    Number.isFinite(Number(pair[0])) && Number.isFinite(Number(pair[1])) &&
+                    Math.abs(Number(pair[0])) <= 90 && Math.abs(Number(pair[1])) <= 180;
+
+                let linePoints = project.linePoints;
+                if (!linePoints && project.linePointsStr) {
+                    try { linePoints = JSON.parse(project.linePointsStr); } catch (error) { linePoints = null; }
+                }
+                if (Array.isArray(linePoints)) {
+                    const parsedLine = linePoints.map(point => {
+                        if (Array.isArray(point)) return [Number(point[0]), Number(point[1])];
+                        if (point && typeof point === 'object') return [Number(point.lat), Number(point.lng)];
+                        return null;
+                    }).filter(validPair);
+                    if (parsedLine.length >= 2) {
+                        geometryType = 'line';
+                        coordinates = parsedLine;
+                    }
+                }
+
+                if (!coordinates.length) {
+                    const start = [project.startLat, project.startLng];
+                    const end = [project.endLat, project.endLng];
+                    if (validPair(start) && validPair(end)) {
+                        geometryType = 'line';
+                        coordinates = [start.map(Number), end.map(Number)];
+                    } else {
+                        const point = [project.lat, project.lng];
+                        if (validPair(point)) {
+                            geometryType = 'point';
+                            coordinates = point.map(Number);
+                        }
+                    }
+                }
+
+                if (coordinates.length) {
+                    const radio = document.querySelector(`input[name="pGeomType"][value="${geometryType}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                        window.toggleGeomTypeSilent();
+                    }
+                    const segmentContainer = document.getElementById('segmentsContainer');
+                    if (segmentContainer) segmentContainer.innerHTML = '';
+                    activeSegmentsData = {};
+                    segmentCounter = 0;
+                    window.addSegmentRow(geometryType === 'line' ? 'แนวโครงการ (จากระบบทางหลวง)' : 'จุดที่ตั้งโครงการ (จากระบบทางหลวง)');
+                    const segmentId = `seg_${segmentCounter}`;
+                    activeSegmentsData[segmentId] = { coordinates };
+                    const row = document.querySelector(`[data-seg-id="${segmentId}"]`);
+                    if (row) {
+                        if (geometryType === 'line') {
+                            const first = coordinates[0];
+                            const last = coordinates[coordinates.length - 1];
+                            row.querySelector('.lat1-input').value = first[0];
+                            row.querySelector('.lng1-input').value = first[1];
+                            row.querySelector('.lat2-input').value = last[0];
+                            row.querySelector('.lng2-input').value = last[1];
+                        } else {
+                            row.querySelector('.lat-input').value = coordinates[0];
+                            row.querySelector('.lng-input').value = coordinates[1];
+                        }
+                    }
+                }
+
+                window.closeHighwayImportModal();
+                if (window.customAlert) {
+                    window.customAlert(coordinates.length
+                        ? 'ดึงข้อมูลโครงการและแนวพิกัดจากระบบบริหารทางหลวงสำเร็จ กรุณาตรวจสอบก่อนบันทึก'
+                        : 'ดึงข้อมูลโครงการจากระบบบริหารทางหลวงสำเร็จ แต่ไม่พบพิกัด กรุณาระบุตำแหน่งบนแผนที่ก่อนบันทึก');
+                }
+            } catch (error) {
+                console.error('Highway Import Error:', error);
+                if (window.customAlert) window.customAlert('ดึงข้อมูลจากระบบบริหารทางหลวงไม่สำเร็จ: ' + error.message);
+            }
+        };
+
         window.onload = function() { 
             window.initMap();
             window.makeDraggable('kanbanSummaryModalContent', 'kanbanSummaryModalHeader');
@@ -4991,6 +5195,20 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = "toon-civil-gis";
+
+        // ฐานข้อมูลของระบบบริหารทางหลวงท้องถิ่น (แยกจากฐานข้อมูล CM)
+        const highwayFirebaseConfig = {
+            apiKey: "AIzaSyAb4RzUwYBTDdusEkOt_zlJmomgfkRY2Tk",
+            authDomain: "construction-ppao-939a5.firebaseapp.com",
+            projectId: "construction-ppao-939a5",
+            storageBucket: "construction-ppao-939a5.firebasestorage.app",
+            messagingSenderId: "351603343106",
+            appId: "1:351603343106:web:c913cc019af6e8a0a74c1b"
+        };
+        const highwayApp = initializeApp(highwayFirebaseConfig, 'highway-import-app');
+        const highwayAuth = getAuth(highwayApp);
+        const highwayDb = getFirestore(highwayApp);
+        const highwayAppId = "pmis-phitsanulok-app";
 
         // เขียนทับฟังก์ชันให้ใช้ฐานข้อมูลเดิม
         window.saveProjectToCloud = async pData => {
@@ -5086,6 +5304,26 @@
             } catch (e) {
                 console.error("ดึงข้อมูลประสานแผนพลาด:", e);
                 if(window.customAlert) window.customAlert("ไม่สามารถดึงข้อมูลได้: " + e.message);
+            }
+        };
+
+        window.fetchHighwayProjectsFromCloud = async () => {
+            try {
+                if (!highwayAuth.currentUser) await signInAnonymously(highwayAuth);
+                const snapshot = await getDocs(collection(highwayDb, 'artifacts', highwayAppId, 'public', 'data', 'pmis_projects'));
+                const projects = [];
+                snapshot.forEach(documentSnapshot => {
+                    const data = documentSnapshot.data();
+                    const isProject = data.recordType === 'project' || data.roadRole === 'project';
+                    const isExcluded = data.recordType === 'road' || data.roadRole === 'master' || data.recordType === 'issue' || data.recordType === 'material';
+                    if (isProject && !isExcluded) projects.push({ id: documentSnapshot.id, ...data });
+                });
+                window.highwayProjects = projects.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+                console.log('Fetched selected highway projects:', window.highwayProjects);
+            } catch (error) {
+                console.error('ดึงข้อมูลระบบบริหารทางหลวงพลาด:', error);
+                window.highwayProjects = [];
+                if (window.customAlert) window.customAlert('ไม่สามารถดึงข้อมูลจากระบบบริหารทางหลวงได้: ' + error.message);
             }
         };
 
